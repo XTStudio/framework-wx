@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const UIPoint_1 = require("./UIPoint");
 const EventEmitter_1 = require("../kimi/EventEmitter");
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
@@ -16,28 +17,28 @@ class UIGestureRecognizer extends EventEmitter_1.EventEmitter {
         this.state = UIGestureRecognizerState.possible;
         this.enabled = true;
         this.view = undefined;
-        // locationInView(view: UIView | undefined): UIPoint {
-        //     const touch = this.touches[0]
-        //     if (touch) {
-        //         return touch.locationInView(view)
-        //     }
-        //     return UIPointZero
-        // }
-        // numberOfTouches(): number {
-        //     return this.touches.values.length
-        // }
-        // locationOfTouch(touchIndex: number, view: UIView | undefined): UIPoint {
-        //     const touch = this.touches[touchIndex]
-        //     if (touch) {
-        //         return touch.locationInView(view)
-        //     }
-        //     return UIPointZero
-        // }
-        // private touches: UITouch[] = []
-        // handleTouch(touches: UITouch[]) { this.touches = touches }
-        // handleEvent(name: String) { }
+        this.touches = [];
     }
     requireGestureRecognizerToFail(otherGestureRecognizer) {
     }
+    locationInView(view) {
+        const touch = this.touches[0];
+        if (touch) {
+            return touch.locationInView(view);
+        }
+        return UIPoint_1.UIPointZero;
+    }
+    numberOfTouches() {
+        return this.touches.values.length;
+    }
+    locationOfTouch(touchIndex, view) {
+        const touch = this.touches[touchIndex];
+        if (touch) {
+            return touch.locationInView(view);
+        }
+        return UIPoint_1.UIPointZero;
+    }
+    handleTouch(touches) { this.touches = touches; }
+    handleEvent(name) { }
 }
 exports.UIGestureRecognizer = UIGestureRecognizer;

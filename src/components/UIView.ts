@@ -34,8 +34,8 @@ export class UIViewComponent {
             value: {},
             observer: function (newVal: any, oldVal: any) {
                 if (newVal === undefined || newVal === null) { return }
-                if (newVal.isDirty !== true) { return }
                 var self: WeApp.Page = this as any
+                if (newVal.isDirty !== true && self.el !== undefined) { return }
                 if (self.el === undefined) {
                     self.el = new UIViewElement(self)
                 }

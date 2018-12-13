@@ -4,19 +4,25 @@ const UIRect_1 = require("./UIRect");
 const UIAffineTransform_1 = require("./UIAffineTransform");
 const Matrix_1 = require("./helpers/Matrix");
 const UIColor_1 = require("./UIColor");
+const UIWindowManager_1 = require("../components/UIWindowManager");
+const UITouch_1 = require("./UITouch");
+const UIEdgeInsets_1 = require("./UIEdgeInsets");
+const MagicObject_1 = require("./helpers/MagicObject");
 exports.dirtyItems = [];
 class UIView {
     constructor() {
         this.clazz = "UIView";
         this.isDirty = true;
-        this.dataResponder = undefined;
+        this.dataOwner = undefined;
+        this.dataField = undefined;
         this._frame = UIRect_1.UIRectZero;
         this.bounds = UIRect_1.UIRectZero;
+        this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
         this.tag = 0;
         this.viewDelegate = undefined;
-        this._superview = new WeakMap();
+        this._superview = new MagicObject_1.MagicObject();
         this.subviews = [];
         this._clipsToBounds = false;
         this._hidden = false;
@@ -26,14 +32,16 @@ class UIView {
         this._backgroundColor = undefined;
         // GestureRecognizers
         this._userInteractionEnabled = true;
-        this.gestureRecognizers = [];
+        this._gestureRecognizers = new MagicObject_1.MagicObject([]);
         // Helpers
         this.invalidateCallHandler = undefined;
         exports.dirtyItems.push(this);
     }
-    attach(dataResponder) {
-        this.dataResponder = dataResponder;
-        this.dataResponder();
+    attach(dataOwner, dataField) {
+        if (!(this instanceof UIWindow)) {
+            const window = new UIWindow();
+            window.attach(dataOwner, dataField, this);
+        }
     }
     set frame(value) {
         const boundsChanged = this._frame.width != value.width || this._frame.height != value.height;
@@ -45,7 +53,7 @@ class UIView {
         this.invalidate();
     }
     get frame() {
-        return this.frame;
+        return this._frame;
     }
     get center() {
         return { x: this.frame.x + this.frame.width / 2.0, y: this.frame.y + this.frame.height / 2.0 };
@@ -61,10 +69,10 @@ class UIView {
         this.invalidate();
     }
     get superview() {
-        return this._superview.get(this);
+        return this._superview.get();
     }
     set superview(value) {
-        this._superview.set(this, value);
+        this._superview.set(value);
     }
     get window() {
         if (this instanceof UIWindow) {
@@ -107,6 +115,7 @@ class UIView {
         view.superview = this;
         this.subviews.splice(index, 0, view);
         this.invalidate();
+        view.invalidate();
         view.didMoveToSuperview();
         this.didAddSubview(view);
     }
@@ -127,6 +136,7 @@ class UIView {
         view.superview = this;
         this.subviews.push(view);
         this.invalidate();
+        view.invalidate();
         view.didMoveToSuperview();
         this.didAddSubview(view);
         view.didMoveToWindow();
@@ -364,7 +374,9 @@ class UIView {
             return;
         }
         this._userInteractionEnabled = value;
-        // this.domElement.style.pointerEvents = value ? "auto" : "none"
+    }
+    get gestureRecognizers() {
+        return this._gestureRecognizers.get();
     }
     addGestureRecognizer(gestureRecognizer) {
         this.gestureRecognizers.push(gestureRecognizer);
@@ -375,6 +387,67 @@ class UIView {
             this.gestureRecognizers.splice(index, 1);
         }
     }
+    // Touches
+    hitTest(point) {
+        if (this.userInteractionEnabled && this.alpha > 0.0 && !this.hidden && this.pointInside(point)) {
+            for (let index = this.subviews.length - 1; index >= 0; index--) {
+                const it = this.subviews[index];
+                const convertedPoint = it.convertPointFromView(point, this);
+                const testedView = it.hitTest(convertedPoint);
+                if (testedView !== undefined) {
+                    return testedView;
+                }
+            }
+            return this;
+        }
+        return undefined;
+    }
+    touchesBegan(touches) {
+        this.gestureRecognizers.filter((it) => it.enabled).forEach((it) => {
+            it.handleTouch(touches);
+        });
+        if (this.superview) {
+            this.superview.touchesBegan(touches);
+        }
+    }
+    touchesMoved(touches) {
+        this.gestureRecognizers.filter((it) => it.enabled).forEach((it) => {
+            it.handleTouch(touches);
+        });
+        if (this.superview) {
+            this.superview.touchesMoved(touches);
+        }
+    }
+    touchesEnded(touches) {
+        this.gestureRecognizers.filter((it) => it.enabled).forEach((it) => {
+            it.handleTouch(touches);
+        });
+        if (this.superview) {
+            this.superview.touchesEnded(touches);
+        }
+    }
+    touchesCancelled(touches) {
+        this.gestureRecognizers.filter((it) => it.enabled).forEach((it) => {
+            it.handleTouch(touches);
+        });
+        if (this.superview) {
+            this.superview.touchesCancelled(touches);
+        }
+    }
+    touchesWheel(delta) {
+        if (this.superview) {
+            this.superview.touchesWheel(delta);
+        }
+    }
+    intrinsicContentSize() {
+        return undefined;
+    }
+    pointInside(point) {
+        return point.x >= 0.0 - this.touchAreaInsets.left &&
+            point.y >= 0.0 - this.touchAreaInsets.top &&
+            point.x <= this.frame.width + this.touchAreaInsets.right &&
+            point.y <= this.frame.height + this.touchAreaInsets.bottom;
+    }
     invalidate(dirty = true) {
         if (dirty) {
             this.isDirty = true;
@@ -382,17 +455,19 @@ class UIView {
         }
         let nextResponder = this.nextResponder();
         if (nextResponder !== undefined) {
-            nextResponder.invalidate(false);
+            nextResponder.invalidate(true);
         }
         else {
             if (this.invalidateCallHandler === undefined) {
                 this.invalidateCallHandler = setTimeout(() => {
                     this.invalidateCallHandler = undefined;
-                    if (this.dataResponder) {
-                        this.dataResponder();
-                        exports.dirtyItems.forEach(it => it.isDirty = false);
-                        exports.dirtyItems = [];
+                    if (this.dataOwner && this.dataField) {
+                        this.dataOwner.setData({
+                            [this.dataField]: this
+                        });
                     }
+                    exports.dirtyItems.forEach(it => it.isDirty = false);
+                    exports.dirtyItems = [];
                 });
             }
         }
@@ -400,5 +475,201 @@ class UIView {
 }
 exports.UIView = UIView;
 class UIWindow extends UIView {
+    constructor() {
+        super();
+        this.clazz = "UIWindow";
+        // touches
+        this.currentTouchesID = [];
+        this.touches = {};
+        this.upCount = new Map();
+        this.upTimestamp = new Map();
+        UIWindowManager_1.UIWindowManager.shared.addWindow(this);
+    }
+    attach(dataOwner, dataField, rootView = undefined) {
+        if (rootView) {
+            this.rootView = rootView;
+            this.addSubview(rootView);
+            this.layoutSubviews();
+        }
+        this.dataOwner = dataOwner;
+        this.dataField = dataField;
+        this.invalidate();
+    }
+    layoutSubviews() {
+        super.layoutSubviews();
+        if (this.rootView) {
+            this.rootView.frame = this.bounds;
+        }
+    }
+    set frame(_) { }
+    get frame() {
+        const systemInfo = wx.getSystemInfoSync();
+        return {
+            x: 0,
+            y: 0,
+            width: parseInt(systemInfo.windowWidth),
+            height: parseInt(systemInfo.windowHeight),
+        };
+    }
+    set bounds(_) { }
+    get bounds() {
+        const systemInfo = wx.getSystemInfoSync();
+        return {
+            x: 0,
+            y: 0,
+            width: parseInt(systemInfo.windowWidth),
+            height: parseInt(systemInfo.windowHeight),
+        };
+    }
+    handleTouchStart(e) {
+        const changedTouches = this.standardlizeTouches(e);
+        for (let index = 0; index < changedTouches.length; index++) {
+            const pointer = changedTouches[index];
+            const pointerIdentifier = this.standardlizeTouchIdentifier(pointer);
+            this.currentTouchesID.push(pointerIdentifier);
+            const point = { x: pointer.pageX, y: pointer.pageY };
+            const target = this.hitTest(point);
+            if (target) {
+                const touch = new UITouch_1.UITouch();
+                this.touches[pointerIdentifier] = touch;
+                touch.identifier = pointerIdentifier;
+                touch.phase = UITouch_1.UITouchPhase.began;
+                touch.tapCount = (() => {
+                    for (const [key, value] of this.upCount) {
+                        const timestamp = this.upTimestamp.get(key) || 0.0;
+                        if ((e.timeStamp / 1000) - timestamp < 1.0
+                            && Math.abs(key.x - point.x) < 44.0 && Math.abs(key.y - point.y) < 44.0) {
+                            return value + 1;
+                        }
+                    }
+                    return 1;
+                })();
+                touch.timestamp = e.timeStamp / 1000;
+                touch.window = this;
+                touch.windowPoint = point;
+                touch.view = target;
+                if (touch.identifier == 0) {
+                    exports.sharedVelocityTracker.addMovement(touch);
+                }
+                touch.view.touchesBegan([touch]);
+            }
+        }
+    }
+    handleTouchMove(e) {
+        const changedTouches = this.standardlizeTouches(e);
+        for (let index = 0; index < changedTouches.length; index++) {
+            const pointer = changedTouches[index];
+            const pointerIdentifier = this.standardlizeTouchIdentifier(pointer);
+            const point = { x: pointer.pageX, y: pointer.pageY };
+            const touch = this.touches[pointerIdentifier];
+            if (touch === undefined) {
+                return false;
+            }
+            touch.phase = UITouch_1.UITouchPhase.moved;
+            touch.timestamp = e.timeStamp / 1000;
+            touch.windowPoint = point;
+            if (touch.identifier == 0) {
+                exports.sharedVelocityTracker.addMovement(touch);
+            }
+            if (touch.view) {
+                touch.view.touchesMoved([touch]);
+            }
+        }
+    }
+    handleTouchEnd(e) {
+        const changedTouches = this.standardlizeTouches(e);
+        for (let index = 0; index < changedTouches.length; index++) {
+            const pointer = changedTouches[index];
+            const pointerIdentifier = this.standardlizeTouchIdentifier(pointer);
+            const point = { x: pointer.pageX, y: pointer.pageY };
+            const touch = this.touches[pointerIdentifier];
+            if (touch !== undefined) {
+                touch.phase = UITouch_1.UITouchPhase.ended;
+                touch.timestamp = e.timeStamp / 1000;
+                touch.windowPoint = point;
+                if (touch.identifier == 0) {
+                    exports.sharedVelocityTracker.addMovement(touch);
+                }
+                if (touch.view) {
+                    touch.view.touchesEnded([touch]);
+                }
+            }
+            const idx = this.currentTouchesID.indexOf(pointerIdentifier);
+            if (idx >= 0) {
+                this.currentTouchesID.splice(idx, 1);
+            }
+        }
+        if (this.currentTouchesID.length == 0) {
+            this.upCount.clear();
+            this.upTimestamp.clear();
+            for (const key in this.touches) {
+                if (this.touches.hasOwnProperty(key)) {
+                    const it = this.touches[key];
+                    if (it.windowPoint) {
+                        this.upCount.set(it.windowPoint, it.tapCount);
+                        this.upTimestamp.set(it.windowPoint, it.timestamp);
+                    }
+                }
+            }
+            this.touches = {};
+            exports.sharedVelocityTracker.reset();
+            setTimeout(() => {
+                UIView.recognizedGesture = undefined;
+            }, 0);
+        }
+    }
+    handleTouchCancel(e) {
+        const changedTouches = this.standardlizeTouches(e);
+        for (let index = 0; index < changedTouches.length; index++) {
+            const pointer = changedTouches[index];
+            const pointerIdentifier = this.standardlizeTouchIdentifier(pointer);
+            const point = { x: pointer.pageX, y: pointer.pageY };
+            const touch = this.touches[pointerIdentifier];
+            if (touch) {
+                touch.phase = UITouch_1.UITouchPhase.cancelled;
+                touch.timestamp = e.timeStamp;
+                touch.windowPoint = point;
+                if (touch.identifier == 0) {
+                    exports.sharedVelocityTracker.addMovement(touch);
+                }
+                if (touch.view) {
+                    touch.view.touchesCancelled([touch]);
+                }
+            }
+        }
+        this.upCount.clear();
+        this.upTimestamp.clear();
+        this.touches = {};
+    }
+    standardlizeTouches(e) {
+        if (e.changedTouches) {
+            return new Array(e.changedTouches.length)
+                .fill(0)
+                .map((_, i) => e.changedTouches[i])
+                .map(it => {
+                if (it.identifier < -100 || it.identifier > 100) {
+                    it.identifier_2 = (() => {
+                        for (let index = 0; index < e.touches.length; index++) {
+                            if (e.touches[index].identifier === it.identifier) {
+                                return index;
+                            }
+                        }
+                        return 0;
+                    })();
+                    return it;
+                }
+                else {
+                    return it;
+                }
+            });
+        }
+        else {
+            return [];
+        }
+    }
+    standardlizeTouchIdentifier(touch) {
+        return typeof touch.identifier_2 === "number" ? touch.identifier_2 : touch.identifier;
+    }
 }
 exports.UIWindow = UIWindow;
+exports.sharedVelocityTracker = new UITouch_1.VelocityTracker;

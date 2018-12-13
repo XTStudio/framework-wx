@@ -1,0 +1,6 @@
+<!--xt-framework/uiwindow.wxml-->
+<view style='{{style}}' data-windowid="{{windowID}}" bindtouchstart="onTouchStarted" bindtouchmove="onTouchMoved" bindtouchend="onTouchEnded" bindtouchcancel="onTouchCancelled">
+  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <factory view="{{item}}"></factory>
+  </view>
+</view>

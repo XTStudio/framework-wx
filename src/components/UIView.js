@@ -32,10 +32,10 @@ class UIViewComponent {
                     if (newVal === undefined || newVal === null) {
                         return;
                     }
-                    if (newVal.isDirty !== true) {
+                    var self = this;
+                    if (newVal.isDirty !== true && self.el !== undefined) {
                         return;
                     }
-                    var self = this;
                     if (self.el === undefined) {
                         self.el = new UIViewElement(self);
                     }

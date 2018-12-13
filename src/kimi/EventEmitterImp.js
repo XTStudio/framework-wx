@@ -490,6 +490,8 @@
         return this._events || (this._events = {});
     };
 
-    exports.EventEmitter = EventEmitter;
+    module.exports = {
+        EventEmitter: EventEmitter
+    }
 
 }(this || {}));
