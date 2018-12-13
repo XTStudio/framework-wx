@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = require("./UIRect");
 const UIColor_1 = require("./UIColor");
 const UIAffineTransform_1 = require("./UIAffineTransform");
+const Matrix_1 = require("./helpers/Matrix");
 class UIViewElement {
     constructor(component) {
         this.component = component;
@@ -19,6 +20,8 @@ class UIViewElement {
     background-color: ${props._backgroundColor !== undefined ? UIColor_1.UIColor.toStyle(props._backgroundColor) : 'transparent'};
     opacity: ${props._alpha};
     display: ${props._hidden ? "none" : ""};
+    overflow: ${props._clipsToBounds ? "hidden" : ""};
+    transform: ${UIAffineTransform_1.UIAffineTransformIsIdentity(props._transform) ? "" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
     `;
     }
 }
@@ -117,6 +120,15 @@ class UIView {
         }
         else if (this.superview) {
             return this.superview.window;
+        }
+        return undefined;
+    }
+    get viewController() {
+        if (this.viewDelegate !== undefined) {
+            return this.viewDelegate;
+        }
+        else if (this.superview) {
+            return this.superview.viewController;
         }
         return undefined;
     }
@@ -227,7 +239,7 @@ class UIView {
     willRemoveSubview(subview) { }
     willMoveToSuperview(newSuperview) { }
     didMoveToSuperview() {
-        // this.tintColorDidChange()
+        this.tintColorDidChange();
     }
     willMoveToWindow(window) {
         this.subviews.forEach(it => it.willMoveToWindow(window));
@@ -252,12 +264,26 @@ class UIView {
     }
     // Rendering
     setNeedsDisplay() { }
+    get clipsToBounds() {
+        return this._clipsToBounds;
+    }
+    set clipsToBounds(value) {
+        this._clipsToBounds = value;
+        this.invalidate();
+    }
     set hidden(value) {
         this._hidden = value;
         this.invalidate();
     }
     get hidden() {
         return this._hidden;
+    }
+    set tintColor(value) {
+        this._tintColor = value;
+        this.tintColorDidChange();
+    }
+    get tintColor() {
+        return this._tintColor || (this.superview && this.superview.tintColor) || new UIColor_1.UIColor(0.0, 122.0 / 255.0, 1.0, 1.0);
     }
     tintColorDidChange() {
         this.subviews.forEach(it => it.tintColorDidChange());
@@ -297,6 +323,105 @@ class UIView {
                 });
             }
         }
+    }
+    convertPointToView(point, toView) {
+        const fromPoint = this.convertPointToWindow(point);
+        if (!fromPoint) {
+            return point;
+        }
+        if (toView instanceof UIWindow) {
+            return fromPoint;
+        }
+        return toView.convertPointFromWindow(fromPoint) || point;
+    }
+    convertPointFromView(point, fromView) {
+        return fromView.convertPointToView(point, this);
+    }
+    convertRectToView(rect, toView) {
+        let lt = this.convertPointToView({ x: rect.x, y: rect.y }, toView);
+        let rt = this.convertPointToView({ x: rect.x + rect.width, y: rect.y }, toView);
+        let lb = this.convertPointToView({ x: rect.x, y: rect.y + rect.height }, toView);
+        let rb = this.convertPointToView({ x: rect.x + rect.width, y: rect.y + rect.height }, toView);
+        return {
+            x: Math.min(lt.x, rt.x, lb.x, rb.x),
+            y: Math.min(lt.y, rt.y, lb.y, rb.y),
+            width: Math.max(lt.x, rt.x, lb.x, rb.x) - Math.min(lt.x, rt.x, lb.x, rb.x),
+            height: Math.max(lt.y, rt.y, lb.y, rb.y) - Math.min(lt.y, rt.y, lb.y, rb.y),
+        };
+    }
+    convertRectFromView(rect, fromView) {
+        return fromView.convertRectToView(rect, this);
+    }
+    convertPointToWindow(point) {
+        if (this.window === undefined) {
+            return undefined;
+        }
+        var current = this;
+        let currentPoint = { x: point.x, y: point.y };
+        while (current !== undefined) {
+            if (current instanceof UIWindow) {
+                break;
+            }
+            if (!UIAffineTransform_1.UIAffineTransformIsIdentity(current.transform)) {
+                const unmatrix = Matrix_1.Matrix.unmatrix(current.transform);
+                const matrix2 = new Matrix_1.Matrix();
+                matrix2.postTranslate(-(current.frame.width / 2.0), -(current.frame.height / 2.0));
+                matrix2.postRotate(unmatrix.degree / (180.0 / Math.PI));
+                matrix2.postScale(unmatrix.scale.x, unmatrix.scale.y);
+                matrix2.postTranslate(unmatrix.translate.x, unmatrix.translate.y);
+                matrix2.postTranslate((current.frame.width / 2.0), (current.frame.height / 2.0));
+                const x = currentPoint.x;
+                const y = currentPoint.y;
+                currentPoint.x = x * matrix2.a + y * matrix2.c + matrix2.tx;
+                currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
+            }
+            if (current.superview !== undefined && current.superview.isScrollerView === true) {
+                currentPoint.x += -current.superview.domElement.scrollLeft;
+                currentPoint.y += -current.superview.domElement.scrollTop;
+            }
+            currentPoint.x += current.frame.x;
+            currentPoint.y += current.frame.y;
+            current = current.superview;
+        }
+        return currentPoint;
+    }
+    convertPointFromWindow(point) {
+        if (this.window == undefined) {
+            return undefined;
+        }
+        var current = this;
+        var routes = [];
+        while (current !== undefined) {
+            if (current instanceof UIWindow) {
+                break;
+            }
+            routes.unshift(current);
+            current = current.superview;
+        }
+        let currentPoint = { x: point.x, y: point.y };
+        routes.forEach((it) => {
+            if (it.superview !== undefined && it.superview.isScrollerView === true) {
+                currentPoint.x -= -it.superview.domElement.scrollLeft;
+                currentPoint.y -= -it.superview.domElement.scrollTop;
+            }
+            currentPoint.x -= it.frame.x;
+            currentPoint.y -= it.frame.y;
+            if (!UIAffineTransform_1.UIAffineTransformIsIdentity(it.transform)) {
+                const unmatrix = Matrix_1.Matrix.unmatrix(it.transform);
+                const matrix2 = new Matrix_1.Matrix();
+                matrix2.postTranslate(-(it.frame.width / 2.0), -(it.frame.height / 2.0));
+                matrix2.postRotate(unmatrix.degree / (180.0 / Math.PI));
+                matrix2.postScale(unmatrix.scale.x, unmatrix.scale.y);
+                matrix2.postTranslate(unmatrix.translate.x, unmatrix.translate.y);
+                matrix2.postTranslate((it.frame.width / 2.0), (it.frame.height / 2.0));
+                const id = 1 / ((matrix2.a * matrix2.d) + (matrix2.c * -matrix2.b));
+                const x = currentPoint.x;
+                const y = currentPoint.y;
+                currentPoint.x = (matrix2.d * id * x) + (-matrix2.c * id * y) + (((matrix2.ty * matrix2.c) - (matrix2.tx * matrix2.d)) * id);
+                currentPoint.y = (matrix2.a * id * y) + (-matrix2.b * id * x) + (((-matrix2.ty * matrix2.a) + (matrix2.tx * matrix2.b)) * id);
+            }
+        });
+        return currentPoint;
     }
     nextResponder() {
         return this.viewDelegate || this.superview || undefined;

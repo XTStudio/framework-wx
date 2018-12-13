@@ -3,6 +3,7 @@ import { UIRect, UIRectZero } from "./UIRect";
 import { UIColor } from "./UIColor";
 import { UIAffineTransform, UIAffineTransformIdentity, UIAffineTransformIsIdentity, UIAffineTransformEqualToTransform } from "./UIAffineTransform";
 import { UIPoint } from "./UIPoint";
+import { Matrix } from "./helpers/Matrix";
 
 export class UIViewElement {
 
@@ -23,6 +24,8 @@ export class UIViewElement {
     background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
     opacity: ${props._alpha};
     display: ${props._hidden ? "none" : ""};
+    overflow: ${props._clipsToBounds ? "hidden" : ""};
+    transform: ${UIAffineTransformIsIdentity(props._transform) ? "" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
     `
   }
 
@@ -133,6 +136,16 @@ export class UIView {
     }
     else if (this.superview) {
       return this.superview.window
+    }
+    return undefined
+  }
+
+  public get viewController(): any {
+    if (this.viewDelegate !== undefined) {
+      return this.viewDelegate
+    }
+    else if (this.superview) {
+      return this.superview.viewController
     }
     return undefined
   }
@@ -259,7 +272,7 @@ export class UIView {
   willMoveToSuperview(newSuperview: UIView | undefined): void { }
 
   didMoveToSuperview(): void {
-    // this.tintColorDidChange()
+    this.tintColorDidChange()
   }
 
   willMoveToWindow(window: UIWindow | undefined): void {
@@ -292,6 +305,15 @@ export class UIView {
 
   private _clipsToBounds: boolean = false
 
+  public get clipsToBounds(): boolean {
+    return this._clipsToBounds;
+  }
+
+  public set clipsToBounds(value: boolean) {
+    this._clipsToBounds = value;
+    this.invalidate()
+  }
+
   public _hidden: boolean = false
 
   set hidden(value) {
@@ -306,6 +328,15 @@ export class UIView {
   // protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
 
   private _tintColor: UIColor | undefined = undefined
+
+  set tintColor(value: UIColor) {
+    this._tintColor = value;
+    this.tintColorDidChange()
+  }
+
+  get tintColor(): UIColor {
+    return this._tintColor || (this.superview && this.superview.tintColor) || new UIColor(0.0, 122.0 / 255.0, 1.0, 1.0);
+  }
 
   tintColorDidChange(): void {
     this.subviews.forEach(it => it.tintColorDidChange())
@@ -356,6 +387,107 @@ export class UIView {
         })
       }
     }
+  }
+
+  convertPointToView(point: UIPoint, toView: UIView): UIPoint {
+    const fromPoint = this.convertPointToWindow(point)
+    if (!fromPoint) {
+      return point
+    }
+    if (toView instanceof UIWindow) {
+      return fromPoint
+    }
+    return toView.convertPointFromWindow(fromPoint) || point
+  }
+
+  convertPointFromView(point: UIPoint, fromView: UIView): UIPoint {
+    return fromView.convertPointToView(point, this)
+  }
+
+  convertRectToView(rect: UIRect, toView: UIView): UIRect {
+    let lt = this.convertPointToView({ x: rect.x, y: rect.y }, toView)
+    let rt = this.convertPointToView({ x: rect.x + rect.width, y: rect.y }, toView)
+    let lb = this.convertPointToView({ x: rect.x, y: rect.y + rect.height }, toView)
+    let rb = this.convertPointToView({ x: rect.x + rect.width, y: rect.y + rect.height }, toView)
+    return {
+      x: Math.min(lt.x, rt.x, lb.x, rb.x),
+      y: Math.min(lt.y, rt.y, lb.y, rb.y),
+      width: Math.max(lt.x, rt.x, lb.x, rb.x) - Math.min(lt.x, rt.x, lb.x, rb.x),
+      height: Math.max(lt.y, rt.y, lb.y, rb.y) - Math.min(lt.y, rt.y, lb.y, rb.y),
+    }
+  }
+
+  convertRectFromView(rect: UIRect, fromView: UIView): UIRect {
+    return fromView.convertRectToView(rect, this)
+  }
+
+  convertPointToWindow(point: UIPoint): UIPoint | undefined {
+    if (this.window === undefined) {
+      return undefined
+    }
+    var current: UIView | undefined = this
+    let currentPoint = { x: point.x, y: point.y }
+    while (current !== undefined) {
+      if (current instanceof UIWindow) { break }
+      if (!UIAffineTransformIsIdentity(current.transform)) {
+        const unmatrix = Matrix.unmatrix(current.transform as Matrix)
+        const matrix2 = new Matrix()
+        matrix2.postTranslate(-(current.frame.width / 2.0), -(current.frame.height / 2.0))
+        matrix2.postRotate(unmatrix.degree / (180.0 / Math.PI))
+        matrix2.postScale(unmatrix.scale.x, unmatrix.scale.y)
+        matrix2.postTranslate(unmatrix.translate.x, unmatrix.translate.y)
+        matrix2.postTranslate((current.frame.width / 2.0), (current.frame.height / 2.0))
+        const x = currentPoint.x;
+        const y = currentPoint.y;
+        currentPoint.x = x * matrix2.a + y * matrix2.c + matrix2.tx;
+        currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
+      }
+      if (current.superview !== undefined && (current.superview as any).isScrollerView === true) {
+        currentPoint.x += -(current.superview as any).domElement.scrollLeft
+        currentPoint.y += -(current.superview as any).domElement.scrollTop
+      }
+      currentPoint.x += current.frame.x
+      currentPoint.y += current.frame.y
+      current = current.superview
+    }
+    return currentPoint
+  }
+
+  convertPointFromWindow(point: UIPoint): UIPoint | undefined {
+    if (this.window == undefined) {
+      return undefined
+    }
+    var current: UIView | undefined = this
+    var routes: UIView[] = []
+    while (current !== undefined) {
+      if (current instanceof UIWindow) { break }
+      routes.unshift(current)
+      current = current.superview
+    }
+    let currentPoint = { x: point.x, y: point.y }
+    routes.forEach((it) => {
+      if (it.superview !== undefined && (it.superview as any).isScrollerView === true) {
+        currentPoint.x -= -(it.superview as any).domElement.scrollLeft
+        currentPoint.y -= -(it.superview as any).domElement.scrollTop
+      }
+      currentPoint.x -= it.frame.x
+      currentPoint.y -= it.frame.y
+      if (!UIAffineTransformIsIdentity(it.transform)) {
+        const unmatrix = Matrix.unmatrix(it.transform as Matrix)
+        const matrix2 = new Matrix()
+        matrix2.postTranslate(-(it.frame.width / 2.0), -(it.frame.height / 2.0))
+        matrix2.postRotate(unmatrix.degree / (180.0 / Math.PI))
+        matrix2.postScale(unmatrix.scale.x, unmatrix.scale.y)
+        matrix2.postTranslate(unmatrix.translate.x, unmatrix.translate.y)
+        matrix2.postTranslate((it.frame.width / 2.0), (it.frame.height / 2.0))
+        const id = 1 / ((matrix2.a * matrix2.d) + (matrix2.c * -matrix2.b));
+        const x = currentPoint.x;
+        const y = currentPoint.y;
+        currentPoint.x = (matrix2.d * id * x) + (-matrix2.c * id * y) + (((matrix2.ty * matrix2.c) - (matrix2.tx * matrix2.d)) * id);
+        currentPoint.y = (matrix2.a * id * y) + (-matrix2.b * id * x) + (((-matrix2.ty * matrix2.a) + (matrix2.tx * matrix2.b)) * id);
+      }
+    })
+    return currentPoint
   }
 
   nextResponder(): UIView | undefined {
