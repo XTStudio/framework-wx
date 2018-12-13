@@ -38,7 +38,7 @@ async function checkIncludedComponents(jsonPath, componentListMap) {
       const key = keys[j]
       let value = typeof checkPropValue[key] === 'object' ? checkPropValue[key].default : checkPropValue[key]
       if (!value) continue
-      if (value === "index") continue
+      if (value === "../index") continue
       value = _.transformPath(value, path.sep)
 
       // check relative path

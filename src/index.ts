@@ -1,10 +1,10 @@
 declare var module: any
 declare var require: any
 
-Object.assign(module.exports, require('./UIRect'))
-Object.assign(module.exports, require('./UIAffineTransform'))
-Object.assign(module.exports, require('./UIColor'))
-Object.assign(module.exports, require('./UIView'))
+Object.assign(module.exports, require('./uikit/UIRect'))
+Object.assign(module.exports, require('./uikit/UIAffineTransform'))
+Object.assign(module.exports, require('./uikit/UIColor'))
+Object.assign(module.exports, require('./uikit/UIView'))
 
 Component({
     properties: {

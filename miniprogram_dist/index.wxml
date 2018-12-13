@@ -1,0 +1,1 @@
+<uiview wx:if="{{clazz == 'UIView'}}" props="{{view}}"></uiview>

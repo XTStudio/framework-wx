@@ -1,62 +1,9 @@
-// xt-framework/uiview.js
 import { UIRect, UIRectZero } from "./UIRect";
-import { UIColor } from "./UIColor";
-import { UIAffineTransform, UIAffineTransformIdentity, UIAffineTransformIsIdentity, UIAffineTransformEqualToTransform } from "./UIAffineTransform";
+import { UIAffineTransform, UIAffineTransformIdentity, UIAffineTransformIsIdentity } from "./UIAffineTransform";
 import { UIPoint } from "./UIPoint";
 import { Matrix } from "./helpers/Matrix";
-
-export class UIViewElement {
-
-    component: WeApp.Page
-
-    constructor(component: WeApp.Page) {
-        this.component = component
-    }
-
-    buildStyle() {
-        const props = this.component.properties.props || {}
-        return `
-    position: absolute;
-    left: ${props._frame.x}px;
-    top: ${props._frame.y}px;
-    width: ${props._frame.width}px;
-    height: ${props._frame.height}px; 
-    background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
-    opacity: ${props._alpha};
-    display: ${props._hidden ? "none" : ""};
-    overflow: ${props._clipsToBounds ? "hidden" : ""};
-    transform: ${UIAffineTransformIsIdentity(props._transform) ? "" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
-    `
-    }
-
-}
-
-export class UIViewComponent {
-
-    properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function (newVal: any, oldVal: any) {
-                if (newVal === undefined || newVal === null) { return }
-                if (newVal.isDirty !== true) { return }
-                var self: WeApp.Page = this as any
-                if (self.el === undefined) {
-                    self.el = new UIViewElement(self)
-                }
-                self.setData({
-                    style: self.el.buildStyle(),
-                    subviews: newVal.subviews,
-                })
-            }
-        },
-    }
-
-    data = {
-        style: ''
-    }
-
-}
+import { UIColor } from "./UIColor";
+import { UIGestureRecognizer } from "./UIGestureRecognizer";
 
 export let dirtyItems: UIView[] = []
 
@@ -364,31 +311,6 @@ export class UIView {
         return this._backgroundColor
     }
 
-    invalidateCallHandler: any = undefined
-
-    invalidate(dirty: boolean = true) {
-        if (dirty) {
-            this.isDirty = true
-            dirtyItems.push(this)
-        }
-        let nextResponder = this.nextResponder()
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(false)
-        }
-        else {
-            if (this.invalidateCallHandler === undefined) {
-                this.invalidateCallHandler = setTimeout(() => {
-                    this.invalidateCallHandler = undefined;
-                    if (this.dataResponder) {
-                        this.dataResponder()
-                        dirtyItems.forEach(it => it.isDirty = false)
-                        dirtyItems = []
-                    }
-                })
-            }
-        }
-    }
-
     convertPointToView(point: UIPoint, toView: UIView): UIPoint {
         const fromPoint = this.convertPointToWindow(point)
         if (!fromPoint) {
@@ -494,10 +416,64 @@ export class UIView {
         return this.viewDelegate || this.superview || undefined
     }
 
+    // GestureRecognizers
+
+    private _userInteractionEnabled: boolean = true
+
+    public get userInteractionEnabled(): boolean {
+        return this._userInteractionEnabled;
+    }
+
+    public set userInteractionEnabled(value: boolean) {
+        if (this._userInteractionEnabled === value) { return }
+        this._userInteractionEnabled = value;
+        // this.domElement.style.pointerEvents = value ? "auto" : "none"
+    }
+
+    public gestureRecognizers: UIGestureRecognizer[] = []
+
+    public addGestureRecognizer(gestureRecognizer: UIGestureRecognizer): void {
+        this.gestureRecognizers.push(gestureRecognizer)
+    }
+
+    public removeGestureRecognizer(gestureRecognizer: UIGestureRecognizer): void {
+        let index = this.gestureRecognizers.indexOf(gestureRecognizer)
+        if (index >= 0) {
+            this.gestureRecognizers.splice(index, 1)
+        }
+    }
+
+    // Helpers
+
+
+
+    invalidateCallHandler: any = undefined
+
+    invalidate(dirty: boolean = true) {
+        if (dirty) {
+            this.isDirty = true
+            dirtyItems.push(this)
+        }
+        let nextResponder = this.nextResponder()
+        if (nextResponder !== undefined) {
+            nextResponder.invalidate(false)
+        }
+        else {
+            if (this.invalidateCallHandler === undefined) {
+                this.invalidateCallHandler = setTimeout(() => {
+                    this.invalidateCallHandler = undefined;
+                    if (this.dataResponder) {
+                        this.dataResponder()
+                        dirtyItems.forEach(it => it.isDirty = false)
+                        dirtyItems = []
+                    }
+                })
+            }
+        }
+    }
+
 }
 
 export class UIWindow extends UIView {
 
 }
-
-Component(new UIViewComponent())

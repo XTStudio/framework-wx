@@ -1,61 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// xt-framework/uiview.js
 const UIRect_1 = require("./UIRect");
-const UIColor_1 = require("./UIColor");
 const UIAffineTransform_1 = require("./UIAffineTransform");
 const Matrix_1 = require("./helpers/Matrix");
-class UIViewElement {
-    constructor(component) {
-        this.component = component;
-    }
-    buildStyle() {
-        const props = this.component.properties.props || {};
-        return `
-    position: absolute;
-    left: ${props._frame.x}px;
-    top: ${props._frame.y}px;
-    width: ${props._frame.width}px;
-    height: ${props._frame.height}px; 
-    background-color: ${props._backgroundColor !== undefined ? UIColor_1.UIColor.toStyle(props._backgroundColor) : 'transparent'};
-    opacity: ${props._alpha};
-    display: ${props._hidden ? "none" : ""};
-    overflow: ${props._clipsToBounds ? "hidden" : ""};
-    transform: ${UIAffineTransform_1.UIAffineTransformIsIdentity(props._transform) ? "" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
-    `;
-    }
-}
-exports.UIViewElement = UIViewElement;
-class UIViewComponent {
-    constructor() {
-        this.properties = {
-            props: {
-                type: Object,
-                value: {},
-                observer: function (newVal, oldVal) {
-                    if (newVal === undefined || newVal === null) {
-                        return;
-                    }
-                    if (newVal.isDirty !== true) {
-                        return;
-                    }
-                    var self = this;
-                    if (self.el === undefined) {
-                        self.el = new UIViewElement(self);
-                    }
-                    self.setData({
-                        style: self.el.buildStyle(),
-                        subviews: newVal.subviews,
-                    });
-                }
-            },
-        };
-        this.data = {
-            style: ''
-        };
-    }
-}
-exports.UIViewComponent = UIViewComponent;
+const UIColor_1 = require("./UIColor");
 exports.dirtyItems = [];
 class UIView {
     constructor() {
@@ -76,6 +24,10 @@ class UIView {
         this._tintColor = undefined;
         this._alpha = 1.0;
         this._backgroundColor = undefined;
+        // GestureRecognizers
+        this._userInteractionEnabled = true;
+        this.gestureRecognizers = [];
+        // Helpers
         this.invalidateCallHandler = undefined;
         exports.dirtyItems.push(this);
     }
@@ -302,28 +254,6 @@ class UIView {
     get backgroundColor() {
         return this._backgroundColor;
     }
-    invalidate(dirty = true) {
-        if (dirty) {
-            this.isDirty = true;
-            exports.dirtyItems.push(this);
-        }
-        let nextResponder = this.nextResponder();
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(false);
-        }
-        else {
-            if (this.invalidateCallHandler === undefined) {
-                this.invalidateCallHandler = setTimeout(() => {
-                    this.invalidateCallHandler = undefined;
-                    if (this.dataResponder) {
-                        this.dataResponder();
-                        exports.dirtyItems.forEach(it => it.isDirty = false);
-                        exports.dirtyItems = [];
-                    }
-                });
-            }
-        }
-    }
     convertPointToView(point, toView) {
         const fromPoint = this.convertPointToWindow(point);
         if (!fromPoint) {
@@ -426,9 +356,49 @@ class UIView {
     nextResponder() {
         return this.viewDelegate || this.superview || undefined;
     }
+    get userInteractionEnabled() {
+        return this._userInteractionEnabled;
+    }
+    set userInteractionEnabled(value) {
+        if (this._userInteractionEnabled === value) {
+            return;
+        }
+        this._userInteractionEnabled = value;
+        // this.domElement.style.pointerEvents = value ? "auto" : "none"
+    }
+    addGestureRecognizer(gestureRecognizer) {
+        this.gestureRecognizers.push(gestureRecognizer);
+    }
+    removeGestureRecognizer(gestureRecognizer) {
+        let index = this.gestureRecognizers.indexOf(gestureRecognizer);
+        if (index >= 0) {
+            this.gestureRecognizers.splice(index, 1);
+        }
+    }
+    invalidate(dirty = true) {
+        if (dirty) {
+            this.isDirty = true;
+            exports.dirtyItems.push(this);
+        }
+        let nextResponder = this.nextResponder();
+        if (nextResponder !== undefined) {
+            nextResponder.invalidate(false);
+        }
+        else {
+            if (this.invalidateCallHandler === undefined) {
+                this.invalidateCallHandler = setTimeout(() => {
+                    this.invalidateCallHandler = undefined;
+                    if (this.dataResponder) {
+                        this.dataResponder();
+                        exports.dirtyItems.forEach(it => it.isDirty = false);
+                        exports.dirtyItems = [];
+                    }
+                });
+            }
+        }
+    }
 }
 exports.UIView = UIView;
 class UIWindow extends UIView {
 }
 exports.UIWindow = UIWindow;
-Component(new UIViewComponent());
