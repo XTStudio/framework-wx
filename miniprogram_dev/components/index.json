@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uiview": "./components/UIView",
+    "uiwindow": "./components/UIWindow"
+  }
+}

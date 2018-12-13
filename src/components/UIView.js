@@ -52,7 +52,7 @@ class UIViewComponent {
     }
 }
 exports.UIViewComponent = UIViewComponent;
-Component(new UIViewComponent());
+Component(new UIViewComponent);
 // Helpers
 class UIColor {
     static toStyle(color) {

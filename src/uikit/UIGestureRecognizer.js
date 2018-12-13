@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIPoint_1 = require("./UIPoint");
 const EventEmitter_1 = require("../kimi/EventEmitter");
+const MagicObject_1 = require("./helpers/MagicObject");
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
     UIGestureRecognizerState[UIGestureRecognizerState["possible"] = 0] = "possible";
@@ -17,7 +18,7 @@ class UIGestureRecognizer extends EventEmitter_1.EventEmitter {
         this.state = UIGestureRecognizerState.possible;
         this.enabled = true;
         this.view = undefined;
-        this.touches = [];
+        this._touches = new MagicObject_1.MagicObject([]);
     }
     requireGestureRecognizerToFail(otherGestureRecognizer) {
     }
@@ -37,6 +38,12 @@ class UIGestureRecognizer extends EventEmitter_1.EventEmitter {
             return touch.locationInView(view);
         }
         return UIPoint_1.UIPointZero;
+    }
+    get touches() {
+        return this._touches.get();
+    }
+    set touches(value) {
+        this._touches.set(value);
     }
     handleTouch(touches) { this.touches = touches; }
     handleEvent(name) { }

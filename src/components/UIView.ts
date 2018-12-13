@@ -53,7 +53,7 @@ export class UIViewComponent {
 
 }
 
-Component(new UIViewComponent())
+Component(new UIViewComponent)
 
 // Helpers
 
