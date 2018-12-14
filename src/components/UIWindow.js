@@ -9,7 +9,6 @@ class UIWindowElement extends UIView_1.UIViewElement {
         style += `
         width: 100%;
         height: 100%;
-        background-color: gray;
         `;
         return style;
     }

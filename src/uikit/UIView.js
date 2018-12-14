@@ -8,6 +8,7 @@ const UIWindowManager_1 = require("../components/UIWindowManager");
 const UITouch_1 = require("./UITouch");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const MagicObject_1 = require("./helpers/MagicObject");
+const UIAnimator_1 = require("./UIAnimator");
 exports.dirtyItems = [];
 class UIView {
     constructor() {
@@ -15,6 +16,8 @@ class UIView {
         this.isDirty = true;
         this.dataOwner = undefined;
         this.dataField = undefined;
+        this.animationProps = {};
+        this.animationValues = {};
         this._frame = UIRect_1.UIRectZero;
         this.bounds = UIRect_1.UIRectZero;
         this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -44,6 +47,24 @@ class UIView {
         }
     }
     set frame(value) {
+        if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
+            return;
+        }
+        if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+            if (Math.abs(this._frame.x - value.x) > 0.001) {
+                this.animationValues["frame.x"] = value.x;
+            }
+            if (Math.abs(this._frame.y - value.y) > 0.001) {
+                this.animationValues["frame.y"] = value.y;
+            }
+            if (Math.abs(this._frame.width - value.width) > 0.001) {
+                this.animationValues["frame.width"] = value.width;
+            }
+            if (Math.abs(this._frame.height - value.height) > 0.001) {
+                this.animationValues["frame.height"] = value.height;
+            }
+        }
         const boundsChanged = this._frame.width != value.width || this._frame.height != value.height;
         this._frame = value;
         if (boundsChanged) {
@@ -65,6 +86,13 @@ class UIView {
         return this._transform;
     }
     set transform(value) {
+        if (UIAffineTransform_1.UIAffineTransformEqualToTransform(this._transform, value)) {
+            return;
+        }
+        if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+            this.animationValues["transform"] = value;
+        }
         this._transform = value;
         this.invalidate();
     }
@@ -230,10 +258,16 @@ class UIView {
         return this._clipsToBounds;
     }
     set clipsToBounds(value) {
+        if (this._clipsToBounds === value) {
+            return;
+        }
         this._clipsToBounds = value;
         this.invalidate();
     }
     set hidden(value) {
+        if (this._hidden === value) {
+            return;
+        }
         this._hidden = value;
         this.invalidate();
     }
@@ -251,6 +285,13 @@ class UIView {
         this.subviews.forEach(it => it.tintColorDidChange());
     }
     set alpha(value) {
+        if (this._alpha === value) {
+            return;
+        }
+        if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+            this.animationValues["alpha"] = value;
+        }
         this._alpha = value;
         this.invalidate();
     }
@@ -258,6 +299,10 @@ class UIView {
         return this._alpha;
     }
     set backgroundColor(value) {
+        if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+            this.animationValues["backgroundColor"] = value;
+        }
         this._backgroundColor = value;
         this.invalidate();
     }
@@ -466,7 +511,11 @@ class UIView {
                             [this.dataField]: this
                         });
                     }
-                    exports.dirtyItems.forEach(it => it.isDirty = false);
+                    exports.dirtyItems.forEach(it => {
+                        it.isDirty = false;
+                        it.animationProps = {};
+                        it.animationValues = {};
+                    });
                     exports.dirtyItems = [];
                 });
             }
@@ -480,7 +529,7 @@ class UIWindow extends UIView {
         this.clazz = "UIWindow";
         // touches
         this.currentTouchesID = [];
-        this.touches = {};
+        this._touches = new MagicObject_1.MagicObject({});
         this.upCount = new Map();
         this.upTimestamp = new Map();
         UIWindowManager_1.UIWindowManager.shared.addWindow(this);
@@ -520,6 +569,12 @@ class UIWindow extends UIView {
             width: parseInt(systemInfo.windowWidth),
             height: parseInt(systemInfo.windowHeight),
         };
+    }
+    set touches(value) {
+        this._touches.set(value);
+    }
+    get touches() {
+        return this._touches.get();
     }
     handleTouchStart(e) {
         const changedTouches = this.standardlizeTouches(e);

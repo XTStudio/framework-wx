@@ -316,6 +316,7 @@ var UIWindowManager_1 = __webpack_require__(4);
 var UITouch_1 = __webpack_require__(1);
 var UIEdgeInsets_1 = __webpack_require__(10);
 var MagicObject_1 = __webpack_require__(6);
+var UIAnimator_1 = __webpack_require__(22);
 exports.dirtyItems = [];
 
 var UIView = function () {
@@ -326,6 +327,8 @@ var UIView = function () {
         this.isDirty = true;
         this.dataOwner = undefined;
         this.dataField = undefined;
+        this.animationProps = {};
+        this.animationValues = {};
         this._frame = UIRect_1.UIRectZero;
         this.bounds = UIRect_1.UIRectZero;
         this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -748,7 +751,9 @@ var UIView = function () {
                         _this2.dataOwner.setData((_this2$dataOwner$setD = {}, _this2$dataOwner$setD[_this2.dataField] = _this2, _this2$dataOwner$setD));
                     }
                     exports.dirtyItems.forEach(function (it) {
-                        return it.isDirty = false;
+                        it.isDirty = false;
+                        it.animationProps = {};
+                        it.animationValues = {};
                     });
                     exports.dirtyItems = [];
                 });
@@ -759,6 +764,24 @@ var UIView = function () {
     _createClass(UIView, [{
         key: "frame",
         set: function set(value) {
+            if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
+                return;
+            }
+            if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+                if (Math.abs(this._frame.x - value.x) > 0.001) {
+                    this.animationValues["frame.x"] = value.x;
+                }
+                if (Math.abs(this._frame.y - value.y) > 0.001) {
+                    this.animationValues["frame.y"] = value.y;
+                }
+                if (Math.abs(this._frame.width - value.width) > 0.001) {
+                    this.animationValues["frame.width"] = value.width;
+                }
+                if (Math.abs(this._frame.height - value.height) > 0.001) {
+                    this.animationValues["frame.height"] = value.height;
+                }
+            }
             var boundsChanged = this._frame.width != value.width || this._frame.height != value.height;
             this._frame = value;
             if (boundsChanged) {
@@ -784,6 +807,13 @@ var UIView = function () {
             return this._transform;
         },
         set: function set(value) {
+            if (UIAffineTransform_1.UIAffineTransformEqualToTransform(this._transform, value)) {
+                return;
+            }
+            if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+                this.animationValues["transform"] = value;
+            }
             this._transform = value;
             this.invalidate();
         }
@@ -821,12 +851,18 @@ var UIView = function () {
             return this._clipsToBounds;
         },
         set: function set(value) {
+            if (this._clipsToBounds === value) {
+                return;
+            }
             this._clipsToBounds = value;
             this.invalidate();
         }
     }, {
         key: "hidden",
         set: function set(value) {
+            if (this._hidden === value) {
+                return;
+            }
             this._hidden = value;
             this.invalidate();
         },
@@ -845,6 +881,13 @@ var UIView = function () {
     }, {
         key: "alpha",
         set: function set(value) {
+            if (this._alpha === value) {
+                return;
+            }
+            if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+                this.animationValues["alpha"] = value;
+            }
             this._alpha = value;
             this.invalidate();
         },
@@ -854,6 +897,10 @@ var UIView = function () {
     }, {
         key: "backgroundColor",
         set: function set(value) {
+            if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
+                this.animationValues["backgroundColor"] = value;
+            }
             this._backgroundColor = value;
             this.invalidate();
         },
@@ -894,7 +941,7 @@ var UIWindow = function (_UIView) {
         _this3.clazz = "UIWindow";
         // touches
         _this3.currentTouchesID = [];
-        _this3.touches = {};
+        _this3._touches = new MagicObject_1.MagicObject({});
         _this3.upCount = new Map();
         _this3.upTimestamp = new Map();
         UIWindowManager_1.UIWindowManager.shared.addWindow(_this3);
@@ -1117,6 +1164,14 @@ var UIWindow = function (_UIView) {
                 width: parseInt(systemInfo.windowWidth),
                 height: parseInt(systemInfo.windowHeight)
             };
+        }
+    }, {
+        key: "touches",
+        set: function set(value) {
+            this._touches.set(value);
+        },
+        get: function get() {
+            return this._touches.get();
         }
     }]);
 
@@ -1862,6 +1917,7 @@ exports.UIRectIsEmpty = function (rect) {
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.assign(module.exports, __webpack_require__(7));
+Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(9));
 Object.assign(module.exports, __webpack_require__(10));
 Object.assign(module.exports, __webpack_require__(0));
@@ -2844,6 +2900,74 @@ var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
 }(UIGestureRecognizer_1.UIGestureRecognizer);
 
 exports.UITapGestureRecognizer = UITapGestureRecognizer;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIAnimator = function () {
+    function UIAnimator() {
+        _classCallCheck(this, UIAnimator);
+
+        this.animationProps = {};
+    }
+
+    UIAnimator.prototype.linear = function linear(duration, isCurve, animations, completion) {
+        if (UIAnimator.nextCompletion !== undefined) {
+            UIAnimator.nextCompletion();
+            UIAnimator.nextCompletion = undefined;
+        }
+        this.animationProps = {
+            duration: duration * 1000,
+            timingFunction: isCurve ? "ease" : "linear"
+        };
+        UIAnimator.activeAnimator = this;
+        animations();
+        UIAnimator.activeAnimator = undefined;
+        if (completion) {
+            UIAnimator.nextCompletion = completion;
+            setTimeout(function () {
+                if (UIAnimator.nextCompletion !== completion) {
+                    return;
+                }
+                completion();
+                UIAnimator.nextCompletion = undefined;
+            }, duration * 1000);
+        }
+    };
+
+    UIAnimator.linear = function linear(duration, animations, completion) {
+        UIAnimator.shared.linear(duration, false, animations, completion);
+    };
+
+    UIAnimator.curve = function curve(duration, animations, completion) {
+        UIAnimator.shared.linear(duration, true, animations, completion);
+    };
+
+    UIAnimator.spring = function spring(tension, friction, animations, completion) {
+        // not support spring animation for wx
+        UIAnimator.shared.linear(0.3, false, animations, completion);
+    };
+
+    UIAnimator.bouncy = function bouncy(bounciness, speed, animations, completion) {
+        // not support bouncy animation for wx
+        UIAnimator.shared.linear(0.3, false, animations, completion);
+    };
+
+    return UIAnimator;
+}();
+
+UIAnimator.shared = new UIAnimator();
+UIAnimator.activeAnimator = undefined;
+UIAnimator.nextCompletion = undefined;
+exports.UIAnimator = UIAnimator;
 
 /***/ })
 /******/ ]);

@@ -107,13 +107,50 @@ var UIViewElement = function () {
 
     UIViewElement.prototype.buildStyle = function buildStyle() {
         var props = this.component.properties.props || {};
-        return "\n    position: absolute;\n    left: " + props._frame.x + "px;\n    top: " + props._frame.y + "px;\n    width: " + props._frame.width + "px;\n    height: " + props._frame.height + "px; \n    background-color: " + (props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent') + ";\n    opacity: " + props._alpha + ";\n    display: " + (props._hidden ? "none" : "") + ";\n    overflow: " + (props._clipsToBounds ? "hidden" : "") + ";\n    transform: " + (UIAffineTransformIsIdentity(props._transform) ? "" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')') + ";\n    ";
+        return "\n    position: absolute;\n    left: " + props._frame.x + "px;\n    top: " + props._frame.y + "px;\n    width: " + props._frame.width + "px;\n    height: " + props._frame.height + "px; \n    background-color: " + (props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent') + ";\n    opacity: " + props._alpha + ";\n    display: " + (props._hidden ? "none" : "") + ";\n    overflow: " + (props._clipsToBounds ? "hidden" : "") + ";\n    transform: " + (UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')') + ";\n    ";
+    };
+
+    UIViewElement.prototype.buildAnimation = function buildAnimation() {
+        var props = this.component.properties.props || {};
+        if (Object.keys(props.animationValues).length > 0) {
+            var animation = wx.createAnimation(props.animationProps);
+            for (var animationKey in props.animationValues) {
+                var endValue = props.animationValues[animationKey];
+                if (animationKey === "alpha") {
+                    animation.opacity(endValue);
+                } else if (animationKey === "frame.x") {
+                    animation.left(endValue);
+                } else if (animationKey === "frame.y") {
+                    animation.top(endValue);
+                } else if (animationKey === "frame.width") {
+                    animation.width(endValue);
+                } else if (animationKey === "frame.height") {
+                    animation.height(endValue);
+                } else if (animationKey === "backgroundColor") {
+                    animation.backgroundColor(UIColor.toStyle(props._backgroundColor));
+                } else if (animationKey === "transform") {
+                    animation.matrix(endValue.a, endValue.b, endValue.c, endValue.d, endValue.tx, endValue.ty);
+                }
+            }
+            if (!UIAffineTransformIsIdentity(props._transform)) {
+                animation.matrix(props._transform.a, props._transform.b, props._transform.c, props._transform.d, props._transform.tx, props._transform.ty);
+            }
+            animation.step();
+            return animation.export();
+        } else {
+            return undefined;
+        }
     };
 
     return UIViewElement;
 }();
 
 exports.UIViewElement = UIViewElement;
+var emptyAnimation = function () {
+    var animation = wx.createAnimation({ duration: 0 });
+    animation.step();
+    return animation.export();
+}();
 
 var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
@@ -133,10 +170,18 @@ var UIViewComponent = function UIViewComponent() {
                 if (self.el === undefined) {
                     self.el = new UIViewElement(self);
                 }
-                self.setData({
-                    style: self.el.buildStyle(),
-                    subviews: newVal.subviews
-                });
+                var animation = self.el.buildAnimation();
+                if (animation !== undefined) {
+                    self.setData({
+                        animation: self.el.buildAnimation()
+                    });
+                } else {
+                    self.setData({
+                        style: self.el.buildStyle(),
+                        animation: self.data.animation !== undefined && self.data.animation !== emptyAnimation ? emptyAnimation : "",
+                        subviews: newVal.subviews
+                    });
+                }
             }
         }
     };
@@ -155,6 +200,9 @@ var UIColor = function () {
     }
 
     UIColor.toStyle = function toStyle(color) {
+        if (color === undefined) {
+            return "transparent";
+        }
         return 'rgba(' + (color.r * 255).toFixed(0) + ', ' + (color.g * 255).toFixed(0) + ', ' + (color.b * 255).toFixed(0) + ', ' + color.a.toFixed(6) + ')';
     };
 

@@ -1,5 +1,5 @@
-import { UIRect, UIRectZero } from "./UIRect";
-import { UIAffineTransform, UIAffineTransformIdentity, UIAffineTransformIsIdentity } from "./UIAffineTransform";
+import { UIRect, UIRectZero, UIRectEqualToRect } from "./UIRect";
+import { UIAffineTransform, UIAffineTransformIdentity, UIAffineTransformIsIdentity, UIAffineTransformEqualToTransform } from "./UIAffineTransform";
 import { UIPoint } from "./UIPoint";
 import { Matrix } from "./helpers/Matrix";
 import { UIColor } from "./UIColor";
@@ -9,6 +9,7 @@ import { UITouch, UITouchPhase, VelocityTracker, } from "./UITouch";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UISize } from "./UISize";
 import { MagicObject } from "./helpers/MagicObject";
+import { UIAnimator } from "./UIAnimator";
 
 export let dirtyItems: UIView[] = []
 
@@ -20,6 +21,8 @@ export class UIView {
     isDirty: boolean = true
     dataOwner: any = undefined
     dataField: string | undefined = undefined
+    animationProps: { [key: string]: any } = {}
+    animationValues: { [key: string]: any } = {}
 
     constructor() {
         dirtyItems.push(this)
@@ -35,6 +38,22 @@ export class UIView {
     private _frame: UIRect = UIRectZero
 
     set frame(value: UIRect) {
+        if (UIRectEqualToRect(this._frame, value)) { return }
+        if (UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator.activeAnimator.animationProps
+            if (Math.abs(this._frame.x - value.x) > 0.001) {
+                this.animationValues["frame.x"] = value.x;
+            }
+            if (Math.abs(this._frame.y - value.y) > 0.001) {
+                this.animationValues["frame.y"] = value.y;
+            }
+            if (Math.abs(this._frame.width - value.width) > 0.001) {
+                this.animationValues["frame.width"] = value.width;
+            }
+            if (Math.abs(this._frame.height - value.height) > 0.001) {
+                this.animationValues["frame.height"] = value.height;
+            }
+        }
         const boundsChanged = this._frame.width != value.width || this._frame.height != value.height
         this._frame = value;
         if (boundsChanged) {
@@ -67,6 +86,13 @@ export class UIView {
     }
 
     set transform(value: UIAffineTransform) {
+        if (UIAffineTransformEqualToTransform(this._transform, value)) {
+            return
+        }
+        if (UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator.activeAnimator.animationProps
+            this.animationValues["transform"] = value;
+        }
         this._transform = value;
         this.invalidate()
     }
@@ -271,6 +297,7 @@ export class UIView {
     }
 
     public set clipsToBounds(value: boolean) {
+        if (this._clipsToBounds === value) { return }
         this._clipsToBounds = value;
         this.invalidate()
     }
@@ -278,6 +305,7 @@ export class UIView {
     public _hidden: boolean = false
 
     set hidden(value) {
+        if (this._hidden === value) { return }
         this._hidden = value
         this.invalidate()
     }
@@ -306,6 +334,11 @@ export class UIView {
     private _alpha: number = 1.0
 
     set alpha(value) {
+        if (this._alpha === value) { return }
+        if (UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator.activeAnimator.animationProps
+            this.animationValues["alpha"] = value;
+        }
         this._alpha = value;
         this.invalidate();
     }
@@ -317,6 +350,10 @@ export class UIView {
     _backgroundColor: UIColor | undefined = undefined
 
     set backgroundColor(value: UIColor | undefined) {
+        if (UIAnimator.activeAnimator !== undefined) {
+            this.animationProps = UIAnimator.activeAnimator.animationProps
+            this.animationValues["backgroundColor"] = value;
+        }
         this._backgroundColor = value
         this.invalidate()
     }
@@ -552,7 +589,11 @@ export class UIView {
                             [this.dataField]: this
                         })
                     }
-                    dirtyItems.forEach(it => it.isDirty = false)
+                    dirtyItems.forEach(it => {
+                        it.isDirty = false
+                        it.animationProps = {}
+                        it.animationValues = {}
+                    })
                     dirtyItems = []
                 })
             }
@@ -617,7 +658,13 @@ export class UIWindow extends UIView {
     // touches
 
     private currentTouchesID: number[] = []
-    private touches: { [key: number]: UITouch } = {}
+    private _touches: MagicObject = new MagicObject({})
+    set touches(value: { [key: number]: UITouch }) {
+        this._touches.set(value)
+    }
+    get touches(): { [key: number]: UITouch } {
+        return this._touches.get()
+    }
     private upCount: Map<UIPoint, number> = new Map()
     private upTimestamp: Map<UIPoint, number> = new Map()
 
