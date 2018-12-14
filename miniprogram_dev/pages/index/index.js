@@ -22,6 +22,9 @@ mainView.frame = UIRectMake(0, 0, 375, 568)
     const itemView = new UIView
     itemView.backgroundColor = UIColor.blue
     itemView.frame = UIRectMake(0, 0, 375, 568)
+    itemView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+        itemView.backgroundColor = UIColor.red
+    }))
     mainView.addSubview(itemView)
 }
 {
@@ -42,7 +45,12 @@ mainView.frame = UIRectMake(0, 0, 375, 568)
 // })
 // mainView.alwaysBounceVertical = true
 mainView.alpha = 0.4
+mainView.bounces = false
 mainView.contentSize = { width: 375 * 3, height: 0 }
+
+// setTimeout(() => {
+//     mainView.setContentOffset({ x: 150, y: 0 }, true)
+// }, 3000)
 mainView.pagingEnabled = true
 // mainView.on("willBeginDragging", () => {
 //     console.log("willBeginDragging")

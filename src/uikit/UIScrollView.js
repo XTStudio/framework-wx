@@ -18,7 +18,7 @@ class UIScrollView extends UIView_1.UIView {
         this._bounces = true;
         this._alwaysBounceVertical = false;
         this._alwaysBounceHorizontal = false;
-        this.pagingEnabled = false;
+        this._pagingEnabled = false;
         // private _scrollDisabledTemporary: boolean = false
         // public get scrollDisabledTemporary(): boolean {
         //     return this._scrollDisabledTemporary;
@@ -71,6 +71,13 @@ class UIScrollView extends UIView_1.UIView {
     }
     set alwaysBounceHorizontal(value) {
         this._alwaysBounceHorizontal = value;
+        this.invalidate();
+    }
+    get pagingEnabled() {
+        return this._pagingEnabled;
+    }
+    set pagingEnabled(value) {
+        this._pagingEnabled = value;
         this.invalidate();
     }
     get scrollEnabled() {

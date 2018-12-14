@@ -3053,7 +3053,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._bounces = true;
         _this._alwaysBounceVertical = false;
         _this._alwaysBounceHorizontal = false;
-        _this.pagingEnabled = false;
+        _this._pagingEnabled = false;
         // private _scrollDisabledTemporary: boolean = false
         // public get scrollDisabledTemporary(): boolean {
         //     return this._scrollDisabledTemporary;
@@ -3221,6 +3221,15 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._alwaysBounceHorizontal = value;
+            this.invalidate();
+        }
+    }, {
+        key: "pagingEnabled",
+        get: function get() {
+            return this._pagingEnabled;
+        },
+        set: function set(value) {
+            this._pagingEnabled = value;
             this.invalidate();
         }
     }, {

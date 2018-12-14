@@ -43,6 +43,7 @@ export class UIScrollView extends UIView {
 
     contentInset: UIEdgeInsets = UIEdgeInsetsZero
     directionalLockEnabled: boolean = false
+    
     private _bounces: boolean = true
 
     public get bounces(): boolean {
@@ -76,7 +77,16 @@ export class UIScrollView extends UIView {
         this.invalidate()
     }
 
-    pagingEnabled: boolean = false
+    private _pagingEnabled: boolean = false
+
+	public get pagingEnabled(): boolean  {
+		return this._pagingEnabled;
+    }
+    
+	public set pagingEnabled(value: boolean ) {
+        this._pagingEnabled = value;
+        this.invalidate()
+	}
 
     // private _scrollDisabledTemporary: boolean = false
 
