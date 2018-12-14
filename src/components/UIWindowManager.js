@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const UUID_1 = require("../uikit/helpers/UUID");
 class UIWindowManager {
     constructor() {
         this.windows = {};
@@ -11,7 +12,7 @@ class UIWindowManager {
         return getApp().UIWindowManagerShared;
     }
     addWindow(window) {
-        window.windowID = Math.random().toString();
+        window.windowID = UUID_1.randomUUID();
         this.windows[window.windowID] = window;
     }
     fetchWindow(windowID) {

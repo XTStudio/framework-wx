@@ -1,0 +1,20 @@
+<!--xt-framework/uiview.wxml-->
+<scroll-view style='{{style}}; pointer-events: {{pointerEvents}}' 
+             data-viewID="{{viewID}}" 
+             animation='{{animation}}' 
+             scroll-x="{{scrollX}}" 
+             scroll-y="{{scrollY}}" 
+             scroll-left="{{scrollLeft}}"
+             scroll-top="{{scrollTop}}"
+             scroll-with-animation="{{scrollWithAnimation}}"
+             enable-back-to-top="{{scrollsToTop}}"
+             bindscroll="onScroll"
+             bindtouchstart="onTouchStarted"
+             bindtouchend="onTouchEnded"
+             bindtouchcancel="onTouchCancelled">
+  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <factory view="{{item}}"></factory>
+  </view>
+  <!-- placeholder view -->
+  <view style="position: absolute; width: 1px; height: 1px; left: {{placeholderLocation.x}}px; top: {{placeholderLocation.y}}px;"></view>
+</scroll-view>

@@ -82,119 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 12:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
-var UIWindowManager_1 = __webpack_require__(4);
-// xt-framework/uiview.js
-
-var UIWindowElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIWindowElement, _UIView_1$UIViewEleme);
-
-    function UIWindowElement() {
-        _classCallCheck(this, UIWindowElement);
-
-        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
-    }
-
-    UIWindowElement.prototype.buildStyle = function buildStyle() {
-        var style = _UIView_1$UIViewEleme.prototype.buildStyle.call(this);
-        style += "\n        width: 100%;\n        height: 100%;\n        ";
-        return style;
-    };
-
-    return UIWindowElement;
-}(UIView_1.UIViewElement);
-
-exports.UIWindowElement = UIWindowElement;
-
-var UIWindowComponent = function UIWindowComponent() {
-    _classCallCheck(this, UIWindowComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                if (newVal === undefined || newVal === null) {
-                    return;
-                }
-                var self = this;
-                if (newVal.isDirty !== true && self.el !== undefined) {
-                    return;
-                }
-                if (self.el === undefined) {
-                    self.el = new UIWindowElement(self);
-                }
-                self.setData({
-                    style: self.el.buildStyle(),
-                    windowID: newVal.windowID || "",
-                    subviews: newVal.subviews
-                });
-            }
-        }
-    };
-    this.data = {
-        style: ''
-    };
-    this.methods = {
-        onTouchStarted: function onTouchStarted(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchStart(e);
-                }
-            }
-        },
-        onTouchMoved: function onTouchMoved(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchMove(e);
-                }
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchEnd(e);
-                }
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchCancel(e);
-                }
-            }
-        }
-    };
-};
-
-exports.UIWindowComponent = UIWindowComponent;
-Component(new UIWindowComponent());
-
-/***/ }),
-
-/***/ 3:
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -326,6 +219,130 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
 
 /***/ }),
 
+/***/ 14:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIWindowManager_1 = __webpack_require__(4);
+// xt-framework/uiview.js
+
+var UIWindowElement = function (_UIView_1$UIViewEleme) {
+    _inherits(UIWindowElement, _UIView_1$UIViewEleme);
+
+    function UIWindowElement() {
+        _classCallCheck(this, UIWindowElement);
+
+        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
+    }
+
+    UIWindowElement.prototype.buildStyle = function buildStyle() {
+        var style = _UIView_1$UIViewEleme.prototype.buildStyle.call(this);
+        style += "\n        width: 100%;\n        height: 100%;\n        ";
+        return style;
+    };
+
+    return UIWindowElement;
+}(UIView_1.UIViewElement);
+
+exports.UIWindowElement = UIWindowElement;
+
+var UIWindowComponent = function UIWindowComponent() {
+    _classCallCheck(this, UIWindowComponent);
+
+    this.properties = {
+        props: {
+            type: Object,
+            value: {},
+            observer: function observer(newVal, oldVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                var self = this;
+                if (newVal.isDirty !== true && self.el !== undefined) {
+                    return;
+                }
+                if (self.el === undefined) {
+                    self.el = new UIWindowElement(self);
+                }
+                self.setData({
+                    style: self.el.buildStyle(),
+                    windowID: newVal.windowID || "",
+                    subviews: newVal.subviews
+                });
+            }
+        }
+    };
+    this.data = {
+        style: ''
+    };
+    this.methods = {
+        onTouchStarted: function onTouchStarted(e) {
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
+                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
+                if (window) {
+                    window.handleTouchStart(e);
+                }
+            }
+        },
+        onTouchMoved: function onTouchMoved(e) {
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
+                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
+                if (window) {
+                    window.handleTouchMove(e);
+                }
+            }
+        },
+        onTouchEnded: function onTouchEnded(e) {
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
+                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
+                if (window) {
+                    window.handleTouchEnd(e);
+                }
+            }
+        },
+        onTouchCancelled: function onTouchCancelled(e) {
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
+                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
+                if (window) {
+                    window.handleTouchCancel(e);
+                }
+            }
+        }
+    };
+};
+
+exports.UIWindowComponent = UIWindowComponent;
+Component(new UIWindowComponent());
+
+/***/ }),
+
+/***/ 26:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomUUID = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : r & 0x3 | 0x8;
+        return v.toString(16);
+    });
+};
+
+/***/ }),
+
 /***/ 4:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -337,6 +354,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(26);
 
 var UIWindowManager = function () {
     function UIWindowManager() {
@@ -346,7 +364,7 @@ var UIWindowManager = function () {
     }
 
     UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = Math.random().toString();
+        window.windowID = UUID_1.randomUUID();
         this.windows[window.windowID] = window;
     };
 

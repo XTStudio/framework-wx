@@ -10,12 +10,12 @@ import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UISize } from "./UISize";
 import { MagicObject } from "./helpers/MagicObject";
 import { UIAnimator } from "./UIAnimator";
+import { UIViewManager } from "../components/UIViewManager";
+import { EventEmitter } from "../kimi/EventEmitter";
 
 export let dirtyItems: UIView[] = []
 
-export class UIView {
-
-    static recognizedGesture: any
+export class UIView extends EventEmitter {
 
     clazz: string = "UIView"
     isDirty: boolean = true
@@ -25,6 +25,8 @@ export class UIView {
     animationValues: { [key: string]: any } = {}
 
     constructor() {
+        super()
+        UIViewManager.shared.addView(this)
         dirtyItems.push(this)
     }
 
@@ -415,9 +417,9 @@ export class UIView {
                 currentPoint.x = x * matrix2.a + y * matrix2.c + matrix2.tx;
                 currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
             }
-            if (current.superview !== undefined && (current.superview as any).isScrollerView === true) {
-                currentPoint.x += -(current.superview as any).domElement.scrollLeft
-                currentPoint.y += -(current.superview as any).domElement.scrollTop
+            if (current.superview !== undefined && current.superview.clazz === "UIScrollView") {
+                currentPoint.x += -(current.superview as any).contentOffset.x
+                currentPoint.y += -(current.superview as any).contentOffset.y
             }
             currentPoint.x += current.frame.x
             currentPoint.y += current.frame.y
@@ -439,9 +441,9 @@ export class UIView {
         }
         let currentPoint = { x: point.x, y: point.y }
         routes.forEach((it) => {
-            if (it.superview !== undefined && (it.superview as any).isScrollerView === true) {
-                currentPoint.x -= -(it.superview as any).domElement.scrollLeft
-                currentPoint.y -= -(it.superview as any).domElement.scrollTop
+            if (it.superview !== undefined && it.superview.clazz === "UIScrollView") {
+                currentPoint.x -= -(it.superview as any).contentOffset.x
+                currentPoint.y -= -(it.superview as any).contentOffset.y
             }
             currentPoint.x -= it.frame.x
             currentPoint.y -= it.frame.y
@@ -569,18 +571,53 @@ export class UIView {
 
     // Helpers
 
+    static _recognizedGesture: any
+
+    static get recognizedGesture() {
+        return this._recognizedGesture
+    }
+
+    static set recognizedGesture(value: any) {
+        this._recognizedGesture = value
+        // if (value !== undefined) {
+        //     if (value.enabled === false) { return }
+        //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+        //         it.scrollDisabledTemporary = true
+        //     })
+        // }
+        // else {
+        //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+        //         it.scrollDisabledTemporary = false
+        //     })
+        // }
+    }
+
     invalidateCallHandler: any = undefined
 
-    invalidate(dirty: boolean = true) {
+    invalidate(dirty: boolean = true, force: boolean = false) {
         if (dirty) {
             this.isDirty = true
             dirtyItems.push(this)
         }
         let nextResponder = this.nextResponder()
         if (nextResponder !== undefined) {
-            nextResponder.invalidate(true)
+            nextResponder.invalidate(true, force)
         }
         else {
+            if (force) {
+                if (this.dataOwner && this.dataField) {
+                    this.dataOwner.setData({
+                        [this.dataField]: this
+                    })
+                }
+                dirtyItems.forEach(it => {
+                    it.isDirty = false
+                    it.animationProps = {}
+                    it.animationValues = {}
+                })
+                dirtyItems = []
+                return
+            }
             if (this.invalidateCallHandler === undefined) {
                 this.invalidateCallHandler = setTimeout(() => {
                     this.invalidateCallHandler = undefined;

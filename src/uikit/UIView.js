@@ -9,9 +9,12 @@ const UITouch_1 = require("./UITouch");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const MagicObject_1 = require("./helpers/MagicObject");
 const UIAnimator_1 = require("./UIAnimator");
+const UIViewManager_1 = require("../components/UIViewManager");
+const EventEmitter_1 = require("../kimi/EventEmitter");
 exports.dirtyItems = [];
-class UIView {
+class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
+        super();
         this.clazz = "UIView";
         this.isDirty = true;
         this.dataOwner = undefined;
@@ -36,8 +39,8 @@ class UIView {
         // GestureRecognizers
         this._userInteractionEnabled = true;
         this._gestureRecognizers = new MagicObject_1.MagicObject([]);
-        // Helpers
         this.invalidateCallHandler = undefined;
+        UIViewManager_1.UIViewManager.shared.addView(this);
         exports.dirtyItems.push(this);
     }
     attach(dataOwner, dataField) {
@@ -360,9 +363,9 @@ class UIView {
                 currentPoint.x = x * matrix2.a + y * matrix2.c + matrix2.tx;
                 currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
             }
-            if (current.superview !== undefined && current.superview.isScrollerView === true) {
-                currentPoint.x += -current.superview.domElement.scrollLeft;
-                currentPoint.y += -current.superview.domElement.scrollTop;
+            if (current.superview !== undefined && current.superview.clazz === "UIScrollView") {
+                currentPoint.x += -current.superview.contentOffset.x;
+                currentPoint.y += -current.superview.contentOffset.y;
             }
             currentPoint.x += current.frame.x;
             currentPoint.y += current.frame.y;
@@ -385,9 +388,9 @@ class UIView {
         }
         let currentPoint = { x: point.x, y: point.y };
         routes.forEach((it) => {
-            if (it.superview !== undefined && it.superview.isScrollerView === true) {
-                currentPoint.x -= -it.superview.domElement.scrollLeft;
-                currentPoint.y -= -it.superview.domElement.scrollTop;
+            if (it.superview !== undefined && it.superview.clazz === "UIScrollView") {
+                currentPoint.x -= -it.superview.contentOffset.x;
+                currentPoint.y -= -it.superview.contentOffset.y;
             }
             currentPoint.x -= it.frame.x;
             currentPoint.y -= it.frame.y;
@@ -493,16 +496,47 @@ class UIView {
             point.x <= this.frame.width + this.touchAreaInsets.right &&
             point.y <= this.frame.height + this.touchAreaInsets.bottom;
     }
-    invalidate(dirty = true) {
+    static get recognizedGesture() {
+        return this._recognizedGesture;
+    }
+    static set recognizedGesture(value) {
+        this._recognizedGesture = value;
+        // if (value !== undefined) {
+        //     if (value.enabled === false) { return }
+        //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+        //         it.scrollDisabledTemporary = true
+        //     })
+        // }
+        // else {
+        //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+        //         it.scrollDisabledTemporary = false
+        //     })
+        // }
+    }
+    invalidate(dirty = true, force = false) {
         if (dirty) {
             this.isDirty = true;
             exports.dirtyItems.push(this);
         }
         let nextResponder = this.nextResponder();
         if (nextResponder !== undefined) {
-            nextResponder.invalidate(true);
+            nextResponder.invalidate(true, force);
         }
         else {
+            if (force) {
+                if (this.dataOwner && this.dataField) {
+                    this.dataOwner.setData({
+                        [this.dataField]: this
+                    });
+                }
+                exports.dirtyItems.forEach(it => {
+                    it.isDirty = false;
+                    it.animationProps = {};
+                    it.animationValues = {};
+                });
+                exports.dirtyItems = [];
+                return;
+            }
             if (this.invalidateCallHandler === undefined) {
                 this.invalidateCallHandler = setTimeout(() => {
                     this.invalidateCallHandler = undefined;

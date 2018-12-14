@@ -2,6 +2,7 @@
   "component": true,
   "usingComponents": {
     "uiview": "./components/UIView",
+    "uiscrollview": "./components/UIScrollView",
     "uiwindow": "./components/UIWindow"
   }
 }

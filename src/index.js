@@ -10,6 +10,7 @@ Object.assign(module.exports, require('./uikit/UIPinchGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIPoint'));
 Object.assign(module.exports, require('./uikit/UIRect'));
 Object.assign(module.exports, require('./uikit/UIRotationGestureRecognizer'));
+Object.assign(module.exports, require('./uikit/UIScrollView'));
 Object.assign(module.exports, require('./uikit/UISize'));
 Object.assign(module.exports, require('./uikit/UITapGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UITouch'));

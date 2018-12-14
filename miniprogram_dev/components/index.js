@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 15);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -102,7 +102,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIPoint_1 = __webpack_require__(5);
-var EventEmitter_1 = __webpack_require__(14);
+var EventEmitter_1 = __webpack_require__(16);
 var MagicObject_1 = __webpack_require__(6);
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
@@ -173,7 +173,8 @@ var UIGestureRecognizer = function (_EventEmitter_1$Event) {
 exports.UIGestureRecognizer = UIGestureRecognizer;
 
 /***/ }),
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -293,7 +294,7 @@ var VelocityTracker = function () {
 exports.VelocityTracker = VelocityTracker;
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -301,55 +302,62 @@ exports.VelocityTracker = VelocityTracker;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIRect_1 = __webpack_require__(11);
+var UIRect_1 = __webpack_require__(12);
 var UIAffineTransform_1 = __webpack_require__(7);
 var Matrix_1 = __webpack_require__(8);
-var UIColor_1 = __webpack_require__(9);
+var UIColor_1 = __webpack_require__(10);
 var UIWindowManager_1 = __webpack_require__(4);
-var UITouch_1 = __webpack_require__(1);
-var UIEdgeInsets_1 = __webpack_require__(10);
+var UITouch_1 = __webpack_require__(2);
+var UIEdgeInsets_1 = __webpack_require__(11);
 var MagicObject_1 = __webpack_require__(6);
-var UIAnimator_1 = __webpack_require__(22);
+var UIAnimator_1 = __webpack_require__(9);
+var UIViewManager_1 = __webpack_require__(25);
+var EventEmitter_1 = __webpack_require__(16);
 exports.dirtyItems = [];
 
-var UIView = function () {
+var UIView = function (_EventEmitter_1$Event) {
+    _inherits(UIView, _EventEmitter_1$Event);
+
     function UIView() {
         _classCallCheck(this, UIView);
 
-        this.clazz = "UIView";
-        this.isDirty = true;
-        this.dataOwner = undefined;
-        this.dataField = undefined;
-        this.animationProps = {};
-        this.animationValues = {};
-        this._frame = UIRect_1.UIRectZero;
-        this.bounds = UIRect_1.UIRectZero;
-        this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
-        this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
+        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.call(this));
+
+        _this.clazz = "UIView";
+        _this.isDirty = true;
+        _this.dataOwner = undefined;
+        _this.dataField = undefined;
+        _this.animationProps = {};
+        _this.animationValues = {};
+        _this._frame = UIRect_1.UIRectZero;
+        _this.bounds = UIRect_1.UIRectZero;
+        _this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
-        this.tag = 0;
-        this.viewDelegate = undefined;
-        this._superview = new MagicObject_1.MagicObject();
-        this.subviews = [];
-        this._clipsToBounds = false;
-        this._hidden = false;
+        _this.tag = 0;
+        _this.viewDelegate = undefined;
+        _this._superview = new MagicObject_1.MagicObject();
+        _this.subviews = [];
+        _this._clipsToBounds = false;
+        _this._hidden = false;
         // protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
-        this._tintColor = undefined;
-        this._alpha = 1.0;
-        this._backgroundColor = undefined;
+        _this._tintColor = undefined;
+        _this._alpha = 1.0;
+        _this._backgroundColor = undefined;
         // GestureRecognizers
-        this._userInteractionEnabled = true;
-        this._gestureRecognizers = new MagicObject_1.MagicObject([]);
-        // Helpers
-        this.invalidateCallHandler = undefined;
-        exports.dirtyItems.push(this);
+        _this._userInteractionEnabled = true;
+        _this._gestureRecognizers = new MagicObject_1.MagicObject([]);
+        _this.invalidateCallHandler = undefined;
+        UIViewManager_1.UIViewManager.shared.addView(_this);
+        exports.dirtyItems.push(_this);
+        return _this;
     }
 
     UIView.prototype.attach = function attach(dataOwner, dataField) {
@@ -360,14 +368,14 @@ var UIView = function () {
     };
 
     UIView.prototype.removeFromSuperview = function removeFromSuperview() {
-        var _this = this;
+        var _this2 = this;
 
         if (this.superview !== undefined) {
             var superview = this.superview;
             superview.willRemoveSubview(this);
             this.willMoveToSuperview(undefined);
             superview.subviews = this.superview.subviews.filter(function (it) {
-                return it !== _this;
+                return it !== _this2;
             });
             this.superview = undefined;
             superview.invalidate();
@@ -589,9 +597,9 @@ var UIView = function () {
                 currentPoint.x = x * matrix2.a + y * matrix2.c + matrix2.tx;
                 currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
             }
-            if (current.superview !== undefined && current.superview.isScrollerView === true) {
-                currentPoint.x += -current.superview.domElement.scrollLeft;
-                currentPoint.y += -current.superview.domElement.scrollTop;
+            if (current.superview !== undefined && current.superview.clazz === "UIScrollView") {
+                currentPoint.x += -current.superview.contentOffset.x;
+                currentPoint.y += -current.superview.contentOffset.y;
             }
             currentPoint.x += current.frame.x;
             currentPoint.y += current.frame.y;
@@ -615,9 +623,9 @@ var UIView = function () {
         }
         var currentPoint = { x: point.x, y: point.y };
         routes.forEach(function (it) {
-            if (it.superview !== undefined && it.superview.isScrollerView === true) {
-                currentPoint.x -= -it.superview.domElement.scrollLeft;
-                currentPoint.y -= -it.superview.domElement.scrollTop;
+            if (it.superview !== undefined && it.superview.clazz === "UIScrollView") {
+                currentPoint.x -= -it.superview.contentOffset.x;
+                currentPoint.y -= -it.superview.contentOffset.y;
             }
             currentPoint.x -= it.frame.x;
             currentPoint.y -= it.frame.y;
@@ -730,9 +738,10 @@ var UIView = function () {
     };
 
     UIView.prototype.invalidate = function invalidate() {
-        var _this2 = this;
+        var _this3 = this;
 
         var dirty = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
         if (dirty) {
             this.isDirty = true;
@@ -740,15 +749,29 @@ var UIView = function () {
         }
         var nextResponder = this.nextResponder();
         if (nextResponder !== undefined) {
-            nextResponder.invalidate(true);
+            nextResponder.invalidate(true, force);
         } else {
+            if (force) {
+                if (this.dataOwner && this.dataField) {
+                    var _dataOwner$setData;
+
+                    this.dataOwner.setData((_dataOwner$setData = {}, _dataOwner$setData[this.dataField] = this, _dataOwner$setData));
+                }
+                exports.dirtyItems.forEach(function (it) {
+                    it.isDirty = false;
+                    it.animationProps = {};
+                    it.animationValues = {};
+                });
+                exports.dirtyItems = [];
+                return;
+            }
             if (this.invalidateCallHandler === undefined) {
                 this.invalidateCallHandler = setTimeout(function () {
-                    _this2.invalidateCallHandler = undefined;
-                    if (_this2.dataOwner && _this2.dataField) {
-                        var _this2$dataOwner$setD;
+                    _this3.invalidateCallHandler = undefined;
+                    if (_this3.dataOwner && _this3.dataField) {
+                        var _this3$dataOwner$setD;
 
-                        _this2.dataOwner.setData((_this2$dataOwner$setD = {}, _this2$dataOwner$setD[_this2.dataField] = _this2, _this2$dataOwner$setD));
+                        _this3.dataOwner.setData((_this3$dataOwner$setD = {}, _this3$dataOwner$setD[_this3.dataField] = _this3, _this3$dataOwner$setD));
                     }
                     exports.dirtyItems.forEach(function (it) {
                         it.isDirty = false;
@@ -923,10 +946,29 @@ var UIView = function () {
         get: function get() {
             return this._gestureRecognizers.get();
         }
+    }], [{
+        key: "recognizedGesture",
+        get: function get() {
+            return this._recognizedGesture;
+        },
+        set: function set(value) {
+            this._recognizedGesture = value;
+            // if (value !== undefined) {
+            //     if (value.enabled === false) { return }
+            //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+            //         it.scrollDisabledTemporary = true
+            //     })
+            // }
+            // else {
+            //     UIViewManager.shared.fetchViews().filter(it => it.clazz === "UIScrollView").forEach(it => {
+            //         it.scrollDisabledTemporary = false
+            //     })
+            // }
+        }
     }]);
 
     return UIView;
-}();
+}(EventEmitter_1.EventEmitter);
 
 exports.UIView = UIView;
 
@@ -936,16 +978,16 @@ var UIWindow = function (_UIView) {
     function UIWindow() {
         _classCallCheck(this, UIWindow);
 
-        var _this3 = _possibleConstructorReturn(this, _UIView.call(this));
+        var _this4 = _possibleConstructorReturn(this, _UIView.call(this));
 
-        _this3.clazz = "UIWindow";
+        _this4.clazz = "UIWindow";
         // touches
-        _this3.currentTouchesID = [];
-        _this3._touches = new MagicObject_1.MagicObject({});
-        _this3.upCount = new Map();
-        _this3.upTimestamp = new Map();
-        UIWindowManager_1.UIWindowManager.shared.addWindow(_this3);
-        return _this3;
+        _this4.currentTouchesID = [];
+        _this4._touches = new MagicObject_1.MagicObject({});
+        _this4.upCount = new Map();
+        _this4.upTimestamp = new Map();
+        UIWindowManager_1.UIWindowManager.shared.addWindow(_this4);
+        return _this4;
     }
 
     UIWindow.prototype.attach = function attach(dataOwner, dataField) {
@@ -969,23 +1011,23 @@ var UIWindow = function (_UIView) {
     };
 
     UIWindow.prototype.handleTouchStart = function handleTouchStart(e) {
-        var _this4 = this;
+        var _this5 = this;
 
         var changedTouches = this.standardlizeTouches(e);
 
         var _loop = function _loop(index) {
             var pointer = changedTouches[index];
-            var pointerIdentifier = _this4.standardlizeTouchIdentifier(pointer);
-            _this4.currentTouchesID.push(pointerIdentifier);
+            var pointerIdentifier = _this5.standardlizeTouchIdentifier(pointer);
+            _this5.currentTouchesID.push(pointerIdentifier);
             var point = { x: pointer.pageX, y: pointer.pageY };
-            var target = _this4.hitTest(point);
+            var target = _this5.hitTest(point);
             if (target) {
                 var touch = new UITouch_1.UITouch();
-                _this4.touches[pointerIdentifier] = touch;
+                _this5.touches[pointerIdentifier] = touch;
                 touch.identifier = pointerIdentifier;
                 touch.phase = UITouch_1.UITouchPhase.began;
                 touch.tapCount = function () {
-                    for (var _iterator = _this4.upCount, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                    for (var _iterator = _this5.upCount, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
                         var _ref2;
 
                         if (_isArray) {
@@ -1001,7 +1043,7 @@ var UIWindow = function (_UIView) {
                         var key = _ref[0];
                         var value = _ref[1];
 
-                        var timestamp = _this4.upTimestamp.get(key) || 0.0;
+                        var timestamp = _this5.upTimestamp.get(key) || 0.0;
                         if (e.timeStamp / 1000 - timestamp < 1.0 && Math.abs(key.x - point.x) < 44.0 && Math.abs(key.y - point.y) < 44.0) {
                             return value + 1;
                         }
@@ -1009,7 +1051,7 @@ var UIWindow = function (_UIView) {
                     return 1;
                 }();
                 touch.timestamp = e.timeStamp / 1000;
-                touch.window = _this4;
+                touch.window = _this5;
                 touch.windowPoint = point;
                 touch.view = target;
                 if (touch.identifier == 0) {
@@ -1182,7 +1224,6 @@ exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker();
 
 /***/ }),
-/* 3 */,
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1194,6 +1235,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(26);
 
 var UIWindowManager = function () {
     function UIWindowManager() {
@@ -1203,7 +1245,7 @@ var UIWindowManager = function () {
     }
 
     UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = Math.random().toString();
+        window.windowID = UUID_1.randomUUID();
         this.windows[window.windowID] = window;
     };
 
@@ -1782,6 +1824,74 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 
+var UIAnimator = function () {
+    function UIAnimator() {
+        _classCallCheck(this, UIAnimator);
+
+        this.animationProps = {};
+    }
+
+    UIAnimator.prototype.linear = function linear(duration, isCurve, animations, completion) {
+        if (UIAnimator.nextCompletion !== undefined) {
+            UIAnimator.nextCompletion();
+            UIAnimator.nextCompletion = undefined;
+        }
+        this.animationProps = {
+            duration: duration * 1000,
+            timingFunction: isCurve ? "ease" : "linear"
+        };
+        UIAnimator.activeAnimator = this;
+        animations();
+        UIAnimator.activeAnimator = undefined;
+        if (completion) {
+            UIAnimator.nextCompletion = completion;
+            setTimeout(function () {
+                if (UIAnimator.nextCompletion !== completion) {
+                    return;
+                }
+                completion();
+                UIAnimator.nextCompletion = undefined;
+            }, duration * 1000);
+        }
+    };
+
+    UIAnimator.linear = function linear(duration, animations, completion) {
+        UIAnimator.shared.linear(duration, false, animations, completion);
+    };
+
+    UIAnimator.curve = function curve(duration, animations, completion) {
+        UIAnimator.shared.linear(duration, true, animations, completion);
+    };
+
+    UIAnimator.spring = function spring(tension, friction, animations, completion) {
+        // not support spring animation for wx
+        UIAnimator.shared.linear(0.3, false, animations, completion);
+    };
+
+    UIAnimator.bouncy = function bouncy(bounciness, speed, animations, completion) {
+        // not support bouncy animation for wx
+        UIAnimator.shared.linear(0.3, false, animations, completion);
+    };
+
+    return UIAnimator;
+}();
+
+UIAnimator.shared = new UIAnimator();
+UIAnimator.activeAnimator = undefined;
+UIAnimator.nextCompletion = undefined;
+exports.UIAnimator = UIAnimator;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
 var UIColor = function () {
     function UIColor(r, g, b, a) {
         _classCallCheck(this, UIColor);
@@ -1829,7 +1939,7 @@ UIColor.white = new UIColor(1.0, 1.0, 1.0, 1.0);
 exports.UIColor = UIColor;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1853,7 +1963,7 @@ exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
 };
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1907,8 +2017,9 @@ exports.UIRectIsEmpty = function (rect) {
 };
 
 /***/ }),
-/* 12 */,
-/* 13 */
+/* 13 */,
+/* 14 */,
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1917,20 +2028,21 @@ exports.UIRectIsEmpty = function (rect) {
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.assign(module.exports, __webpack_require__(7));
-Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(9));
 Object.assign(module.exports, __webpack_require__(10));
-Object.assign(module.exports, __webpack_require__(0));
-Object.assign(module.exports, __webpack_require__(16));
-Object.assign(module.exports, __webpack_require__(17));
-Object.assign(module.exports, __webpack_require__(18));
-Object.assign(module.exports, __webpack_require__(5));
 Object.assign(module.exports, __webpack_require__(11));
+Object.assign(module.exports, __webpack_require__(0));
+Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(19));
 Object.assign(module.exports, __webpack_require__(20));
+Object.assign(module.exports, __webpack_require__(5));
+Object.assign(module.exports, __webpack_require__(12));
 Object.assign(module.exports, __webpack_require__(21));
-Object.assign(module.exports, __webpack_require__(1));
+Object.assign(module.exports, __webpack_require__(24));
+Object.assign(module.exports, __webpack_require__(22));
+Object.assign(module.exports, __webpack_require__(23));
 Object.assign(module.exports, __webpack_require__(2));
+Object.assign(module.exports, __webpack_require__(3));
 Component({
     properties: {
         view: {
@@ -1957,18 +2069,18 @@ Component({
 });
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var EventEmitterIMP = __webpack_require__(15);
+var EventEmitterIMP = __webpack_require__(17);
 exports.EventEmitter = EventEmitterIMP.EventEmitter;
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2469,7 +2581,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(undefined || {});
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2483,8 +2595,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIGestureRecognizer_1 = __webpack_require__(0);
-var UITouch_1 = __webpack_require__(1);
-var UIView_1 = __webpack_require__(2);
+var UITouch_1 = __webpack_require__(2);
+var UIView_1 = __webpack_require__(3);
 
 var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UILongPressGestureRecognizer, _UIGestureRecognizer_);
@@ -2577,7 +2689,7 @@ var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UILongPressGestureRecognizer = UILongPressGestureRecognizer;
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2591,8 +2703,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIGestureRecognizer_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(2);
-var UITouch_1 = __webpack_require__(1);
+var UIView_1 = __webpack_require__(3);
+var UITouch_1 = __webpack_require__(2);
 
 var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIPanGestureRecognizer, _UIGestureRecognizer_);
@@ -2729,7 +2841,7 @@ var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2767,7 +2879,7 @@ var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIPinchGestureRecognizer = UIPinchGestureRecognizer;
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2801,7 +2913,7 @@ var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIRotationGestureRecognizer = UIRotationGestureRecognizer;
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2817,7 +2929,7 @@ exports.UISizeEqualToSize = function (a, b) {
 };
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2830,9 +2942,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UITouch_1 = __webpack_require__(1);
+var UITouch_1 = __webpack_require__(2);
 var UIGestureRecognizer_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(2);
+var UIView_1 = __webpack_require__(3);
 
 var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
@@ -2902,72 +3014,308 @@ var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(3);
+var UIPoint_1 = __webpack_require__(5);
+var UISize_1 = __webpack_require__(22);
+var UIEdgeInsets_1 = __webpack_require__(11);
+var UIPanGestureRecognizer_1 = __webpack_require__(19);
+
+var UIScrollView = function (_UIView_1$UIView) {
+    _inherits(UIScrollView, _UIView_1$UIView);
+
+    function UIScrollView() {
+        _classCallCheck(this, UIScrollView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.clazz = "UIScrollView";
+        _this._panGesture = new UIPanGestureRecognizer_1.UIPanGestureRecognizer();
+        _this._contentOffset = UIPoint_1.UIPointZero;
+        _this._contentOffsetAnimated = false;
+        _this._contentSize = UISize_1.UISizeZero;
+        _this.contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this.directionalLockEnabled = false;
+        _this._bounces = true;
+        _this._alwaysBounceVertical = false;
+        _this._alwaysBounceHorizontal = false;
+        _this.pagingEnabled = false;
+        // private _scrollDisabledTemporary: boolean = false
+        // public get scrollDisabledTemporary(): boolean {
+        //     return this._scrollDisabledTemporary;
+        // }
+        // public set scrollDisabledTemporary(value: boolean) {
+        //     this._scrollDisabledTemporary = value;
+        //     this.invalidate(true, true)
+        // }
+        _this._scrollEnabled = true;
+        _this.showsHorizontalScrollIndicator = true; // todo
+        _this.showsVerticalScrollIndicator = true; // todo
+        _this.tracking = false;
+        _this.dragging = false;
+        _this.decelerating = false;
+        _this._scrollsToTop = false;
+        _this._endDraggingVelocity = UIPoint_1.UIPointZero;
+        _this._panGesture.enabled = false;
+        return _this;
+    }
+
+    UIScrollView.prototype.setContentOffset = function setContentOffset(contentOffset, animated) {
+        var _this2 = this;
+
+        this.contentOffset = contentOffset;
+        this._contentOffsetAnimated = animated;
+        if (this._contentOffsetAnimated) {
+            setTimeout(function () {
+                _this2._contentOffsetAnimated = false;
+            }, 32);
+        }
+    };
+
+    UIScrollView.prototype.scrollRectToVisible = function scrollRectToVisible(rect, animated) {
+        var targetContentOffset = this.contentOffset;
+        if (rect.x < this.contentOffset.x) {
+            targetContentOffset = { x: rect.x, y: targetContentOffset.y };
+        } else if (rect.x + rect.width > this.contentOffset.x + this.bounds.width) {
+            targetContentOffset = { x: rect.x + rect.width - this.bounds.width, y: targetContentOffset.y };
+        }
+        if (rect.y < this.contentOffset.y) {
+            targetContentOffset = { x: targetContentOffset.x, y: rect.y };
+        } else if (rect.y + rect.height > this.contentOffset.y + this.bounds.height) {
+            targetContentOffset = { x: targetContentOffset.x, y: rect.y + rect.height - this.bounds.height };
+        }
+        targetContentOffset = {
+            x: Math.max(0.0, Math.min(this.contentSize.width - this.bounds.width, targetContentOffset.x)),
+            y: Math.max(0.0, Math.min(this.contentSize.height - this.bounds.height, targetContentOffset.y))
+        };
+        this.setContentOffset(targetContentOffset, animated);
+    };
+
+    // Delegates
+    UIScrollView.prototype.didScroll = function didScroll() {
+        this.emit("didScroll", this);
+    };
+
+    UIScrollView.prototype.willBeginDragging = function willBeginDragging() {
+        UIView_1.UIView.recognizedGesture = this._panGesture;
+        this.emit("willBeginDragging", this);
+        this.tracking = true;
+        this.dragging = true;
+    };
+
+    UIScrollView.prototype.willEndDragging = function willEndDragging(velocity) {
+        this._endDraggingVelocity = velocity;
+        this.emit("willEndDragging", this, velocity);
+    };
+
+    UIScrollView.prototype.didEndDragging = function didEndDragging(decelerate) {
+        this.tracking = false;
+        this.dragging = false;
+        this.emit("didEndDragging", this, decelerate);
+        if (this.pagingEnabled) {
+            if (this.contentSize.width < this.bounds.width) {
+                if (this.contentOffset.y <= 0 || this.contentOffset.y >= this.contentSize.height - this.bounds.height) {
+                    return;
+                }
+                var currentPageY = Math.floor(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+                var nextPageY = Math.ceil(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+                if (this._endDraggingVelocity.y > 200) {
+                    this.setContentOffset({ x: 0, y: currentPageY }, true);
+                } else if (this._endDraggingVelocity.y < -200 || nextPageY - this.contentOffset.y < this.contentOffset.y - currentPageY) {
+                    this.setContentOffset({ x: 0, y: nextPageY }, true);
+                } else {
+                    this.setContentOffset({ x: 0, y: currentPageY }, true);
+                }
+                this.invalidate(true, true);
+            } else if (this.contentSize.height < this.bounds.height) {
+                if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) {
+                    return;
+                }
+                var currentPageX = Math.floor(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+                var nextPageX = Math.ceil(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+                if (this._endDraggingVelocity.x > 200) {
+                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
+                } else if (this._endDraggingVelocity.x < -200 || nextPageX - this.contentOffset.x < this.contentOffset.x - currentPageX) {
+                    this.setContentOffset({ x: nextPageX, y: 0 }, true);
+                } else {
+                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
+                }
+                this.invalidate(true, true);
+            }
+        }
+    };
+
+    UIScrollView.prototype.willBeginDecelerating = function willBeginDecelerating() {
+        this.emit("willBeginDecelerating", this);
+        this.decelerating = true;
+    };
+
+    UIScrollView.prototype.didEndDecelerating = function didEndDecelerating() {
+        this.decelerating = false;
+        this.emit("didEndDecelerating", this);
+    };
+
+    UIScrollView.prototype.didEndScrollingAnimation = function didEndScrollingAnimation() {
+        this.emit("didEndScrollingAnimation", this);
+    };
+
+    UIScrollView.prototype.didScrollToTop = function didScrollToTop() {
+        this.emit("didScrollToTop", this);
+    };
+
+    _createClass(UIScrollView, [{
+        key: "contentOffset",
+        get: function get() {
+            return this._contentOffset;
+        },
+        set: function set(value) {
+            this._contentOffset = value;
+            this._contentOffsetAnimated = false;
+            this.invalidate();
+        }
+    }, {
+        key: "contentSize",
+        get: function get() {
+            return this._contentSize;
+        },
+        set: function set(value) {
+            this._contentSize = value;
+            this.invalidate();
+        }
+    }, {
+        key: "bounces",
+        get: function get() {
+            return this._bounces;
+        },
+        set: function set(value) {
+            this._bounces = value;
+            this.invalidate();
+        }
+    }, {
+        key: "alwaysBounceVertical",
+        get: function get() {
+            return this._alwaysBounceVertical;
+        },
+        set: function set(value) {
+            this._alwaysBounceVertical = value;
+            this.invalidate();
+        }
+    }, {
+        key: "alwaysBounceHorizontal",
+        get: function get() {
+            return this._alwaysBounceHorizontal;
+        },
+        set: function set(value) {
+            this._alwaysBounceHorizontal = value;
+            this.invalidate();
+        }
+    }, {
+        key: "scrollEnabled",
+        get: function get() {
+            return this._scrollEnabled;
+        },
+        set: function set(value) {
+            this._scrollEnabled = value;
+            this.invalidate();
+        }
+    }, {
+        key: "scrollsToTop",
+        get: function get() {
+            return this._scrollsToTop;
+        },
+        set: function set(value) {
+            this._scrollsToTop = value;
+            this.invalidate();
+        }
+    }]);
+
+    return UIScrollView;
+}(UIView_1.UIView);
+
+exports.UIScrollView = UIScrollView;
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(26);
 
-var UIAnimator = function () {
-    function UIAnimator() {
-        _classCallCheck(this, UIAnimator);
+var UIViewManager = function () {
+    function UIViewManager() {
+        _classCallCheck(this, UIViewManager);
 
-        this.animationProps = {};
+        this.views = {};
     }
 
-    UIAnimator.prototype.linear = function linear(duration, isCurve, animations, completion) {
-        if (UIAnimator.nextCompletion !== undefined) {
-            UIAnimator.nextCompletion();
-            UIAnimator.nextCompletion = undefined;
+    UIViewManager.prototype.addView = function addView(view) {
+        view.viewID = UUID_1.randomUUID();
+        this.views[view.viewID] = view;
+    };
+
+    UIViewManager.prototype.fetchView = function fetchView(viewID) {
+        return this.views[viewID];
+    };
+
+    UIViewManager.prototype.fetchViews = function fetchViews() {
+        var _this = this;
+
+        return Object.keys(this.views).map(function (it) {
+            return _this.views[it];
+        });
+    };
+
+    _createClass(UIViewManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIViewManagerManagerShared === undefined) {
+                getApp().UIViewManagerManagerShared = new UIViewManager();
+            }
+            return getApp().UIViewManagerManagerShared;
         }
-        this.animationProps = {
-            duration: duration * 1000,
-            timingFunction: isCurve ? "ease" : "linear"
-        };
-        UIAnimator.activeAnimator = this;
-        animations();
-        UIAnimator.activeAnimator = undefined;
-        if (completion) {
-            UIAnimator.nextCompletion = completion;
-            setTimeout(function () {
-                if (UIAnimator.nextCompletion !== completion) {
-                    return;
-                }
-                completion();
-                UIAnimator.nextCompletion = undefined;
-            }, duration * 1000);
-        }
-    };
+    }]);
 
-    UIAnimator.linear = function linear(duration, animations, completion) {
-        UIAnimator.shared.linear(duration, false, animations, completion);
-    };
-
-    UIAnimator.curve = function curve(duration, animations, completion) {
-        UIAnimator.shared.linear(duration, true, animations, completion);
-    };
-
-    UIAnimator.spring = function spring(tension, friction, animations, completion) {
-        // not support spring animation for wx
-        UIAnimator.shared.linear(0.3, false, animations, completion);
-    };
-
-    UIAnimator.bouncy = function bouncy(bounciness, speed, animations, completion) {
-        // not support bouncy animation for wx
-        UIAnimator.shared.linear(0.3, false, animations, completion);
-    };
-
-    return UIAnimator;
+    return UIViewManager;
 }();
 
-UIAnimator.shared = new UIAnimator();
-UIAnimator.activeAnimator = undefined;
-UIAnimator.nextCompletion = undefined;
-exports.UIAnimator = UIAnimator;
+exports.UIViewManager = UIViewManager;
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomUUID = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : r & 0x3 | 0x8;
+        return v.toString(16);
+    });
+};
 
 /***/ })
 /******/ ]);

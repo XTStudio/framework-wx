@@ -1,3 +1,5 @@
+import { randomUUID } from "../uikit/helpers/UUID";
+
 export class UIWindowManager {
 
     static get shared(): UIWindowManager {
@@ -10,7 +12,7 @@ export class UIWindowManager {
     private windows: { [key: string]: any } = {}
 
     addWindow(window: any) {
-        window.windowID = Math.random().toString()
+        window.windowID = randomUUID()
         this.windows[window.windowID] = window
     }
 
