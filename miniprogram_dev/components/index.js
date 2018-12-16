@@ -82,11 +82,27 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 15);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomUUID = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : r & 0x3 | 0x8;
+        return v.toString(16);
+    });
+};
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -102,8 +118,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIPoint_1 = __webpack_require__(5);
-var EventEmitter_1 = __webpack_require__(16);
-var MagicObject_1 = __webpack_require__(6);
+var EventEmitter_1 = __webpack_require__(14);
+var MagicObject_1 = __webpack_require__(9);
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
     UIGestureRecognizerState[UIGestureRecognizerState["possible"] = 0] = "possible";
@@ -173,8 +189,8 @@ var UIGestureRecognizer = function (_EventEmitter_1$Event) {
 exports.UIGestureRecognizer = UIGestureRecognizer;
 
 /***/ }),
-/* 1 */,
-/* 2 */
+/* 2 */,
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -186,7 +202,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIPoint_1 = __webpack_require__(5);
-var MagicObject_1 = __webpack_require__(6);
+var MagicObject_1 = __webpack_require__(9);
 var UITouchPhase;
 (function (UITouchPhase) {
     UITouchPhase[UITouchPhase["began"] = 0] = "began";
@@ -294,7 +310,7 @@ var VelocityTracker = function () {
 exports.VelocityTracker = VelocityTracker;
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -309,17 +325,17 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIRect_1 = __webpack_require__(12);
-var UIAffineTransform_1 = __webpack_require__(7);
-var Matrix_1 = __webpack_require__(8);
-var UIColor_1 = __webpack_require__(10);
-var UIWindowManager_1 = __webpack_require__(4);
-var UITouch_1 = __webpack_require__(2);
-var UIEdgeInsets_1 = __webpack_require__(11);
-var MagicObject_1 = __webpack_require__(6);
-var UIAnimator_1 = __webpack_require__(9);
-var UIViewManager_1 = __webpack_require__(25);
-var EventEmitter_1 = __webpack_require__(16);
+var UIRect_1 = __webpack_require__(15);
+var UIAffineTransform_1 = __webpack_require__(10);
+var Matrix_1 = __webpack_require__(11);
+var UIColor_1 = __webpack_require__(13);
+var UIWindowManager_1 = __webpack_require__(7);
+var UITouch_1 = __webpack_require__(3);
+var UIEdgeInsets_1 = __webpack_require__(8);
+var MagicObject_1 = __webpack_require__(9);
+var UIAnimator_1 = __webpack_require__(12);
+var UIViewManager_1 = __webpack_require__(6);
+var EventEmitter_1 = __webpack_require__(14);
 exports.dirtyItems = [];
 
 var UIView = function (_EventEmitter_1$Event) {
@@ -1224,7 +1240,23 @@ exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker();
 
 /***/ }),
-/* 4 */
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UIPointZero = { x: 0, y: 0 };
+exports.UIPointMake = function (x, y) {
+    return { x: x, y: y };
+};
+exports.UIPointEqualToPoint = function (point1, point2) {
+    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
+};
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1235,7 +1267,60 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(26);
+var UUID_1 = __webpack_require__(0);
+
+var UIViewManager = function () {
+    function UIViewManager() {
+        _classCallCheck(this, UIViewManager);
+
+        this.views = {};
+    }
+
+    UIViewManager.prototype.addView = function addView(view) {
+        view.viewID = UUID_1.randomUUID();
+        this.views[view.viewID] = view;
+    };
+
+    UIViewManager.prototype.fetchView = function fetchView(viewID) {
+        return this.views[viewID];
+    };
+
+    UIViewManager.prototype.fetchViews = function fetchViews() {
+        var _this = this;
+
+        return Object.keys(this.views).map(function (it) {
+            return _this.views[it];
+        });
+    };
+
+    _createClass(UIViewManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIViewManagerManagerShared === undefined) {
+                getApp().UIViewManagerManagerShared = new UIViewManager();
+            }
+            return getApp().UIViewManagerManagerShared;
+        }
+    }]);
+
+    return UIViewManager;
+}();
+
+exports.UIViewManager = UIViewManager;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(0);
 
 var UIWindowManager = function () {
     function UIWindowManager() {
@@ -1269,23 +1354,31 @@ var UIWindowManager = function () {
 exports.UIWindowManager = UIWindowManager;
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UIPointZero = { x: 0, y: 0 };
-exports.UIPointMake = function (x, y) {
-    return { x: x, y: y };
+exports.UIEdgeInsetsZero = { top: 0, left: 0, bottom: 0, right: 0 };
+exports.UIEdgeInsetsMake = function (top, left, bottom, right) {
+    return { top: top, left: left, bottom: bottom, right: right };
 };
-exports.UIPointEqualToPoint = function (point1, point2) {
-    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
+exports.UIEdgeInsetsInsetRect = function (rect, insets) {
+    return {
+        x: rect.x + insets.left,
+        y: rect.y + insets.top,
+        width: rect.width - insets.left - insets.right,
+        height: rect.height - insets.top - insets.bottom
+    };
+};
+exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
+    return Math.abs(rect1.top - rect2.top) < 0.001 && Math.abs(rect1.left - rect2.left) < 0.001 && Math.abs(rect1.bottom - rect2.bottom) < 0.001 && Math.abs(rect1.right - rect2.right) < 0.001;
 };
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1319,14 +1412,14 @@ var MagicObject = function () {
 exports.MagicObject = MagicObject;
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Matrix_1 = __webpack_require__(8);
+var Matrix_1 = __webpack_require__(11);
 exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
     return { a: a, b: b, c: c, d: d, tx: tx, ty: ty };
@@ -1386,7 +1479,7 @@ exports.UIAffineTransformIsIdentity = function (transform) {
 };
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1814,7 +1907,7 @@ var Matrix = function () {
 exports.Matrix = Matrix;
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1882,7 +1975,7 @@ UIAnimator.nextCompletion = undefined;
 exports.UIAnimator = UIAnimator;
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1939,31 +2032,18 @@ UIColor.white = new UIColor(1.0, 1.0, 1.0, 1.0);
 exports.UIColor = UIColor;
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UIEdgeInsetsZero = { top: 0, left: 0, bottom: 0, right: 0 };
-exports.UIEdgeInsetsMake = function (top, left, bottom, right) {
-    return { top: top, left: left, bottom: bottom, right: right };
-};
-exports.UIEdgeInsetsInsetRect = function (rect, insets) {
-    return {
-        x: rect.x + insets.left,
-        y: rect.y + insets.top,
-        width: rect.width - insets.left - insets.right,
-        height: rect.height - insets.top - insets.bottom
-    };
-};
-exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
-    return Math.abs(rect1.top - rect2.top) < 0.001 && Math.abs(rect1.left - rect2.left) < 0.001 && Math.abs(rect1.bottom - rect2.bottom) < 0.001 && Math.abs(rect1.right - rect2.right) < 0.001;
-};
+var EventEmitterIMP = __webpack_require__(21);
+exports.EventEmitter = EventEmitterIMP.EventEmitter;
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2017,9 +2097,177 @@ exports.UIRectIsEmpty = function (rect) {
 };
 
 /***/ }),
-/* 13 */,
-/* 14 */,
-/* 15 */
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIGestureRecognizer_1 = __webpack_require__(1);
+var UIView_1 = __webpack_require__(4);
+var UITouch_1 = __webpack_require__(3);
+
+var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
+    _inherits(UIPanGestureRecognizer, _UIGestureRecognizer_);
+
+    function UIPanGestureRecognizer() {
+        _classCallCheck(this, UIPanGestureRecognizer);
+
+        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
+
+        _this.lockedDirection = undefined;
+        _this.firstTouch = undefined;
+        _this.translationPoint = undefined;
+        _this.beganPoints = {};
+        return _this;
+    }
+
+    UIPanGestureRecognizer.prototype.translationInView = function translationInView(view) {
+        if (!this.firstTouch) {
+            return { x: 0, y: 0 };
+        }
+        var windowPoint = this.firstTouch.windowPoint;
+        if (!windowPoint) {
+            return { x: 0, y: 0 };
+        }
+        var translationPoint = this.translationPoint;
+        if (!translationPoint) {
+            return { x: 0, y: 0 };
+        }
+        return { x: windowPoint.x - translationPoint.x, y: windowPoint.y - translationPoint.y };
+    };
+
+    UIPanGestureRecognizer.prototype.setTranslation = function setTranslation(translation, inView) {
+        if (!this.firstTouch) {
+            return;
+        }
+        var windowPoint = this.firstTouch.windowPoint;
+        if (!windowPoint) {
+            return;
+        }
+        this.translationPoint = { x: windowPoint.x - translation.x, y: windowPoint.y - translation.y };
+    };
+
+    UIPanGestureRecognizer.prototype.velocityInView = function velocityInView(view) {
+        UIView_1.sharedVelocityTracker.computeCurrentVelocity();
+        return UIView_1.sharedVelocityTracker.velocity;
+    };
+
+    UIPanGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
+        var _this2 = this;
+
+        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
+        touches.forEach(function (it) {
+            if (it.identifier == 0) {
+                _this2.firstTouch = it;
+            }
+            if (it.phase == UITouch_1.UITouchPhase.began) {
+                if (UIView_1.UIView.recognizedGesture != undefined && UIView_1.UIView.recognizedGesture != _this2) {
+                    _this2.beganPoints = {};
+                    return;
+                }
+                if (it.windowPoint) {
+                    _this2.beganPoints[it.identifier] = it.windowPoint;
+                }
+                if (it.identifier == 0) {
+                    _this2.translationPoint = it.windowPoint;
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
+                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.possible) {
+                    if (UIView_1.UIView.recognizedGesture != undefined && UIView_1.UIView.recognizedGesture != _this2) {
+                        _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.failed;
+                        return;
+                    }
+                    if (it.windowPoint && _this2.beganPoints[it.identifier]) {
+                        var beganPoint = _this2.beganPoints[it.identifier];
+                        if (_this2.lockedDirection !== undefined) {
+                            if (_this2.lockedDirection === 1) {
+                                if (Math.abs(beganPoint.y - it.windowPoint.y) >= 8.0) {
+                                    UIView_1.UIView.recognizedGesture = _this2;
+                                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
+                                    _this2.handleEvent("began");
+                                    _this2.emit("began", _this2);
+                                }
+                            } else if (_this2.lockedDirection === 2) {
+                                if (Math.abs(beganPoint.x - it.windowPoint.x) >= 8.0) {
+                                    UIView_1.UIView.recognizedGesture = _this2;
+                                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
+                                    _this2.handleEvent("began");
+                                    _this2.emit("began", _this2);
+                                }
+                            }
+                        } else {
+                            if (Math.abs(beganPoint.x - it.windowPoint.x) >= 8.0 || Math.abs(beganPoint.y - it.windowPoint.y) >= 8.0) {
+                                UIView_1.UIView.recognizedGesture = _this2;
+                                _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
+                                _this2.handleEvent("began");
+                                _this2.emit("began", _this2);
+                            }
+                        }
+                    }
+                } else if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.changed;
+                    _this2.handleEvent("changed");
+                    _this2.emit("changed", _this2);
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
+                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
+                    _this2.handleEvent("ended");
+                    _this2.emit("ended", _this2);
+                    setTimeout(function () {
+                        UIView_1.UIView.recognizedGesture = undefined;
+                    }, 0);
+                }
+                if (it.identifier == 0) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.cancelled) {
+                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.cancelled;
+                    _this2.handleEvent("cancelled");
+                    _this2.emit("cancelled", _this2);
+                    setTimeout(function () {
+                        UIView_1.UIView.recognizedGesture = undefined;
+                    }, 0);
+                }
+                _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+            }
+        });
+    };
+
+    return UIPanGestureRecognizer;
+}(UIGestureRecognizer_1.UIGestureRecognizer);
+
+exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UISizeZero = { width: 0, height: 0 };
+exports.UISizeMake = function (width, height) {
+    return { width: width, height: height };
+};
+exports.UISizeEqualToSize = function (a, b) {
+    return Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
+};
+
+/***/ }),
+/* 18 */,
+/* 19 */,
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2027,22 +2275,22 @@ exports.UIRectIsEmpty = function (rect) {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-Object.assign(module.exports, __webpack_require__(7));
-Object.assign(module.exports, __webpack_require__(9));
 Object.assign(module.exports, __webpack_require__(10));
-Object.assign(module.exports, __webpack_require__(11));
-Object.assign(module.exports, __webpack_require__(0));
-Object.assign(module.exports, __webpack_require__(18));
-Object.assign(module.exports, __webpack_require__(19));
-Object.assign(module.exports, __webpack_require__(20));
-Object.assign(module.exports, __webpack_require__(5));
 Object.assign(module.exports, __webpack_require__(12));
-Object.assign(module.exports, __webpack_require__(21));
-Object.assign(module.exports, __webpack_require__(24));
+Object.assign(module.exports, __webpack_require__(13));
+Object.assign(module.exports, __webpack_require__(8));
+Object.assign(module.exports, __webpack_require__(1));
 Object.assign(module.exports, __webpack_require__(22));
+Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(23));
-Object.assign(module.exports, __webpack_require__(2));
+Object.assign(module.exports, __webpack_require__(5));
+Object.assign(module.exports, __webpack_require__(15));
+Object.assign(module.exports, __webpack_require__(24));
+Object.assign(module.exports, __webpack_require__(17));
+Object.assign(module.exports, __webpack_require__(25));
+Object.assign(module.exports, __webpack_require__(26));
 Object.assign(module.exports, __webpack_require__(3));
+Object.assign(module.exports, __webpack_require__(4));
 Component({
     properties: {
         view: {
@@ -2069,18 +2317,7 @@ Component({
 });
 
 /***/ }),
-/* 16 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var EventEmitterIMP = __webpack_require__(17);
-exports.EventEmitter = EventEmitterIMP.EventEmitter;
-
-/***/ }),
-/* 17 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2581,7 +2818,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(undefined || {});
 
 /***/ }),
-/* 18 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2594,9 +2831,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(0);
-var UITouch_1 = __webpack_require__(2);
-var UIView_1 = __webpack_require__(3);
+var UIGestureRecognizer_1 = __webpack_require__(1);
+var UITouch_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 
 var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UILongPressGestureRecognizer, _UIGestureRecognizer_);
@@ -2689,7 +2926,7 @@ var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UILongPressGestureRecognizer = UILongPressGestureRecognizer;
 
 /***/ }),
-/* 19 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2702,159 +2939,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(3);
-var UITouch_1 = __webpack_require__(2);
-
-var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
-    _inherits(UIPanGestureRecognizer, _UIGestureRecognizer_);
-
-    function UIPanGestureRecognizer() {
-        _classCallCheck(this, UIPanGestureRecognizer);
-
-        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
-
-        _this.lockedDirection = undefined;
-        _this.firstTouch = undefined;
-        _this.translationPoint = undefined;
-        _this.beganPoints = {};
-        return _this;
-    }
-
-    UIPanGestureRecognizer.prototype.translationInView = function translationInView(view) {
-        if (!this.firstTouch) {
-            return { x: 0, y: 0 };
-        }
-        var windowPoint = this.firstTouch.windowPoint;
-        if (!windowPoint) {
-            return { x: 0, y: 0 };
-        }
-        var translationPoint = this.translationPoint;
-        if (!translationPoint) {
-            return { x: 0, y: 0 };
-        }
-        return { x: windowPoint.x - translationPoint.x, y: windowPoint.y - translationPoint.y };
-    };
-
-    UIPanGestureRecognizer.prototype.setTranslation = function setTranslation(translation, inView) {
-        if (!this.firstTouch) {
-            return;
-        }
-        var windowPoint = this.firstTouch.windowPoint;
-        if (!windowPoint) {
-            return;
-        }
-        this.translationPoint = { x: windowPoint.x - translation.x, y: windowPoint.y - translation.y };
-    };
-
-    UIPanGestureRecognizer.prototype.velocityInView = function velocityInView(view) {
-        UIView_1.sharedVelocityTracker.computeCurrentVelocity();
-        return UIView_1.sharedVelocityTracker.velocity;
-    };
-
-    UIPanGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
-        var _this2 = this;
-
-        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
-        touches.forEach(function (it) {
-            if (it.identifier == 0) {
-                _this2.firstTouch = it;
-            }
-            if (it.phase == UITouch_1.UITouchPhase.began) {
-                if (UIView_1.UIView.recognizedGesture != undefined && UIView_1.UIView.recognizedGesture != _this2) {
-                    _this2.beganPoints = {};
-                    return;
-                }
-                if (it.windowPoint) {
-                    _this2.beganPoints[it.identifier] = it.windowPoint;
-                }
-                if (it.identifier == 0) {
-                    _this2.translationPoint = it.windowPoint;
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
-                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.possible) {
-                    if (UIView_1.UIView.recognizedGesture != undefined && UIView_1.UIView.recognizedGesture != _this2) {
-                        _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.failed;
-                        return;
-                    }
-                    if (it.windowPoint && _this2.beganPoints[it.identifier]) {
-                        var beganPoint = _this2.beganPoints[it.identifier];
-                        if (_this2.lockedDirection !== undefined) {
-                            if (_this2.lockedDirection === 1) {
-                                if (Math.abs(beganPoint.y - it.windowPoint.y) >= 8.0) {
-                                    UIView_1.UIView.recognizedGesture = _this2;
-                                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
-                                    _this2.handleEvent("began");
-                                    _this2.emit("began", _this2);
-                                }
-                            } else if (_this2.lockedDirection === 2) {
-                                if (Math.abs(beganPoint.x - it.windowPoint.x) >= 8.0) {
-                                    UIView_1.UIView.recognizedGesture = _this2;
-                                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
-                                    _this2.handleEvent("began");
-                                    _this2.emit("began", _this2);
-                                }
-                            }
-                        } else {
-                            if (Math.abs(beganPoint.x - it.windowPoint.x) >= 8.0 || Math.abs(beganPoint.y - it.windowPoint.y) >= 8.0) {
-                                UIView_1.UIView.recognizedGesture = _this2;
-                                _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.began;
-                                _this2.handleEvent("began");
-                                _this2.emit("began", _this2);
-                            }
-                        }
-                    }
-                } else if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.changed;
-                    _this2.handleEvent("changed");
-                    _this2.emit("changed", _this2);
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
-                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
-                    _this2.handleEvent("ended");
-                    _this2.emit("ended", _this2);
-                    setTimeout(function () {
-                        UIView_1.UIView.recognizedGesture = undefined;
-                    }, 0);
-                }
-                if (it.identifier == 0) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.cancelled) {
-                if (_this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.began || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.changed) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.cancelled;
-                    _this2.handleEvent("cancelled");
-                    _this2.emit("cancelled", _this2);
-                    setTimeout(function () {
-                        UIView_1.UIView.recognizedGesture = undefined;
-                    }, 0);
-                }
-                _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-            }
-        });
-    };
-
-    return UIPanGestureRecognizer;
-}(UIGestureRecognizer_1.UIGestureRecognizer);
-
-exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(0);
+var UIGestureRecognizer_1 = __webpack_require__(1);
 
 var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIPinchGestureRecognizer, _UIGestureRecognizer_);
@@ -2879,7 +2964,7 @@ var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIPinchGestureRecognizer = UIPinchGestureRecognizer;
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2892,7 +2977,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(0);
+var UIGestureRecognizer_1 = __webpack_require__(1);
 
 var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIRotationGestureRecognizer, _UIGestureRecognizer_);
@@ -2913,108 +2998,7 @@ var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIRotationGestureRecognizer = UIRotationGestureRecognizer;
 
 /***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UISizeZero = { width: 0, height: 0 };
-exports.UISizeMake = function (width, height) {
-    return { width: width, height: height };
-};
-exports.UISizeEqualToSize = function (a, b) {
-    return Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
-};
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UITouch_1 = __webpack_require__(2);
-var UIGestureRecognizer_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(3);
-
-var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
-    _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
-
-    function UITapGestureRecognizer() {
-        _classCallCheck(this, UITapGestureRecognizer);
-
-        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
-
-        _this.numberOfTapsRequired = 1;
-        _this.numberOfTouchesRequired = 1;
-        _this.beganPoints = {};
-        _this.validPointsCount = 0;
-        return _this;
-    }
-
-    UITapGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
-        var _this2 = this;
-
-        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
-        touches.forEach(function (it) {
-            if (it.phase == UITouch_1.UITouchPhase.began) {
-                if (UIView_1.UIView.recognizedGesture != undefined) {
-                    _this2.beganPoints = {};
-                    return;
-                }
-                if (it.windowPoint) {
-                    _this2.beganPoints[it.identifier] = it.windowPoint;
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
-                if (it.windowPoint && _this2.beganPoints[it.identifier]) {
-                    if (Math.abs(_this2.beganPoints[it.identifier].x - it.windowPoint.x) >= 22.0 || Math.abs(_this2.beganPoints[it.identifier].y - it.windowPoint.y) >= 22.0) {
-                        delete _this2.beganPoints[it.identifier];
-                    }
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
-                if (UIView_1.UIView.recognizedGesture != undefined) {
-                    _this2.beganPoints = {};
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-                    _this2.validPointsCount = 0;
-                    return;
-                }
-                if (it.tapCount >= _this2.numberOfTapsRequired && _this2.beganPoints[it.identifier] != undefined) {
-                    _this2.validPointsCount++;
-                }
-                delete _this2.beganPoints[it.identifier];
-                if (_this2.validPointsCount >= _this2.numberOfTouchesRequired) {
-                    UIView_1.UIView.recognizedGesture = _this2;
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
-                    _this2.handleEvent("touch");
-                    _this2.emit("touch", _this2);
-                    setTimeout(function () {
-                        UIView_1.UIView.recognizedGesture = undefined;
-                    }, 0);
-                }
-                if (Object.keys(_this2.beganPoints).length == 0 || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.ended) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-                    _this2.validPointsCount = 0;
-                }
-            }
-        });
-    };
-
-    return UITapGestureRecognizer;
-}(UIGestureRecognizer_1.UIGestureRecognizer);
-
-exports.UITapGestureRecognizer = UITapGestureRecognizer;
-
-/***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3029,11 +3013,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIPoint_1 = __webpack_require__(5);
-var UISize_1 = __webpack_require__(22);
-var UIEdgeInsets_1 = __webpack_require__(11);
-var UIPanGestureRecognizer_1 = __webpack_require__(19);
+var UISize_1 = __webpack_require__(17);
+var UIEdgeInsets_1 = __webpack_require__(8);
+var UIPanGestureRecognizer_1 = __webpack_require__(16);
 
 var UIScrollView = function (_UIView_1$UIView) {
     _inherits(UIScrollView, _UIView_1$UIView);
@@ -3258,73 +3242,89 @@ var UIScrollView = function (_UIView_1$UIView) {
 exports.UIScrollView = UIScrollView;
 
 /***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(26);
-
-var UIViewManager = function () {
-    function UIViewManager() {
-        _classCallCheck(this, UIViewManager);
-
-        this.views = {};
-    }
-
-    UIViewManager.prototype.addView = function addView(view) {
-        view.viewID = UUID_1.randomUUID();
-        this.views[view.viewID] = view;
-    };
-
-    UIViewManager.prototype.fetchView = function fetchView(viewID) {
-        return this.views[viewID];
-    };
-
-    UIViewManager.prototype.fetchViews = function fetchViews() {
-        var _this = this;
-
-        return Object.keys(this.views).map(function (it) {
-            return _this.views[it];
-        });
-    };
-
-    _createClass(UIViewManager, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().UIViewManagerManagerShared === undefined) {
-                getApp().UIViewManagerManagerShared = new UIViewManager();
-            }
-            return getApp().UIViewManagerManagerShared;
-        }
-    }]);
-
-    return UIViewManager;
-}();
-
-exports.UIViewManager = UIViewManager;
-
-/***/ }),
 /* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomUUID = function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
-};
+var UITouch_1 = __webpack_require__(3);
+var UIGestureRecognizer_1 = __webpack_require__(1);
+var UIView_1 = __webpack_require__(4);
+
+var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
+    _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
+
+    function UITapGestureRecognizer() {
+        _classCallCheck(this, UITapGestureRecognizer);
+
+        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
+
+        _this.numberOfTapsRequired = 1;
+        _this.numberOfTouchesRequired = 1;
+        _this.beganPoints = {};
+        _this.validPointsCount = 0;
+        return _this;
+    }
+
+    UITapGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
+        var _this2 = this;
+
+        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
+        touches.forEach(function (it) {
+            if (it.phase == UITouch_1.UITouchPhase.began) {
+                if (UIView_1.UIView.recognizedGesture != undefined) {
+                    _this2.beganPoints = {};
+                    return;
+                }
+                if (it.windowPoint) {
+                    _this2.beganPoints[it.identifier] = it.windowPoint;
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
+                if (it.windowPoint && _this2.beganPoints[it.identifier]) {
+                    if (Math.abs(_this2.beganPoints[it.identifier].x - it.windowPoint.x) >= 22.0 || Math.abs(_this2.beganPoints[it.identifier].y - it.windowPoint.y) >= 22.0) {
+                        delete _this2.beganPoints[it.identifier];
+                    }
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
+                if (UIView_1.UIView.recognizedGesture != undefined) {
+                    _this2.beganPoints = {};
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+                    _this2.validPointsCount = 0;
+                    return;
+                }
+                if (it.tapCount >= _this2.numberOfTapsRequired && _this2.beganPoints[it.identifier] != undefined) {
+                    _this2.validPointsCount++;
+                }
+                delete _this2.beganPoints[it.identifier];
+                if (_this2.validPointsCount >= _this2.numberOfTouchesRequired) {
+                    UIView_1.UIView.recognizedGesture = _this2;
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
+                    _this2.handleEvent("touch");
+                    _this2.emit("touch", _this2);
+                    setTimeout(function () {
+                        UIView_1.UIView.recognizedGesture = undefined;
+                    }, 0);
+                }
+                if (Object.keys(_this2.beganPoints).length == 0 || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.ended) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+                    _this2.validPointsCount = 0;
+                }
+            }
+        });
+    };
+
+    return UITapGestureRecognizer;
+}(UIGestureRecognizer_1.UIGestureRecognizer);
+
+exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 /***/ })
 /******/ ]);

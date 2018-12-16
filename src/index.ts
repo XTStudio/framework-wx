@@ -2,6 +2,7 @@ declare var module: any
 declare var require: any
 
 Object.assign(module.exports, require('./uikit/UIAffineTransform'))
+Object.assign(module.exports, require('./uikit/UIAnimator'));
 Object.assign(module.exports, require('./uikit/UIColor'))
 Object.assign(module.exports, require('./uikit/UIEdgeInsets'))
 Object.assign(module.exports, require('./uikit/UIGestureRecognizer'))
@@ -12,6 +13,7 @@ Object.assign(module.exports, require('./uikit/UIPoint'))
 Object.assign(module.exports, require('./uikit/UIRect'))
 Object.assign(module.exports, require('./uikit/UIRotationGestureRecognizer'))
 Object.assign(module.exports, require('./uikit/UISize'))
+Object.assign(module.exports, require('./uikit/UIScrollView'))
 Object.assign(module.exports, require('./uikit/UITapGestureRecognizer'))
 Object.assign(module.exports, require('./uikit/UITouch'))
 Object.assign(module.exports, require('./uikit/UIView'))

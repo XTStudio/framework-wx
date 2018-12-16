@@ -82,12 +82,170 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 1:
+/***/ 0:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomUUID = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : r & 0x3 | 0x8;
+        return v.toString(16);
+    });
+};
+
+/***/ }),
+
+/***/ 18:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(2);
+var UIViewManager_1 = __webpack_require__(6);
+
+var UIScrollViewElement = function (_UIView_1$UIViewEleme) {
+    _inherits(UIScrollViewElement, _UIView_1$UIViewEleme);
+
+    function UIScrollViewElement() {
+        _classCallCheck(this, UIScrollViewElement);
+
+        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
+    }
+
+    return UIScrollViewElement;
+}(UIView_1.UIViewElement);
+
+exports.UIScrollViewElement = UIScrollViewElement;
+
+var UIScrollViewComponent = function UIScrollViewComponent() {
+    _classCallCheck(this, UIScrollViewComponent);
+
+    this.properties = {
+        props: {
+            type: Object,
+            value: {},
+            observer: function observer(newVal, oldVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                var self = this;
+                if (newVal.isDirty !== true && self.el !== undefined) {
+                    return;
+                }
+                if (self.el === undefined) {
+                    self.el = new UIScrollViewElement(self);
+                }
+                if (newVal._contentOffsetAnimated) {
+                    self.setData({
+                        contentOffsetX: -newVal._contentOffset.x,
+                        contentOffsetY: -newVal._contentOffset.y,
+                        scrollWithAnimation: newVal._contentOffsetAnimated
+                    });
+                    return;
+                }
+                self.setData({
+                    style: self.el.buildStyle(),
+                    viewID: newVal.viewID,
+                    inertia: newVal._pagingEnabled === true ? false : true,
+                    direction: function () {
+                        if (!newVal._scrollEnabled) {
+                            return "none";
+                        } else if (newVal._contentSize.width > newVal.bounds.width && newVal._contentSize.height > newVal.bounds.height) {
+                            return "all";
+                        } else if (newVal._contentSize.width > newVal.bounds.width) {
+                            return "horizontal";
+                        } else if (newVal._contentSize.height > newVal.bounds.height) {
+                            return "vertical";
+                        } else {
+                            return "none";
+                        }
+                    }(),
+                    bounces: newVal._bounces,
+                    contentSize: newVal._contentSize,
+                    contentOffsetX: -newVal._contentOffset.x,
+                    contentOffsetY: -newVal._contentOffset.y,
+                    pointerEvents: newVal._scrollDisabledTemporary === true ? "none" : "auto",
+                    subviews: newVal.subviews
+                });
+            }
+        }
+    };
+    this.data = {
+        style: ''
+    };
+    this.methods = {
+        onScroll: function onScroll(e) {
+            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+            if (view) {
+                var deltaX = view._contentOffset.x - -e.detail.x;
+                var deltaY = view._contentOffset.y - -e.detail.y;
+                view._contentOffset = { x: -e.detail.x, y: -e.detail.y };
+                view.didScroll();
+                if (view._touchStarted === true) {
+                    if (view.tracking === false && view.dragging === false) {
+                        view.willBeginDragging();
+                    }
+                }
+                if (typeof view._lastScrollTimeStamp === "number") {
+                    view._velocity = {
+                        x: deltaX === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaX * 1000,
+                        y: deltaY === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaY * 1000
+                    };
+                }
+                view._lastScrollTimeStamp = e.timeStamp;
+            }
+        },
+        onTouchStarted: function onTouchStarted(e) {
+            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+            if (view) {
+                view._lastScrollTimeStamp = undefined;
+                view._touchStarted = true;
+            }
+        },
+        onTouchEnded: function onTouchEnded(e) {
+            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+            if (view) {
+                if (view._touchStarted === true && view.tracking === true && view.dragging === true) {
+                    view.willEndDragging(view._velocity);
+                    view.didEndDragging(false);
+                    view.willBeginDecelerating();
+                    view.didEndDecelerating();
+                }
+                view._touchStarted = false;
+            }
+        },
+        onTouchCancelled: function onTouchCancelled(e) {
+            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+            if (view) {
+                view._touchStarted = false;
+            }
+        }
+    };
+};
+
+exports.UIScrollViewComponent = UIScrollViewComponent;
+Component(new UIScrollViewComponent());
+
+/***/ }),
+
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -219,148 +377,7 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
 
 /***/ }),
 
-/***/ 13:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIViewManager_1 = __webpack_require__(25);
-
-var UIScrollViewElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIScrollViewElement, _UIView_1$UIViewEleme);
-
-    function UIScrollViewElement() {
-        _classCallCheck(this, UIScrollViewElement);
-
-        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
-    }
-
-    return UIScrollViewElement;
-}(UIView_1.UIViewElement);
-
-exports.UIScrollViewElement = UIScrollViewElement;
-
-var UIScrollViewComponent = function UIScrollViewComponent() {
-    _classCallCheck(this, UIScrollViewComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                if (newVal === undefined || newVal === null) {
-                    return;
-                }
-                var self = this;
-                if (newVal.isDirty !== true && self.el !== undefined) {
-                    return;
-                }
-                if (self.el === undefined) {
-                    self.el = new UIScrollViewElement(self);
-                }
-                if (newVal._contentOffsetAnimated) {
-                    self.setData({
-                        contentOffsetX: -newVal._contentOffset.x,
-                        contentOffsetY: -newVal._contentOffset.y,
-                        scrollWithAnimation: newVal._contentOffsetAnimated
-                    });
-                    return;
-                }
-                self.setData({
-                    style: self.el.buildStyle(),
-                    viewID: newVal.viewID,
-                    inertia: newVal._pagingEnabled === true ? false : true,
-                    direction: function () {
-                        if (!newVal._scrollEnabled) {
-                            return "none";
-                        } else if (newVal._contentSize.width > newVal.bounds.width && newVal._contentSize.height > newVal.bounds.height) {
-                            return "all";
-                        } else if (newVal._contentSize.width > newVal.bounds.width) {
-                            return "horizontal";
-                        } else if (newVal._contentSize.height > newVal.bounds.height) {
-                            return "vertical";
-                        } else {
-                            return "none";
-                        }
-                    }(),
-                    bounces: newVal._bounces,
-                    contentSize: newVal._contentSize,
-                    contentOffsetX: -newVal._contentOffset.x,
-                    contentOffsetY: -newVal._contentOffset.y,
-                    pointerEvents: newVal._scrollDisabledTemporary === true ? "none" : "auto",
-                    subviews: newVal.subviews
-                });
-            }
-        }
-    };
-    this.data = {
-        style: ''
-    };
-    this.methods = {
-        onScroll: function onScroll(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                var deltaX = view._contentOffset.x - -e.detail.x;
-                var deltaY = view._contentOffset.y - -e.detail.y;
-                view._contentOffset = { x: -e.detail.x, y: -e.detail.y };
-                view.didScroll();
-                if (view._touchStarted === true) {
-                    if (view.tracking === false && view.dragging === false) {
-                        view.willBeginDragging();
-                    }
-                }
-                if (typeof view._lastScrollTimeStamp === "number") {
-                    view._velocity = {
-                        x: deltaX === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaX * 1000,
-                        y: deltaY === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaY * 1000
-                    };
-                }
-                view._lastScrollTimeStamp = e.timeStamp;
-            }
-        },
-        onTouchStarted: function onTouchStarted(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                view._lastScrollTimeStamp = undefined;
-                view._touchStarted = true;
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                if (view._touchStarted === true && view.tracking === true && view.dragging === true) {
-                    view.willEndDragging(view._velocity);
-                    view.didEndDragging(false);
-                    view.willBeginDecelerating();
-                    view.didEndDecelerating();
-                }
-                view._touchStarted = false;
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                view._touchStarted = false;
-            }
-        }
-    };
-};
-
-exports.UIScrollViewComponent = UIScrollViewComponent;
-Component(new UIScrollViewComponent());
-
-/***/ }),
-
-/***/ 25:
+/***/ 6:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -371,7 +388,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(26);
+var UUID_1 = __webpack_require__(0);
 
 var UIViewManager = function () {
     function UIViewManager() {
@@ -411,23 +428,6 @@ var UIViewManager = function () {
 }();
 
 exports.UIViewManager = UIViewManager;
-
-/***/ }),
-
-/***/ 26:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomUUID = function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
-};
 
 /***/ })
 
