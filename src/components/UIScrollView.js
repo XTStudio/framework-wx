@@ -22,42 +22,50 @@ class UIScrollViewComponent {
                     if (self.el === undefined) {
                         self.el = new UIScrollViewElement(self);
                     }
-                    if (newVal._contentOffsetAnimated) {
+                    const animation = self.el.buildAnimation();
+                    if (animation !== undefined) {
                         self.setData({
+                            animation: self.el.buildAnimation(),
+                        });
+                    }
+                    else {
+                        if (newVal._contentOffsetAnimated) {
+                            self.setData({
+                                contentOffsetX: -newVal._contentOffset.x,
+                                contentOffsetY: -newVal._contentOffset.y,
+                                scrollWithAnimation: newVal._contentOffsetAnimated,
+                            });
+                            return;
+                        }
+                        self.setData({
+                            style: self.el.buildStyle(),
+                            viewID: newVal.viewID,
+                            inertia: newVal._pagingEnabled === true ? false : true,
+                            direction: (() => {
+                                if (!newVal._scrollEnabled) {
+                                    return "none";
+                                }
+                                else if (newVal._contentSize.width > newVal.bounds.width && newVal._contentSize.height > newVal.bounds.height) {
+                                    return "all";
+                                }
+                                else if (newVal._contentSize.width > newVal.bounds.width) {
+                                    return "horizontal";
+                                }
+                                else if (newVal._contentSize.height > newVal.bounds.height) {
+                                    return "vertical";
+                                }
+                                else {
+                                    return "none";
+                                }
+                            })(),
+                            bounces: newVal._bounces,
+                            contentSize: newVal._contentSize,
                             contentOffsetX: -newVal._contentOffset.x,
                             contentOffsetY: -newVal._contentOffset.y,
-                            scrollWithAnimation: newVal._contentOffsetAnimated,
+                            pointerEvents: newVal._scrollDisabledTemporary === true ? "none" : "auto",
+                            subviews: newVal.subviews,
                         });
-                        return;
                     }
-                    self.setData({
-                        style: self.el.buildStyle(),
-                        viewID: newVal.viewID,
-                        inertia: newVal._pagingEnabled === true ? false : true,
-                        direction: (() => {
-                            if (!newVal._scrollEnabled) {
-                                return "none";
-                            }
-                            else if (newVal._contentSize.width > newVal.bounds.width && newVal._contentSize.height > newVal.bounds.height) {
-                                return "all";
-                            }
-                            else if (newVal._contentSize.width > newVal.bounds.width) {
-                                return "horizontal";
-                            }
-                            else if (newVal._contentSize.height > newVal.bounds.height) {
-                                return "vertical";
-                            }
-                            else {
-                                return "none";
-                            }
-                        })(),
-                        bounces: newVal._bounces,
-                        contentSize: newVal._contentSize,
-                        contentOffsetX: -newVal._contentOffset.x,
-                        contentOffsetY: -newVal._contentOffset.y,
-                        pointerEvents: newVal._scrollDisabledTemporary === true ? "none" : "auto",
-                        subviews: newVal.subviews,
-                    });
                 }
             }
         };

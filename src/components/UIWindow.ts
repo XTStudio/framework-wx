@@ -29,11 +29,19 @@ export class UIWindowComponent {
                 if (self.el === undefined) {
                     self.el = new UIWindowElement(self)
                 }
-                self.setData({
-                    style: self.el.buildStyle(),
-                    windowID: newVal.windowID || "",
-                    subviews: newVal.subviews,
-                })
+                const animation = self.el.buildAnimation()
+                if (animation !== undefined) {
+                    self.setData({
+                        animation: self.el.buildAnimation(),
+                    })
+                }
+                else {
+                    self.setData({
+                        style: self.el.buildStyle(),
+                        windowID: newVal.windowID || "",
+                        subviews: newVal.subviews,
+                    })
+                }
             }
         }
     }
