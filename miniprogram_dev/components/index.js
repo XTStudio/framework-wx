@@ -2293,6 +2293,7 @@ Object.assign(module.exports, __webpack_require__(29));
 Object.assign(module.exports, __webpack_require__(2));
 Object.assign(module.exports, __webpack_require__(23));
 Object.assign(module.exports, __webpack_require__(24));
+Object.assign(module.exports, __webpack_require__(32));
 Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(25));
 Object.assign(module.exports, __webpack_require__(5));
@@ -3615,6 +3616,7 @@ var UIViewController = function (_EventEmitter_1$Event) {
 
         var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
 
+        _this.clazz = "UIViewController";
         _this._title = undefined;
         _this._view = undefined;
         _this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -3708,9 +3710,8 @@ var UIViewController = function (_EventEmitter_1$Event) {
     UIViewController.prototype.didMoveToParentViewController = function didMoveToParentViewController(parent) {};
 
     UIViewController.prototype.didAddSubview = function didAddSubview(subview) {};
+
     // Helpers
-
-
     UIViewController.prototype.nextResponder = function nextResponder() {
         if (this.parentViewController) {
             return this.parentViewController.view;
@@ -3760,12 +3761,177 @@ var UIViewController = function (_EventEmitter_1$Event) {
             this.loadViewIfNeed();
             return this._view;
         }
+    }, {
+        key: "navigationController",
+        get: function get() {
+            var current = this;
+            while (current != undefined) {
+                if (current.clazz === "UINavigationController") {
+                    return current;
+                }
+                current = current.parentViewController;
+            }
+            return undefined;
+        }
+        // navigationItem = new UINavigationItem
+        // hidesBottomBarWhenPushed: boolean = false
+
+    }, {
+        key: "window",
+        get: function get() {
+            var nextResponder = this.nextResponder();
+            while (nextResponder !== undefined) {
+                if (nextResponder.clazz === "UIWindow") {
+                    return nextResponder;
+                }
+                nextResponder = nextResponder.nextResponder();
+            }
+        }
+    }, {
+        key: "visibleViewController",
+        get: function get() {
+            if (this.window && this.window.presentedViewControllers.length > 0) {
+                return this.window.presentedViewControllers[this.window.presentedViewControllers.length - 1];
+            } else if (this.window) {
+                return this.window.rootViewController;
+            }
+            return undefined;
+        }
     }]);
 
     return UIViewController;
 }(EventEmitter_1.EventEmitter);
 
 exports.UIViewController = UIViewController;
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIViewController_1 = __webpack_require__(31);
+
+var UINavigationController = function (_UIViewController_1$U) {
+    _inherits(UINavigationController, _UIViewController_1$U);
+
+    function UINavigationController(rootViewController) {
+        _classCallCheck(this, UINavigationController);
+
+        var _this = _possibleConstructorReturn(this, _UIViewController_1$U.call(this));
+
+        _this.rootViewController = rootViewController;
+        _this.clazz = "UINavigationController";
+        _this.attachBlock = undefined;
+        return _this;
+    }
+
+    UINavigationController.prototype.attach = function attach(dataOwner, dataField) {
+        var _this2 = this;
+
+        var idx = dataOwner.options && parseInt(dataOwner.options.idx);
+        if (isNaN(idx)) {
+            idx = 0;
+        }
+        this.attachBlock = function () {
+            if (idx < _this2.childViewControllers.length) {
+                _this2.childViewControllers[idx].iView.attach(dataOwner, dataField);
+            }
+        };
+        this.attachBlock();
+        this.loadViewIfNeed();
+        dataOwner.onShow = this._onShow.bind(this);
+    };
+
+    UINavigationController.prototype._onShow = function _onShow() {
+        var currentIdx = getCurrentPages().length - 1;
+        if (currentIdx < this.childViewControllers.length) {
+            this.popToViewController(this.childViewControllers[currentIdx]);
+        }
+    };
+
+    UINavigationController.prototype.viewDidLoad = function viewDidLoad() {
+        if (this.rootViewController) {
+            this.pushViewController(this.rootViewController, false);
+        }
+        _UIViewController_1$U.prototype.viewDidLoad.call(this);
+    };
+
+    UINavigationController.prototype.pushViewController = function pushViewController(viewController) {
+        var animated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        this.addChildViewController(viewController);
+        if (this.childViewControllers.length === 1) {
+            if (this.attachBlock) {
+                this.attachBlock();
+            }
+        } else {
+            wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
+        }
+    };
+
+    UINavigationController.prototype.popViewController = function popViewController() {
+        var animated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+        var fromViewController = this.childViewControllers[this.childViewControllers.length - 1];
+        var toViewController = this.childViewControllers[this.childViewControllers.length - 2];
+        fromViewController.viewWillDisappear(animated);
+        toViewController.viewWillAppear(animated);
+        wx.navigateBack();
+        fromViewController.removeFromParentViewController();
+        fromViewController.iView.removeFromSuperview();
+        fromViewController.viewDidDisappear(true);
+        toViewController.viewDidAppear(true);
+        return fromViewController;
+    };
+
+    UINavigationController.prototype.popToViewController = function popToViewController(viewController) {
+        var animated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        if (this.childViewControllers.indexOf(viewController) < 0) {
+            return [];
+        }
+        var targetIndex = this.childViewControllers.indexOf(viewController);
+        var fromViewControllers = this.childViewControllers.filter(function (_, index) {
+            return index > targetIndex;
+        });
+        if (fromViewControllers.length == 0) {
+            return [];
+        }
+        var toViewController = viewController;
+        toViewController.iView.hidden = false;
+        fromViewControllers.forEach(function (it) {
+            it.viewWillDisappear(animated);
+        });
+        toViewController.viewWillAppear(animated);
+        if (getCurrentPages().length !== this.childViewControllers.length - fromViewControllers.length) {
+            wx.navigateBack({ delta: fromViewControllers.length });
+        }
+        fromViewControllers.forEach(function (it) {
+            it.removeFromParentViewController();
+        });
+        fromViewControllers.forEach(function (it) {
+            it.iView.removeFromSuperview();
+        });
+        fromViewControllers.forEach(function (it) {
+            it.viewDidDisappear(false);
+        });
+        toViewController.viewDidAppear(false);
+        return fromViewControllers;
+    };
+
+    return UINavigationController;
+}(UIViewController_1.UIViewController);
+
+exports.UINavigationController = UINavigationController;
 
 /***/ })
 /******/ ]);

@@ -5,6 +5,8 @@ import { UIColor } from "./UIColor";
 
 export class UIViewController extends EventEmitter {
 
+    clazz = "UIViewController"
+
     private _title: string | undefined = undefined
 
     public get title(): string | undefined {
@@ -117,6 +119,41 @@ export class UIViewController extends EventEmitter {
     didMoveToParentViewController(parent: UIViewController | undefined) { }
 
     didAddSubview(subview: UIView) { }
+
+    public get navigationController(): any {
+        let current: UIViewController | undefined = this
+        while (current != undefined) {
+            if (current.clazz === "UINavigationController") {
+                return current as any
+            }
+            current = current.parentViewController
+        }
+        return undefined
+    }
+
+    // navigationItem = new UINavigationItem
+
+    // hidesBottomBarWhenPushed: boolean = false
+
+    public get window(): any {
+        let nextResponder = this.nextResponder()
+        while (nextResponder !== undefined) {
+            if (nextResponder.clazz === "UIWindow") {
+                return nextResponder
+            }
+            nextResponder = nextResponder.nextResponder()
+        }
+    }
+
+    public get visibleViewController(): UIViewController | undefined {
+        if (this.window && this.window.presentedViewControllers.length > 0) {
+            return this.window.presentedViewControllers[this.window.presentedViewControllers.length - 1]
+        }
+        else if (this.window) {
+            return this.window.rootViewController
+        }
+        return undefined
+    }
 
     // Helpers
 

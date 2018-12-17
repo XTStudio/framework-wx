@@ -1,18 +1,10 @@
 const {
-    UIWindow,
     UIView,
     UIRectMake,
     UIColor,
-    UIAffineTransformMakeRotation,
     UITapGestureRecognizer,
-    UIPanGestureRecognizer,
-    UILongPressGestureRecognizer,
-    UIAnimator,
-    UIScrollView,
-    UILabel,
-    UIFont,
-    UITextAlignment,
     UIViewController,
+    UINavigationController,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -22,6 +14,12 @@ class FooViewController extends UIViewController {
     viewDidLoad() {
         super.viewDidLoad()
         this.redView.backgroundColor = UIColor.red
+        this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+            this.redView.backgroundColor = UIColor.yellow
+            if (this.navigationController) {
+                this.navigationController.pushViewController(new SecondViewController)
+            }
+        }))
         this.view.addSubview(this.redView)
         this.view.backgroundColor = UIColor.gray
     }
@@ -33,12 +31,41 @@ class FooViewController extends UIViewController {
 
 }
 
-const main = new FooViewController
+class SecondViewController extends UIViewController {
+
+    viewDidLoad() {
+        super.viewDidLoad()
+        this.view.backgroundColor = UIColor.yellow
+        this.view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+            if (this.navigationController) {
+                this.navigationController.pushViewController(new ThirdViewController)
+            }
+        }))
+    }
+
+}
+
+class ThirdViewController extends UIViewController {
+
+    viewDidLoad() {
+        super.viewDidLoad()
+        this.view.backgroundColor = UIColor.green
+        this.view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+            if (this.navigationController) {
+                this.navigationController.popViewController()
+            }
+        }))
+    }
+
+}
+
+const main = new UINavigationController(new FooViewController)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({
     data: {},
-    onLoad: function () {
+    onLoad: function (options) {
+        console.log("load", options)
         main.attach(this, "main")
-    },
+    }
 })

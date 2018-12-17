@@ -7,6 +7,7 @@ const UIColor_1 = require("./UIColor");
 class UIViewController extends EventEmitter_1.EventEmitter {
     constructor() {
         super(...arguments);
+        this.clazz = "UIViewController";
         this._title = undefined;
         this._view = undefined;
         this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -101,6 +102,36 @@ class UIViewController extends EventEmitter_1.EventEmitter {
     willMoveToParentViewController(parent) { }
     didMoveToParentViewController(parent) { }
     didAddSubview(subview) { }
+    get navigationController() {
+        let current = this;
+        while (current != undefined) {
+            if (current.clazz === "UINavigationController") {
+                return current;
+            }
+            current = current.parentViewController;
+        }
+        return undefined;
+    }
+    // navigationItem = new UINavigationItem
+    // hidesBottomBarWhenPushed: boolean = false
+    get window() {
+        let nextResponder = this.nextResponder();
+        while (nextResponder !== undefined) {
+            if (nextResponder.clazz === "UIWindow") {
+                return nextResponder;
+            }
+            nextResponder = nextResponder.nextResponder();
+        }
+    }
+    get visibleViewController() {
+        if (this.window && this.window.presentedViewControllers.length > 0) {
+            return this.window.presentedViewControllers[this.window.presentedViewControllers.length - 1];
+        }
+        else if (this.window) {
+            return this.window.rootViewController;
+        }
+        return undefined;
+    }
     // Helpers
     nextResponder() {
         if (this.parentViewController) {
