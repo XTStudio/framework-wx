@@ -4,6 +4,7 @@ const EventEmitter_1 = require("../kimi/EventEmitter");
 const UIView_1 = require("./UIView");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const UIColor_1 = require("./UIColor");
+const UITabBarItem_1 = require("./UITabBarItem");
 class UIViewController extends EventEmitter_1.EventEmitter {
     constructor() {
         super(...arguments);
@@ -13,6 +14,7 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         this.parentViewController = undefined;
         this.childViewControllers = [];
+        this.tabBarItem = new UITabBarItem_1.UITabBarItem;
     }
     get title() {
         return this._title;
@@ -124,7 +126,6 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         }
         return undefined;
     }
-    // tabBarItem = new UITabBarItem
     get window() {
         let nextResponder = this.nextResponder();
         while (nextResponder !== undefined) {

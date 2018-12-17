@@ -1,6 +1,8 @@
 import { UIRect } from "./UIRect";
 import { UIViewController } from "./UIViewController";
 import { UITabBar } from "./UITabBar";
+import { UIView } from "./UIView";
+import { UIColor } from "./UIColor";
 
 export class UITabBarController extends UIViewController {
 
@@ -42,9 +44,11 @@ export class UITabBarController extends UIViewController {
             const it = this.itemControllers[value]
             if (it.parentViewController === undefined) {
                 this.addChildViewController(it)
-                this.iView.addSubview(it.iView)
-                this.iView.bringSubviewToFront(this.tabBar)
-                this.viewWillLayoutSubviews()
+                setTimeout(() => {
+                    this.iView.addSubview(it.iView)
+                    this.iView.bringSubviewToFront(this.tabBar)
+                    this.viewWillLayoutSubviews()
+                }, 16)
             }
         }
         if (this.itemControllers[oldIndex]) {
@@ -57,7 +61,7 @@ export class UITabBarController extends UIViewController {
         this.childViewControllers.forEach(it => {
             it.iView.hidden = this.itemControllers.indexOf(it) != value
         })
-        // this.tabBar.setSelectedIndex(value)
+        this.tabBar.setSelectedIndex(value)
         if (this.itemControllers[oldIndex]) {
             this.itemControllers[oldIndex].viewDidDisappear(false)
         }
@@ -88,7 +92,7 @@ export class UITabBarController extends UIViewController {
             }
         })
         this.iView.bringSubviewToFront(this.tabBar)
-        // this.tabBar.resetItems()
+        this.tabBar.resetItems()
         this.selectedIndex = 0
         this.viewWillLayoutSubviews()
     }
@@ -117,7 +121,7 @@ export class UITabBarController extends UIViewController {
     }
 
     viewDidLoad() {
-        // this.tabBar.tabBarController = this
+        this.tabBar.tabBarController = this
         this.iView.addSubview(this.tabBar)
         super.viewDidLoad()
     }
@@ -125,7 +129,7 @@ export class UITabBarController extends UIViewController {
     viewWillLayoutSubviews() {
         this.tabBar.frame = this.barFrame
         this.childViewControllers.forEach(it => {
-            if ((it as any)._isUINavigationController === true) {
+            if (it.clazz === "UINavigationController") {
                 it.iView.frame = this.navigationControllerFrame
             }
             else {

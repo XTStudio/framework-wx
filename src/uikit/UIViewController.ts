@@ -2,6 +2,7 @@ import { EventEmitter } from "../kimi/EventEmitter";
 import { UIView } from "./UIView";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UIColor } from "./UIColor";
+import { UITabBarItem } from "./UITabBarItem";
 
 export class UIViewController extends EventEmitter {
 
@@ -146,7 +147,7 @@ export class UIViewController extends EventEmitter {
         return undefined
     }
 
-    // tabBarItem = new UITabBarItem
+    tabBarItem = new UITabBarItem
 
     public get window(): any {
         let nextResponder = this.nextResponder()

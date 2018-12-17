@@ -1,14 +1,14 @@
 import { UIView } from "./UIView";
 import { UIColor } from "./UIColor";
-// import { UIImageView } from "./UIImageView";
+import { UIImageView } from "./UIImageView";
 import { UILabel } from "./UILabel";
 import { UIFont } from "./UIFont";
 import { UITextAlignment } from "./UIEnums";
-import { UITabBarController } from "./UITabBarController";
 import { UITabBarItem } from "./UITabBarItem";
 import { UITapGestureRecognizer } from "./UITapGestureRecognizer";
 import { UISizeZero } from "./UISize";
 import { UIEdgeInsetsZero } from "./UIEdgeInsets";
+import { MagicObject } from "./helpers/MagicObject";
 
 export class UITabBar extends UIView {
 
@@ -20,7 +20,7 @@ export class UITabBar extends UIView {
 
     public set hidden(value: boolean) {
         this._hidden = value;
-        // this.domElement.style.visibility = value ? 'hidden' : 'inherit'
+        this.invalidate()
         if (this.tabBarController) {
             this.tabBarController.iView.setNeedsDisplay()
         }
@@ -43,7 +43,15 @@ export class UITabBar extends UIView {
 
     // Implementation
 
-    tabBarController: UITabBarController | undefined = undefined
+    private _tabBarController: MagicObject = new MagicObject(undefined)
+
+    public get tabBarController(): any {
+        return this._tabBarController.get()
+    }
+
+    public set tabBarController(value: any) {
+        this._tabBarController.set(value)
+    }
 
     private barButtons: UITabBarButton[] = []
 
@@ -59,16 +67,16 @@ export class UITabBar extends UIView {
     resetItems() {
         this.barButtons.forEach(it => {
             it.removeFromSuperview()
-            // if (it.barItem) {
-            //     it.barItem.barButton = undefined
-            //     it.barItem = undefined
-            // }
+            if (it.barItem) {
+                it.barItem.barButton = undefined
+                it.barItem = undefined
+            }
         })
         if (this.tabBarController) {
-            this.barButtons = this.tabBarController.itemControllers.map(it => {
+            this.barButtons = this.tabBarController.itemControllers.map((it: any) => {
                 const tabBarButton = new UITabBarButton
-                // tabBarButton.barItem = it.tabBarItem
-                // it.tabBarItem.barButton = tabBarButton
+                tabBarButton.barItem = it.tabBarItem
+                it.tabBarItem.barButton = tabBarButton
                 return tabBarButton
             })
             this.barButtons.forEach((it, index) => {
@@ -104,16 +112,16 @@ export class UITabBar extends UIView {
 
 export class UITabBarButton extends UIView {
 
-    // private _barItem: UITabBarItem | undefined = undefined
+    private _barItem: MagicObject = new MagicObject
 
-    // public get barItem(): UITabBarItem | undefined {
-    //     return this._barItem;
-    // }
+    public get barItem(): UITabBarItem | undefined {
+        return this._barItem.get();
+    }
 
-    // public set barItem(value: UITabBarItem | undefined) {
-    //     this._barItem = value;
-    //     this.setNeedUpdate()
-    // }
+    public set barItem(value: UITabBarItem | undefined) {
+        this._barItem.set(value);
+        this.setNeedUpdate()
+    }
 
     private _itemSelected: boolean = false
 
@@ -123,56 +131,56 @@ export class UITabBarButton extends UIView {
 
     public set itemSelected(value: boolean) {
         this._itemSelected = value;
-        // this.setNeedUpdate()
+        this.setNeedUpdate()
     }
 
-    // iconImageView = new UIImageView
+    iconImageView = new UIImageView
 
-    // titleLabel = new UILabel
+    titleLabel = new UILabel
 
-    // constructor() {
-    //     super()
-    //     this.addSubview(this.iconImageView)
-    //     this.titleLabel.font = new UIFont(11.0)
-    //     this.titleLabel.textAlignment = UITextAlignment.center
-    //     this.addSubview(this.titleLabel)
-    // }
+    constructor() {
+        super()
+        this.addSubview(this.iconImageView)
+        this.titleLabel.font = new UIFont(11.0)
+        this.titleLabel.textAlignment = UITextAlignment.center
+        this.addSubview(this.titleLabel)
+    }
 
-    // setNeedUpdate() {
-    //     if (this.barItem) {
-    //         this.iconImageView.image = this.itemSelected ? (this.barItem.selectedImage || this.barItem.image) : this.barItem.image
-    //         if (this.iconImageView.image && this.iconImageView.image.size.width === 0) {
-    //             this.iconImageView.image.on("load", () => {
-    //                 this.setNeedsLayout(true)
-    //             })
-    //         }
-    //         this.titleLabel.text = this.barItem.title
-    //     }
-    //     this.setNeedsLayout(true)
-    // }
+    setNeedUpdate() {
+        if (this.barItem) {
+            this.iconImageView.image = this.itemSelected ? (this.barItem.selectedImage || this.barItem.image) : this.barItem.image
+            if (this.iconImageView.image && this.iconImageView.image.size.width === 0) {
+                this.iconImageView.image.on("load", () => {
+                    this.setNeedsLayout(true)
+                })
+            }
+            this.titleLabel.text = this.barItem.title
+        }
+        this.setNeedsLayout(true)
+    }
 
-    // tintColorDidChange() {
-    //     super.tintColorDidChange()
-    //     this.titleLabel.textColor = this.tintColor
-    // }
+    tintColorDidChange() {
+        super.tintColorDidChange()
+        this.titleLabel.textColor = this.tintColor
+    }
 
-    // layoutSubviews() {
-    //     super.layoutSubviews()
-    //     const iconSize = this.iconImageView.intrinsicContentSize() || UISizeZero
-    //     const titleSize = this.titleLabel.intrinsicContentSize() || UISizeZero
-    //     const imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsetsZero
-    //     this.iconImageView.frame = {
-    //         x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,
-    //         y: imageInsets.top + (this.bounds.height - (iconSize.height + titleSize.height)) / 2.0,
-    //         width: iconSize.width,
-    //         height: iconSize.height
-    //     }
-    //     this.titleLabel.frame = {
-    //         x: 0.0,
-    //         y: this.iconImageView.frame.y + this.iconImageView.frame.height + imageInsets.bottom,
-    //         width: this.bounds.width,
-    //         height: titleSize.height
-    //     }
-    // }
+    layoutSubviews() {
+        super.layoutSubviews()
+        const iconSize = this.iconImageView.intrinsicContentSize() || UISizeZero
+        const titleSize = this.titleLabel.intrinsicContentSize() || UISizeZero
+        const imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsetsZero
+        this.iconImageView.frame = {
+            x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,
+            y: imageInsets.top + (this.bounds.height - (iconSize.height + titleSize.height)) / 2.0,
+            width: iconSize.width,
+            height: iconSize.height
+        }
+        this.titleLabel.frame = {
+            x: 0.0,
+            y: this.iconImageView.frame.y + this.iconImageView.frame.height + imageInsets.bottom,
+            width: this.bounds.width,
+            height: titleSize.height
+        }
+    }
 
 }

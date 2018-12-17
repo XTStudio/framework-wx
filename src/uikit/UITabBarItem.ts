@@ -1,6 +1,7 @@
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
-// import { UIImage } from "./UIImage";
+import { UIImage } from "./UIImage";
 import { UITabBarButton } from "./UITabBar";
+import { MagicObject } from "./helpers/MagicObject";
 
 export class UITabBarItem {
 
@@ -17,31 +18,31 @@ export class UITabBarItem {
         }
     }
 
-    // private _image: UIImage | undefined = undefined
+    private _image: UIImage | undefined = undefined
 
-    // public get image(): UIImage | undefined {
-    //     return this._image;
-    // }
+    public get image(): UIImage | undefined {
+        return this._image;
+    }
 
-    // public set image(value: UIImage | undefined) {
-    //     this._image = value;
-    //     if (this.barButton) {
-    //         this.barButton.setNeedUpdate()
-    //     }
-    // }
+    public set image(value: UIImage | undefined) {
+        this._image = value;
+        if (this.barButton) {
+            this.barButton.setNeedUpdate()
+        }
+    }
 
-    // private _selectedImage: UIImage | undefined = undefined
+    private _selectedImage: UIImage | undefined = undefined
 
-    // public get selectedImage(): UIImage | undefined {
-    //     return this._selectedImage;
-    // }
+    public get selectedImage(): UIImage | undefined {
+        return this._selectedImage;
+    }
 
-    // public set selectedImage(value: UIImage | undefined) {
-    //     this._selectedImage = value;
-    //     if (this.barButton) {
-    //         this.barButton.setNeedUpdate()
-    //     }
-    // }
+    public set selectedImage(value: UIImage | undefined) {
+        this._selectedImage = value;
+        if (this.barButton) {
+            this.barButton.setNeedUpdate()
+        }
+    }
 
     private _imageInsets: UIEdgeInsets = UIEdgeInsetsZero
 
@@ -58,6 +59,15 @@ export class UITabBarItem {
 
     // Implementation
 
-    barButton: UITabBarButton | undefined = undefined
+    private _barButton: MagicObject = new MagicObject
+
+    public get barButton(): UITabBarButton | undefined {
+        return this._barButton.get()
+    }
+
+    public set barButton(value: UITabBarButton | undefined) {
+        this._barButton.set(value)
+    }
+
 
 }

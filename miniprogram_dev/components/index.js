@@ -1517,6 +1517,7 @@ var EventEmitter_1 = __webpack_require__(10);
 var UIView_1 = __webpack_require__(1);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var UIColor_1 = __webpack_require__(5);
+var UITabBarItem_1 = __webpack_require__(38);
 
 var UIViewController = function (_EventEmitter_1$Event) {
     _inherits(UIViewController, _EventEmitter_1$Event);
@@ -1532,6 +1533,7 @@ var UIViewController = function (_EventEmitter_1$Event) {
         _this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         _this.parentViewController = undefined;
         _this.childViewControllers = [];
+        _this.tabBarItem = new UITabBarItem_1.UITabBarItem();
         return _this;
     }
 
@@ -1698,8 +1700,6 @@ var UIViewController = function (_EventEmitter_1$Event) {
             }
             return undefined;
         }
-        // tabBarItem = new UITabBarItem
-
     }, {
         key: "window",
         get: function get() {
@@ -4051,7 +4051,7 @@ var UITabBarController = function (_UIViewController_1$U) {
             }
         });
         this.iView.bringSubviewToFront(this.tabBar);
-        // this.tabBar.resetItems()
+        this.tabBar.resetItems();
         this.selectedIndex = 0;
         this.viewWillLayoutSubviews();
     };
@@ -4059,7 +4059,7 @@ var UITabBarController = function (_UIViewController_1$U) {
 
 
     UITabBarController.prototype.viewDidLoad = function viewDidLoad() {
-        // this.tabBar.tabBarController = this
+        this.tabBar.tabBarController = this;
         this.iView.addSubview(this.tabBar);
         _UIViewController_1$U.prototype.viewDidLoad.call(this);
     };
@@ -4069,7 +4069,7 @@ var UITabBarController = function (_UIViewController_1$U) {
 
         this.tabBar.frame = this.barFrame;
         this.childViewControllers.forEach(function (it) {
-            if (it._isUINavigationController === true) {
+            if (it.clazz === "UINavigationController") {
                 it.iView.frame = _this4.navigationControllerFrame;
             } else {
                 it.iView.frame = _this4.contentFrame;
@@ -4099,9 +4099,11 @@ var UITabBarController = function (_UIViewController_1$U) {
                 var it = this.itemControllers[value];
                 if (it.parentViewController === undefined) {
                     this.addChildViewController(it);
-                    this.iView.addSubview(it.iView);
-                    this.iView.bringSubviewToFront(this.tabBar);
-                    this.viewWillLayoutSubviews();
+                    setTimeout(function () {
+                        _this5.iView.addSubview(it.iView);
+                        _this5.iView.bringSubviewToFront(_this5.tabBar);
+                        _this5.viewWillLayoutSubviews();
+                    }, 16);
                 }
             }
             if (this.itemControllers[oldIndex]) {
@@ -4114,7 +4116,7 @@ var UITabBarController = function (_UIViewController_1$U) {
             this.childViewControllers.forEach(function (it) {
                 it.iView.hidden = _this5.itemControllers.indexOf(it) != value;
             });
-            // this.tabBar.setSelectedIndex(value)
+            this.tabBar.setSelectedIndex(value);
             if (this.itemControllers[oldIndex]) {
                 this.itemControllers[oldIndex].viewDidDisappear(false);
             }
@@ -4179,7 +4181,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
 var UIColor_1 = __webpack_require__(5);
+var UIImageView_1 = __webpack_require__(36);
+var UILabel_1 = __webpack_require__(28);
+var UIFont_1 = __webpack_require__(26);
+var UIEnums_1 = __webpack_require__(16);
 var UITapGestureRecognizer_1 = __webpack_require__(20);
+var UISize_1 = __webpack_require__(19);
+var UIEdgeInsets_1 = __webpack_require__(6);
+var MagicObject_1 = __webpack_require__(11);
 
 var UITabBar = function (_UIView_1$UIView) {
     _inherits(UITabBar, _UIView_1$UIView);
@@ -4194,7 +4203,7 @@ var UITabBar = function (_UIView_1$UIView) {
         _this._barTintColor = undefined;
         _this.unselectedItemTintColor = new UIColor_1.UIColor(0x73 / 255.0, 0x73 / 255.0, 0x73 / 255.0, 1.0);
         // Implementation
-        _this.tabBarController = undefined;
+        _this._tabBarController = new MagicObject_1.MagicObject(undefined);
         _this.barButtons = [];
         _this.barTintColor = UIColor_1.UIColor.white;
         _this.tintColor = UIColor_1.UIColor.black;
@@ -4209,16 +4218,16 @@ var UITabBar = function (_UIView_1$UIView) {
 
         this.barButtons.forEach(function (it) {
             it.removeFromSuperview();
-            // if (it.barItem) {
-            //     it.barItem.barButton = undefined
-            //     it.barItem = undefined
-            // }
+            if (it.barItem) {
+                it.barItem.barButton = undefined;
+                it.barItem = undefined;
+            }
         });
         if (this.tabBarController) {
             this.barButtons = this.tabBarController.itemControllers.map(function (it) {
                 var tabBarButton = new UITabBarButton();
-                // tabBarButton.barItem = it.tabBarItem
-                // it.tabBarItem.barButton = tabBarButton
+                tabBarButton.barItem = it.tabBarItem;
+                it.tabBarItem.barButton = tabBarButton;
                 return tabBarButton;
             });
             this.barButtons.forEach(function (it, index) {
@@ -4261,7 +4270,7 @@ var UITabBar = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._hidden = value;
-            // this.domElement.style.visibility = value ? 'hidden' : 'inherit'
+            this.invalidate();
             if (this.tabBarController) {
                 this.tabBarController.iView.setNeedsDisplay();
             }
@@ -4274,6 +4283,14 @@ var UITabBar = function (_UIView_1$UIView) {
         set: function set(value) {
             this._barTintColor = value;
             this.backgroundColor = value;
+        }
+    }, {
+        key: "tabBarController",
+        get: function get() {
+            return this._tabBarController.get();
+        },
+        set: function set(value) {
+            this._tabBarController.set(value);
         }
     }]);
 
@@ -4288,72 +4305,75 @@ var UITabBarButton = function (_UIView_1$UIView2) {
     function UITabBarButton() {
         _classCallCheck(this, UITabBarButton);
 
-        // public get barItem(): UITabBarItem | undefined {
-        //     return this._barItem;
-        // }
-        // public set barItem(value: UITabBarItem | undefined) {
-        //     this._barItem = value;
-        //     this.setNeedUpdate()
-        // }
-        var _this5 = _possibleConstructorReturn(this, _UIView_1$UIView2.apply(this, arguments));
-        // private _barItem: UITabBarItem | undefined = undefined
+        var _this5 = _possibleConstructorReturn(this, _UIView_1$UIView2.call(this));
 
-
+        _this5._barItem = new MagicObject_1.MagicObject();
         _this5._itemSelected = false;
-        // iconImageView = new UIImageView
-        // titleLabel = new UILabel
-        // constructor() {
-        //     super()
-        //     this.addSubview(this.iconImageView)
-        //     this.titleLabel.font = new UIFont(11.0)
-        //     this.titleLabel.textAlignment = UITextAlignment.center
-        //     this.addSubview(this.titleLabel)
-        // }
-        // setNeedUpdate() {
-        //     if (this.barItem) {
-        //         this.iconImageView.image = this.itemSelected ? (this.barItem.selectedImage || this.barItem.image) : this.barItem.image
-        //         if (this.iconImageView.image && this.iconImageView.image.size.width === 0) {
-        //             this.iconImageView.image.on("load", () => {
-        //                 this.setNeedsLayout(true)
-        //             })
-        //         }
-        //         this.titleLabel.text = this.barItem.title
-        //     }
-        //     this.setNeedsLayout(true)
-        // }
-        // tintColorDidChange() {
-        //     super.tintColorDidChange()
-        //     this.titleLabel.textColor = this.tintColor
-        // }
-        // layoutSubviews() {
-        //     super.layoutSubviews()
-        //     const iconSize = this.iconImageView.intrinsicContentSize() || UISizeZero
-        //     const titleSize = this.titleLabel.intrinsicContentSize() || UISizeZero
-        //     const imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsetsZero
-        //     this.iconImageView.frame = {
-        //         x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,
-        //         y: imageInsets.top + (this.bounds.height - (iconSize.height + titleSize.height)) / 2.0,
-        //         width: iconSize.width,
-        //         height: iconSize.height
-        //     }
-        //     this.titleLabel.frame = {
-        //         x: 0.0,
-        //         y: this.iconImageView.frame.y + this.iconImageView.frame.height + imageInsets.bottom,
-        //         width: this.bounds.width,
-        //         height: titleSize.height
-        //     }
-        // }
+        _this5.iconImageView = new UIImageView_1.UIImageView();
+        _this5.titleLabel = new UILabel_1.UILabel();
+        _this5.addSubview(_this5.iconImageView);
+        _this5.titleLabel.font = new UIFont_1.UIFont(11.0);
+        _this5.titleLabel.textAlignment = UIEnums_1.UITextAlignment.center;
+        _this5.addSubview(_this5.titleLabel);
         return _this5;
     }
 
+    UITabBarButton.prototype.setNeedUpdate = function setNeedUpdate() {
+        var _this6 = this;
+
+        if (this.barItem) {
+            this.iconImageView.image = this.itemSelected ? this.barItem.selectedImage || this.barItem.image : this.barItem.image;
+            if (this.iconImageView.image && this.iconImageView.image.size.width === 0) {
+                this.iconImageView.image.on("load", function () {
+                    _this6.setNeedsLayout(true);
+                });
+            }
+            this.titleLabel.text = this.barItem.title;
+        }
+        this.setNeedsLayout(true);
+    };
+
+    UITabBarButton.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView2.prototype.tintColorDidChange.call(this);
+        this.titleLabel.textColor = this.tintColor;
+    };
+
+    UITabBarButton.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView2.prototype.layoutSubviews.call(this);
+        var iconSize = this.iconImageView.intrinsicContentSize() || UISize_1.UISizeZero;
+        var titleSize = this.titleLabel.intrinsicContentSize() || UISize_1.UISizeZero;
+        var imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsets_1.UIEdgeInsetsZero;
+        this.iconImageView.frame = {
+            x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,
+            y: imageInsets.top + (this.bounds.height - (iconSize.height + titleSize.height)) / 2.0,
+            width: iconSize.width,
+            height: iconSize.height
+        };
+        this.titleLabel.frame = {
+            x: 0.0,
+            y: this.iconImageView.frame.y + this.iconImageView.frame.height + imageInsets.bottom,
+            width: this.bounds.width,
+            height: titleSize.height
+        };
+    };
+
     _createClass(UITabBarButton, [{
+        key: "barItem",
+        get: function get() {
+            return this._barItem.get();
+        },
+        set: function set(value) {
+            this._barItem.set(value);
+            this.setNeedUpdate();
+        }
+    }, {
         key: "itemSelected",
         get: function get() {
             return this._itemSelected;
         },
         set: function set(value) {
             this._itemSelected = value;
-            // this.setNeedUpdate()
+            this.setNeedUpdate();
         }
     }]);
 
@@ -4541,6 +4561,92 @@ var UIImage = function (_EventEmitter_1$Event) {
 }(EventEmitter_1.EventEmitter);
 
 exports.UIImage = UIImage;
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIEdgeInsets_1 = __webpack_require__(6);
+var MagicObject_1 = __webpack_require__(11);
+
+var UITabBarItem = function () {
+    function UITabBarItem() {
+        _classCallCheck(this, UITabBarItem);
+
+        this._title = undefined;
+        this._image = undefined;
+        this._selectedImage = undefined;
+        this._imageInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
+        // Implementation
+        this._barButton = new MagicObject_1.MagicObject();
+    }
+
+    _createClass(UITabBarItem, [{
+        key: "title",
+        get: function get() {
+            return this._title;
+        },
+        set: function set(value) {
+            this._title = value;
+            if (this.barButton) {
+                this.barButton.setNeedUpdate();
+            }
+        }
+    }, {
+        key: "image",
+        get: function get() {
+            return this._image;
+        },
+        set: function set(value) {
+            this._image = value;
+            if (this.barButton) {
+                this.barButton.setNeedUpdate();
+            }
+        }
+    }, {
+        key: "selectedImage",
+        get: function get() {
+            return this._selectedImage;
+        },
+        set: function set(value) {
+            this._selectedImage = value;
+            if (this.barButton) {
+                this.barButton.setNeedUpdate();
+            }
+        }
+    }, {
+        key: "imageInsets",
+        get: function get() {
+            return this._imageInsets;
+        },
+        set: function set(value) {
+            this._imageInsets = value;
+            if (this.barButton) {
+                this.barButton.setNeedUpdate();
+            }
+        }
+    }, {
+        key: "barButton",
+        get: function get() {
+            return this._barButton.get();
+        },
+        set: function set(value) {
+            this._barButton.set(value);
+        }
+    }]);
+
+    return UITabBarItem;
+}();
+
+exports.UITabBarItem = UITabBarItem;
 
 /***/ })
 /******/ ]);

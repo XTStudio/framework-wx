@@ -17,7 +17,7 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.redView.backgroundColor = UIColor.red
+        this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
             this.redView.backgroundColor = UIColor.yellow
             if (this.navigationController) {
@@ -25,15 +25,15 @@ class FooViewController extends UIViewController {
             }
         }))
         this.view.addSubview(this.redView)
-        this.view.backgroundColor = UIColor.gray
+        this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)
         this.imgView.image = UIImage.fromURL('https://avatars0.githubusercontent.com/u/5013664?s=460&v=4')
         this.view.addSubview(this.imgView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        // this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
-        this.imgView.frame = UIRectMake(44, 44, 180, 180)
+        this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
+        // this.imgView.frame = UIRectMake(44, 44, 180, 180)
     }
 
 }
@@ -42,7 +42,7 @@ class SecondViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.view.backgroundColor = UIColor.yellow
+        this.view.backgroundColor = new UIColor(0.0, 0.0, 1.0, 0.5)
         this.view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
             if (this.navigationController) {
                 this.navigationController.pushViewController(new ThirdViewController)
@@ -68,9 +68,15 @@ class ThirdViewController extends UIViewController {
 
 const tabBarController = new UITabBarController()
 
+const firstViewController = new FooViewController
+firstViewController.tabBarItem.title = "首页"
+
+const secondViewController = new SecondViewController
+secondViewController.tabBarItem.title = "我的"
+
 tabBarController.setViewControllers([
-    // new FooViewController,
-    new UINavigationController(new FooViewController),
+    firstViewController,
+    secondViewController,
 ])
 
 const main = tabBarController
@@ -78,7 +84,7 @@ const main = tabBarController
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({
     data: {},
-    onLoad: function (options) {
+    onLoad: function () {
         main.attach(this, "main")
     }
 })
