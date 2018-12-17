@@ -1,10 +1,14 @@
 declare var module: any
 declare var require: any
 
+Object.assign(module.exports, require('./foundation/UserDefaults'))
+Object.assign(module.exports, require('./foundation/UUID'))
+
 Object.assign(module.exports, require('./uikit/UIActionSheet'))
 Object.assign(module.exports, require('./uikit/UIAffineTransform'))
 Object.assign(module.exports, require('./uikit/UIAnimator'));
 Object.assign(module.exports, require('./uikit/UIColor'))
+Object.assign(module.exports, require('./uikit/UIDevice'))
 Object.assign(module.exports, require('./uikit/UIEdgeInsets'))
 Object.assign(module.exports, require('./uikit/UIEnums'))
 Object.assign(module.exports, require('./uikit/UIFont'))

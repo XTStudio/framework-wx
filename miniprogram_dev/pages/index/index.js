@@ -9,6 +9,8 @@ const {
     UIImageView,
     UIImage,
     UIActionSheet,
+    UIDevice,
+    UserDefaults,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -18,6 +20,9 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
+        // UserDefaults.standard.setValue("dhlkashflds", "testKey")
+        // UserDefaults.standard.reset()
+        console.log(UserDefaults.standard.valueForKey("testKey"))
         this.title = "我的首页"
         this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {

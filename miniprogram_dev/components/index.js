@@ -2741,10 +2741,13 @@ exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+Object.assign(module.exports, __webpack_require__(42));
+Object.assign(module.exports, __webpack_require__(41));
 Object.assign(module.exports, __webpack_require__(39));
 Object.assign(module.exports, __webpack_require__(13));
 Object.assign(module.exports, __webpack_require__(15));
 Object.assign(module.exports, __webpack_require__(5));
+Object.assign(module.exports, __webpack_require__(40));
 Object.assign(module.exports, __webpack_require__(6));
 Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(26));
@@ -4760,6 +4763,134 @@ var UIActionSheet = function () {
 }();
 
 exports.UIActionSheet = UIActionSheet;
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(41);
+
+var UIDevice = function UIDevice() {
+    _classCallCheck(this, UIDevice);
+
+    this.name = "Browser";
+    this.model = "Browser";
+    this.systemName = "WeChat";
+    this.systemVersion = "1.0.0";
+    var systemInfo = wx.getSystemInfoSync();
+    this.name = systemInfo.brand;
+    this.model = systemInfo.model;
+    this.systemName = "WeChat";
+    this.systemVersion = systemInfo.SDKVersion;
+    var idfv = wx.getStorageSync("com.xt.identifierForVendor");
+    if (typeof idfv === "string" && idfv.length > 0) {
+        this.identifierForVendor = new UUID_1.UUID(idfv);
+    } else {
+        this.identifierForVendor = new UUID_1.UUID();
+        wx.setStorageSync("com.xt.identifierForVendor", this.identifierForVendor.UUIDString);
+    }
+};
+
+UIDevice.current = new UIDevice();
+exports.UIDevice = UIDevice;
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UUID = function () {
+    function UUID() {
+        var UUIDString = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+        _classCallCheck(this, UUID);
+
+        this.UUIDString = UUIDString || this.uuidv4();
+    }
+
+    UUID.prototype.uuidv4 = function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : r & 0x3 | 0x8;
+            return v.toString(16);
+        });
+    };
+
+    return UUID;
+}();
+
+exports.UUID = UUID;
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UserDefaults = function () {
+    function UserDefaults() {
+        var suiteName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+        _classCallCheck(this, UserDefaults);
+
+        this.suiteName = suiteName;
+    }
+
+    UserDefaults.prototype.valueForKey = function valueForKey(forKey) {
+        var value = wx.getStorageSync(this.buildKey(forKey));
+        if (value !== undefined && typeof value === "string") {
+            try {
+                return JSON.parse(value).value;
+            } catch (error) {}
+        }
+        return undefined;
+    };
+
+    UserDefaults.prototype.setValue = function setValue(value, forKey) {
+        if (value === undefined) {
+            wx.removeStorageSync(this.buildKey(forKey));
+        } else {
+            wx.setStorageSync(this.buildKey(forKey), JSON.stringify({ value: value }));
+        }
+    };
+
+    UserDefaults.prototype.reset = function reset() {
+        var _this = this;
+
+        var storageInfo = wx.getStorageInfoSync();
+        storageInfo.keys.forEach(function (key) {
+            if (typeof key === "string" && key.indexOf("com.xt." + (_this.suiteName || "standard") + ".") === 0) {
+                wx.removeStorageSync(key);
+            }
+        });
+    };
+
+    UserDefaults.prototype.buildKey = function buildKey(aKey) {
+        return "com.xt." + (this.suiteName || "standard") + "." + aKey;
+    };
+
+    return UserDefaults;
+}();
+
+UserDefaults.standard = new UserDefaults();
+exports.UserDefaults = UserDefaults;
 
 /***/ })
 /******/ ]);
