@@ -21,17 +21,14 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
-        const path = FileManager.cacheDirectory + "fooDir/foo.txt"
-        const data = new Data({utf8String: 'Hello, World!你好吗'})
-        // const toPath = FileManager.cacheDirectory + "fooDir/foo2.txt"
-        FileManager.defaultManager.createFile(path, data)
-        console.log(FileManager.defaultManager.readFile(path).utf8String())
         this.title = "我的首页"
+        this.redView.layer.cornerRadius = 22.0
         this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            URLSession.shared.fetch('https://api.github.com/').then((data) => {
-                console.log(data.json())
-            })
+            this.redView.backgroundColor = UIColor.red
+            // URLSession.shared.fetch('https://api.github.com/').then((data) => {
+            //     console.log(data.json())
+            // })
         }))
         this.view.addSubview(this.redView)
         // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)

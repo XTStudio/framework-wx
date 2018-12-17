@@ -13,6 +13,7 @@ import { UIAnimator } from "./UIAnimator";
 import { UIViewManager } from "../components/UIViewManager";
 import { EventEmitter } from "../kimi/EventEmitter";
 import { UIViewContentMode } from "./UIEnums";
+import { CALayer } from "../coregraphics/CALayer";
 
 export let dirtyItems: UIView[] = []
 
@@ -36,6 +37,16 @@ export class UIView extends EventEmitter {
             const window = new UIWindow()
             window.attach(dataOwner, dataField, this)
         }
+    }
+
+    private _layer: CALayer | undefined = undefined
+
+    public get layer(): CALayer {
+        if (this._layer === undefined) {
+            this._layer = new CALayer()
+            this._layer.view = this
+        }
+        return this._layer
     }
 
     private _frame: UIRect = UIRectZero

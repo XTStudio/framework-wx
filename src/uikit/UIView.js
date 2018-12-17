@@ -12,6 +12,7 @@ const UIAnimator_1 = require("./UIAnimator");
 const UIViewManager_1 = require("../components/UIViewManager");
 const EventEmitter_1 = require("../kimi/EventEmitter");
 const UIEnums_1 = require("./UIEnums");
+const CALayer_1 = require("../coregraphics/CALayer");
 exports.dirtyItems = [];
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
@@ -22,6 +23,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this.dataField = undefined;
         this.animationProps = {};
         this.animationValues = {};
+        this._layer = undefined;
         this._frame = UIRect_1.UIRectZero;
         this.bounds = UIRect_1.UIRectZero;
         this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -50,6 +52,13 @@ class UIView extends EventEmitter_1.EventEmitter {
             const window = new UIWindow();
             window.attach(dataOwner, dataField, this);
         }
+    }
+    get layer() {
+        if (this._layer === undefined) {
+            this._layer = new CALayer_1.CALayer();
+            this._layer.view = this;
+        }
+        return this._layer;
     }
     set frame(value) {
         if (UIRect_1.UIRectEqualToRect(this._frame, value)) {

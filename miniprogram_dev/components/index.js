@@ -114,6 +114,7 @@ var UIAnimator_1 = __webpack_require__(15);
 var UIViewManager_1 = __webpack_require__(8);
 var EventEmitter_1 = __webpack_require__(10);
 var UIEnums_1 = __webpack_require__(16);
+var CALayer_1 = __webpack_require__(52);
 exports.dirtyItems = [];
 
 var UIView = function (_EventEmitter_1$Event) {
@@ -130,6 +131,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this.dataField = undefined;
         _this.animationProps = {};
         _this.animationValues = {};
+        _this._layer = undefined;
         _this._frame = UIRect_1.UIRectZero;
         _this.bounds = UIRect_1.UIRectZero;
         _this.touchAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -580,6 +582,15 @@ var UIView = function (_EventEmitter_1$Event) {
     };
 
     _createClass(UIView, [{
+        key: "layer",
+        get: function get() {
+            if (this._layer === undefined) {
+                this._layer = new CALayer_1.CALayer();
+                this._layer.view = this;
+            }
+            return this._layer;
+        }
+    }, {
         key: "frame",
         set: function set(value) {
             if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
@@ -5651,6 +5662,246 @@ FileManager.cacheDirectory = FileManager.wxPath + "/cache/";
 FileManager.temporaryDirectory = "tmp://tmp/";
 FileManager.jsBundleDirectory = "xt://";
 exports.FileManager = FileManager;
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIRect_1 = __webpack_require__(17);
+var MagicObject_1 = __webpack_require__(11);
+
+var CALayer = function () {
+    function CALayer() {
+        _classCallCheck(this, CALayer);
+
+        this._view = new MagicObject_1.MagicObject();
+        this._frame = UIRect_1.UIRectZero;
+        this._hidden = false;
+        this._cornerRadius = 0.0;
+        this._borderWidth = 0.0;
+        this._borderColor = undefined;
+        this.superlayer = undefined;
+        this.sublayers = [];
+        this._backgroundColor = undefined;
+        this._opacity = 1.0;
+        this._masksToBounds = false;
+        this._shadowColor = undefined;
+        this._shadowOpacity = 0.0;
+        this._shadowOffset = { width: 0, height: -3 };
+        this._shadowRadius = 3.0;
+    }
+
+    CALayer.prototype.resetBorder = function resetBorder() {
+        if (this._view.get()) {
+            this._view.get().invalidate();
+            // if (this.borderWidth > 0 && this.borderColor) {
+            //     this._view.domElement.style.borderWidth = this.borderWidth.toString() + "px"
+            //     this._view.domElement.style.borderColor = this.borderColor.toStyle()
+            //     this._view.domElement.style.borderStyle = this.borderWidth > 0 ? "solid" : "unset"
+            //     this._view.domElement.style.boxSizing = this.borderWidth > 0 ? "border-box" : "unset"
+            // }
+            // else {
+            //     this._view.domElement.style.borderStyle = "unset"
+            // }
+        } else {}
+    };
+
+    CALayer.prototype.moveBorderElementToFront = function moveBorderElementToFront() {};
+
+    CALayer.prototype.removeFromSuperlayer = function removeFromSuperlayer() {
+        if (this.superlayer) {
+            var idx = this.superlayer.sublayers.indexOf(this);
+            if (idx >= 0) {
+                this.superlayer.sublayers.splice(idx, 1);
+            }
+            this.superlayer = undefined;
+        }
+    };
+
+    CALayer.prototype.addSublayer = function addSublayer(layer) {
+        if (layer.superlayer !== undefined) {
+            layer.removeFromSuperlayer();
+        }
+        this.sublayers.push(layer);
+        layer.superlayer = this;
+        this.createSVGElement();
+        layer.createSVGElement();
+    };
+
+    CALayer.prototype.createSVGElement = function createSVGElement() {};
+
+    CALayer.prototype.resetShadow = function resetShadow() {
+        if (this._view.get()) {
+            this._view.get().invalidate();
+            // if (this.shadowOpacity > 0 && this.shadowColor && this.shadowColor.a > 0) {
+            //     if (this._view instanceof UILabel) {
+            //         this._view.domElement.style.textShadow = this.shadowOffset.width.toString() + "px " + this.shadowOffset.height.toString() + "px " + this.shadowRadius.toString() + "px " + this.shadowColor.colorWithAlphaComponent(this.shadowOpacity).toStyle()
+            //     }
+            //     else {
+            //         this._view.domElement.style.boxShadow = this.shadowOffset.width.toString() + "px " + this.shadowOffset.height.toString() + "px " + this.shadowRadius.toString() + "px " + this.shadowColor.colorWithAlphaComponent(this.shadowOpacity).toStyle()
+            //     }
+            // }
+            // else {
+            //     this._view.domElement.style.textShadow = null
+            //     this._view.domElement.style.boxShadow = null
+            // }
+        }
+    };
+
+    _createClass(CALayer, [{
+        key: "view",
+        get: function get() {
+            if (this.superlayer) {
+                return this.superlayer._view.get();
+            }
+            return this._view.get();
+        },
+        set: function set(value) {
+            this._view.set(value);
+        }
+    }, {
+        key: "frame",
+        get: function get() {
+            return this._frame;
+        },
+        set: function set(value) {
+            this._frame = value;
+        }
+    }, {
+        key: "hidden",
+        get: function get() {
+            if (this._view.get()) {
+                return this._view.get().hidden;
+            } else {
+                return this._hidden;
+            }
+        },
+        set: function set(value) {
+            this._hidden = value;
+            if (this._view.get()) {
+                this._view.get().hidden = value;
+            } else {}
+        }
+    }, {
+        key: "cornerRadius",
+        get: function get() {
+            return this._cornerRadius;
+        },
+        set: function set(value) {
+            this._cornerRadius = value;
+            if (this._view.get()) {
+                this._view.get().invalidate();
+            } else {}
+        }
+    }, {
+        key: "borderWidth",
+        get: function get() {
+            return this._borderWidth;
+        },
+        set: function set(value) {
+            this._borderWidth = value;
+            this.resetBorder();
+        }
+    }, {
+        key: "borderColor",
+        get: function get() {
+            return this._borderColor;
+        },
+        set: function set(value) {
+            this._borderColor = value;
+            this.resetBorder();
+        }
+    }, {
+        key: "backgroundColor",
+        get: function get() {
+            if (this._view.get()) {
+                return this._view.get().backgroundColor;
+            } else {
+                return this._backgroundColor;
+            }
+        },
+        set: function set(value) {
+            this._backgroundColor = value;
+            if (this._view.get()) {
+                this._view.get().backgroundColor = value;
+            } else {}
+        }
+    }, {
+        key: "opacity",
+        get: function get() {
+            if (this._view.get()) {
+                return this._view.get().alpha;
+            } else {
+                return this._opacity;
+            }
+        },
+        set: function set(value) {
+            this._opacity = value;
+            if (this._view.get()) {
+                this._view.get().alpha = value;
+            } else {}
+        }
+    }, {
+        key: "masksToBounds",
+        get: function get() {
+            return this._masksToBounds;
+        },
+        set: function set(value) {
+            this._masksToBounds = value;
+            if (this._view.get()) {
+                this._view.get().clipsToBounds = value;
+            } else {}
+        }
+    }, {
+        key: "shadowColor",
+        get: function get() {
+            return this._shadowColor;
+        },
+        set: function set(value) {
+            this._shadowColor = value;
+            this.resetShadow();
+        }
+    }, {
+        key: "shadowOpacity",
+        get: function get() {
+            return this._shadowOpacity;
+        },
+        set: function set(value) {
+            this._shadowOpacity = value;
+            this.resetShadow();
+        }
+    }, {
+        key: "shadowOffset",
+        get: function get() {
+            return this._shadowOffset;
+        },
+        set: function set(value) {
+            this._shadowOffset = value;
+            this.resetShadow();
+        }
+    }, {
+        key: "shadowRadius",
+        get: function get() {
+            return this._shadowRadius;
+        },
+        set: function set(value) {
+            this._shadowRadius = value;
+            this.resetShadow();
+        }
+    }]);
+
+    return CALayer;
+}();
+
+exports.CALayer = CALayer;
 
 /***/ })
 /******/ ]);
