@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 20);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -229,24 +229,7 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
 
 /***/ }),
 
-/***/ 1:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomUUID = function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
-};
-
-/***/ }),
-
-/***/ 19:
+/***/ 20:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,130 +243,64 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(0);
-var UIWindowManager_1 = __webpack_require__(7);
-// xt-framework/uiview.js
 
-var UIWindowElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIWindowElement, _UIView_1$UIViewEleme);
+var UILabelElement = function (_UIView_1$UIViewEleme) {
+    _inherits(UILabelElement, _UIView_1$UIViewEleme);
 
-    function UIWindowElement() {
-        _classCallCheck(this, UIWindowElement);
+    function UILabelElement() {
+        _classCallCheck(this, UILabelElement);
 
         return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
     }
 
-    UIWindowElement.prototype.buildStyle = function buildStyle() {
-        var style = _UIView_1$UIViewEleme.prototype.buildStyle.call(this);
-        style += "\n        width: 100%;\n        height: 100%;\n        ";
-        return style;
-    };
-
-    UIWindowElement.prototype.buildProps = function buildProps() {
+    UILabelElement.prototype.buildProps = function buildProps() {
         var props = this.getProps();
-        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { windowID: props.windowID });
+        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { text: props._text !== undefined ? props._text : "", textStyle: "\n            line-height: 1.0;\n            color: " + (props._textColor !== undefined ? UIView_1.UIColor.toStyle(props._textColor) : "black") + ";\n            font-size: " + (props._font !== undefined ? props._font.pointSize : 14) + "px;\n            font-family: " + (props._font !== undefined ? props._font.fontName : "") + "; \n            font-weight: " + (props._font !== undefined ? props._font.fontStyle : "") + "; \n            font-style: " + (props._font !== undefined ? props._font.fontStyle : "") + "; \n            text-align: " + function () {
+                switch (props._textAlignment) {
+                    case UITextAlignment.left:
+                        return "left";
+                    case UITextAlignment.center:
+                        return "center";
+                    case UITextAlignment.right:
+                        return "right";
+                }
+                return "left";
+            }() + ";\n            " + function () {
+                if (props._numberOfLines === 1) {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
+                } else {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
+                }
+            }() + "\n            " });
     };
 
-    return UIWindowElement;
+    return UILabelElement;
 }(UIView_1.UIViewElement);
 
-exports.UIWindowElement = UIWindowElement;
+exports.UILabelElement = UILabelElement;
 
-var UIWindowComponent = function UIWindowComponent() {
-    _classCallCheck(this, UIWindowComponent);
+var UILabelComponent = function UILabelComponent() {
+    _classCallCheck(this, UILabelComponent);
 
     this.properties = {
         props: {
             type: Object,
             value: {},
             observer: function observer(newVal, oldVal) {
-                UIView_1.UIViewElement.componentPropsChanged(this, UIWindowElement, newVal);
-            }
-        }
-    };
-    this.methods = {
-        onTouchStarted: function onTouchStarted(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchStart(e);
-                }
-            }
-        },
-        onTouchMoved: function onTouchMoved(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchMove(e);
-                }
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchEnd(e);
-                }
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchCancel(e);
-                }
+                UIView_1.UIViewElement.componentPropsChanged(this, UILabelElement, newVal);
             }
         }
     };
 };
 
-exports.UIWindowComponent = UIWindowComponent;
-Component(new UIWindowComponent());
-
-/***/ }),
-
-/***/ 7:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(1);
-
-var UIWindowManager = function () {
-    function UIWindowManager() {
-        _classCallCheck(this, UIWindowManager);
-
-        this.windows = {};
-    }
-
-    UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = UUID_1.randomUUID();
-        this.windows[window.windowID] = window;
-    };
-
-    UIWindowManager.prototype.fetchWindow = function fetchWindow(windowID) {
-        return this.windows[windowID];
-    };
-
-    _createClass(UIWindowManager, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().UIWindowManagerShared === undefined) {
-                getApp().UIWindowManagerShared = new UIWindowManager();
-            }
-            return getApp().UIWindowManagerShared;
-        }
-    }]);
-
-    return UIWindowManager;
-}();
-
-exports.UIWindowManager = UIWindowManager;
+exports.UILabelComponent = UILabelComponent;
+Component(new UILabelComponent());
+var UITextAlignment;
+(function (UITextAlignment) {
+    UITextAlignment[UITextAlignment["left"] = 0] = "left";
+    UITextAlignment[UITextAlignment["center"] = 1] = "center";
+    UITextAlignment[UITextAlignment["right"] = 2] = "right";
+})(UITextAlignment || (UITextAlignment = {}));
 
 /***/ })
 

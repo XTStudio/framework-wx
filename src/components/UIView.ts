@@ -1,6 +1,32 @@
 // xt-framework/uiview.js
 
+const emptyAnimation = (() => {
+    let animation = wx.createAnimation({ duration: 0 })
+    animation.step()
+    return animation.export()
+})()
+
 export class UIViewElement {
+
+    static componentPropsChanged(owner: WeApp.Page, elementClazz: typeof UIViewElement, newProps: any) {
+        if (newProps === undefined || newProps === null) { return }
+        if (newProps.isDirty !== true && owner.el !== undefined) { return }
+        if (owner.el === undefined) {
+            owner.el = new elementClazz(owner)
+        }
+        const animation = owner.el.buildAnimation()
+        if (animation !== undefined) {
+            owner.setData({
+                animation: owner.el.buildAnimation(),
+            })
+        }
+        else {
+            owner.setData(Object.assign({
+                animation: owner.data.animation !== undefined && owner.data.animation !== emptyAnimation ? emptyAnimation : "",
+                subviews: newProps.subviews,
+            }, owner.el.buildProps()))
+        }
+    }
 
     component: WeApp.Page
 
@@ -8,20 +34,30 @@ export class UIViewElement {
         this.component = component
     }
 
+    getProps(): any {
+        return this.component.properties.props || {}
+    }
+
+    buildProps() {
+        return {
+            style: this.buildStyle(),
+        }
+    }
+
     buildStyle() {
-        const props = this.component.properties.props || {}
+        const props = this.getProps()
         return `
-    position: absolute;
-    left: ${props._frame.x}px;
-    top: ${props._frame.y}px;
-    width: ${props._frame.width}px;
-    height: ${props._frame.height}px; 
-    background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
-    opacity: ${props._alpha};
-    display: ${props._hidden ? "none" : ""};
-    overflow: ${props._clipsToBounds ? "hidden" : ""};
-    transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
-    `
+            position: absolute;
+            left: ${props._frame.x}px;
+            top: ${props._frame.y}px;
+            width: ${props._frame.width}px;
+            height: ${props._frame.height}px; 
+            background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
+            opacity: ${props._alpha};
+            display: ${props._hidden ? "none" : ""};
+            overflow: ${props._clipsToBounds ? "hidden" : ""};
+            transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
+        `
     }
 
     buildAnimation() {
@@ -65,12 +101,6 @@ export class UIViewElement {
 
 }
 
-const emptyAnimation = (() => {
-    let animation = wx.createAnimation({ duration: 0 })
-    animation.step()
-    return animation.export()
-})()
-
 export class UIViewComponent {
 
     properties = {
@@ -78,31 +108,9 @@ export class UIViewComponent {
             type: Object,
             value: {},
             observer: function (newVal: any, oldVal: any) {
-                if (newVal === undefined || newVal === null) { return }
-                var self: WeApp.Page = this as any
-                if (newVal.isDirty !== true && self.el !== undefined) { return }
-                if (self.el === undefined) {
-                    self.el = new UIViewElement(self)
-                }
-                const animation = self.el.buildAnimation()
-                if (animation !== undefined) {
-                    self.setData({
-                        animation: self.el.buildAnimation(),
-                    })
-                }
-                else {
-                    self.setData({
-                        style: self.el.buildStyle(),
-                        animation: self.data.animation !== undefined && self.data.animation !== emptyAnimation ? emptyAnimation : "",
-                        subviews: newVal.subviews,
-                    })
-                }
+                UIViewElement.componentPropsChanged(this as any, UIViewElement, newVal)
             }
         },
-    }
-
-    data = {
-        style: ''
     }
 
 }
@@ -111,8 +119,7 @@ Component(new UIViewComponent)
 
 // Helpers
 
-
-class UIColor {
+export class UIColor {
 
     static toStyle(color: any): string {
         if (color === undefined) {

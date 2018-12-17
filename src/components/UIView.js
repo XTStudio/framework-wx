@@ -1,24 +1,60 @@
 "use strict";
 // xt-framework/uiview.js
 Object.defineProperty(exports, "__esModule", { value: true });
+const emptyAnimation = (() => {
+    let animation = wx.createAnimation({ duration: 0 });
+    animation.step();
+    return animation.export();
+})();
 class UIViewElement {
+    static componentPropsChanged(owner, elementClazz, newProps) {
+        if (newProps === undefined || newProps === null) {
+            return;
+        }
+        if (newProps.isDirty !== true && owner.el !== undefined) {
+            return;
+        }
+        if (owner.el === undefined) {
+            owner.el = new elementClazz(owner);
+        }
+        const animation = owner.el.buildAnimation();
+        if (animation !== undefined) {
+            owner.setData({
+                animation: owner.el.buildAnimation(),
+            });
+        }
+        else {
+            owner.setData(Object.assign({
+                animation: owner.data.animation !== undefined && owner.data.animation !== emptyAnimation ? emptyAnimation : "",
+                subviews: newProps.subviews,
+            }, owner.el.buildProps()));
+        }
+    }
     constructor(component) {
         this.component = component;
     }
+    getProps() {
+        return this.component.properties.props || {};
+    }
+    buildProps() {
+        return {
+            style: this.buildStyle(),
+        };
+    }
     buildStyle() {
-        const props = this.component.properties.props || {};
+        const props = this.getProps();
         return `
-    position: absolute;
-    left: ${props._frame.x}px;
-    top: ${props._frame.y}px;
-    width: ${props._frame.width}px;
-    height: ${props._frame.height}px; 
-    background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
-    opacity: ${props._alpha};
-    display: ${props._hidden ? "none" : ""};
-    overflow: ${props._clipsToBounds ? "hidden" : ""};
-    transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
-    `;
+            position: absolute;
+            left: ${props._frame.x}px;
+            top: ${props._frame.y}px;
+            width: ${props._frame.width}px;
+            height: ${props._frame.height}px; 
+            background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
+            opacity: ${props._alpha};
+            display: ${props._hidden ? "none" : ""};
+            overflow: ${props._clipsToBounds ? "hidden" : ""};
+            transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
+        `;
     }
     buildAnimation() {
         const props = this.component.properties.props || {};
@@ -60,11 +96,6 @@ class UIViewElement {
     }
 }
 exports.UIViewElement = UIViewElement;
-const emptyAnimation = (() => {
-    let animation = wx.createAnimation({ duration: 0 });
-    animation.step();
-    return animation.export();
-})();
 class UIViewComponent {
     constructor() {
         this.properties = {
@@ -72,34 +103,9 @@ class UIViewComponent {
                 type: Object,
                 value: {},
                 observer: function (newVal, oldVal) {
-                    if (newVal === undefined || newVal === null) {
-                        return;
-                    }
-                    var self = this;
-                    if (newVal.isDirty !== true && self.el !== undefined) {
-                        return;
-                    }
-                    if (self.el === undefined) {
-                        self.el = new UIViewElement(self);
-                    }
-                    const animation = self.el.buildAnimation();
-                    if (animation !== undefined) {
-                        self.setData({
-                            animation: self.el.buildAnimation(),
-                        });
-                    }
-                    else {
-                        self.setData({
-                            style: self.el.buildStyle(),
-                            animation: self.data.animation !== undefined && self.data.animation !== emptyAnimation ? emptyAnimation : "",
-                            subviews: newVal.subviews,
-                        });
-                    }
+                    UIViewElement.componentPropsChanged(this, UIViewElement, newVal);
                 }
             },
-        };
-        this.data = {
-            style: ''
         };
     }
 }
@@ -114,6 +120,7 @@ class UIColor {
         return 'rgba(' + (color.r * 255).toFixed(0) + ', ' + (color.g * 255).toFixed(0) + ', ' + (color.b * 255).toFixed(0) + ', ' + color.a.toFixed(6) + ')';
     }
 }
+exports.UIColor = UIColor;
 const UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 const UIAffineTransformEqualToTransform = function (t1, t2) {
     return Math.abs(t1.a - t2.a) < 0.001 &&

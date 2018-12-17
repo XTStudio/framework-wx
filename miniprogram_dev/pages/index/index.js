@@ -9,58 +9,25 @@ const {
     UILongPressGestureRecognizer,
     UIAnimator,
     UIScrollView,
+    UILabel,
+    UIFont,
+    UITextAlignment,
 } = require("../../components/index")
 
 const window = new UIWindow
 
-const mainView = new UIScrollView
-mainView.backgroundColor = UIColor.white
+const mainView = new UIView
+mainView.backgroundColor = UIColor.yellow
 mainView.clipsToBounds = true
-mainView.frame = UIRectMake(0, 0, 375, 568)
+mainView.frame = UIRectMake(0, 0, 300, 300)
 
-{
-    const itemView = new UIView
-    itemView.backgroundColor = UIColor.blue
-    itemView.frame = UIRectMake(0, 0, 375, 568)
-    itemView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-        itemView.backgroundColor = UIColor.red
-    }))
-    mainView.addSubview(itemView)
-}
-{
-    const itemView = new UIView
-    itemView.backgroundColor = UIColor.green
-    itemView.frame = UIRectMake(375, 0, 375, 568)
-    mainView.addSubview(itemView)
-}
-{
-    const itemView = new UIView
-    itemView.backgroundColor = UIColor.red
-    itemView.frame = UIRectMake(375 * 2, 0, 375, 568)
-    mainView.addSubview(itemView)
-}
-
-// mainView.on("didScroll", (sender) => {
-//     console.log(sender.contentOffset)
-// })
-// mainView.alwaysBounceVertical = true
-mainView.alpha = 0.4
-mainView.bounces = false
-mainView.contentSize = { width: 375 * 3, height: 0 }
-
-// setTimeout(() => {
-//     mainView.setContentOffset({ x: 150, y: 0 }, true)
-// }, 3000)
-mainView.pagingEnabled = true
-// mainView.on("willBeginDragging", () => {
-//     console.log("willBeginDragging")
-// })
-// mainView.on("didEndDragging", () => {
-//     console.log("didEndDragging")
-// })
-// mainView.scrollsToTop = true
-// mainView.contentOffset = { x: 0, y: 22 }
-// mainView.scrollEnabled = false
+const fooLabel = new UILabel
+fooLabel.frame = UIRectMake(0, 0, 300, 300)
+fooLabel.text = "We continuously monitor the status of github.com and all its related services. If there are any interruptions in service, a note will be posted here."
+// fooLabel.textColor = UIColor.red
+fooLabel.numberOfLines = 3
+fooLabel.font = new UIFont(20)
+mainView.addSubview(fooLabel)
 
 window.addSubview(mainView)
 

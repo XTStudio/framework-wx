@@ -14,6 +14,14 @@ export class UIWindowElement extends UIViewElement {
         return style
     }
 
+    buildProps() {
+        const props = this.getProps()
+        return {
+            ... super.buildProps(),
+            windowID: props.windowID,
+        }
+    }
+
 }
 
 export class UIWindowComponent {
@@ -23,31 +31,9 @@ export class UIWindowComponent {
             type: Object,
             value: {},
             observer: function (newVal: any, oldVal: any) {
-                if (newVal === undefined || newVal === null) { return }
-                var self: WeApp.Page = this as any
-                if (newVal.isDirty !== true && self.el !== undefined) { return }
-                if (self.el === undefined) {
-                    self.el = new UIWindowElement(self)
-                }
-                const animation = self.el.buildAnimation()
-                if (animation !== undefined) {
-                    self.setData({
-                        animation: self.el.buildAnimation(),
-                    })
-                }
-                else {
-                    self.setData({
-                        style: self.el.buildStyle(),
-                        windowID: newVal.windowID || "",
-                        subviews: newVal.subviews,
-                    })
-                }
+                UIViewElement.componentPropsChanged(this as any, UIWindowElement, newVal)
             }
         }
-    }
-
-    data = {
-        style: ''
     }
 
     methods = {

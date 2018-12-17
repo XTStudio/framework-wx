@@ -1,3 +1,4 @@
 <uiview wx:if="{{clazz == 'UIView'}}" props="{{view}}"></uiview>
 <uiscrollview wx:if="{{clazz == 'UIScrollView'}}" props="{{view}}"></uiscrollview>
 <uiwindow wx:if="{{clazz == 'UIWindow'}}" props="{{view}}"></uiwindow>
+<uilabel wx:if="{{clazz == 'UILabel'}}" props="{{view}}"></uilabel>

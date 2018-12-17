@@ -12,6 +12,10 @@ class UIWindowElement extends UIView_1.UIViewElement {
         `;
         return style;
     }
+    buildProps() {
+        const props = this.getProps();
+        return Object.assign({}, super.buildProps(), { windowID: props.windowID });
+    }
 }
 exports.UIWindowElement = UIWindowElement;
 class UIWindowComponent {
@@ -21,34 +25,9 @@ class UIWindowComponent {
                 type: Object,
                 value: {},
                 observer: function (newVal, oldVal) {
-                    if (newVal === undefined || newVal === null) {
-                        return;
-                    }
-                    var self = this;
-                    if (newVal.isDirty !== true && self.el !== undefined) {
-                        return;
-                    }
-                    if (self.el === undefined) {
-                        self.el = new UIWindowElement(self);
-                    }
-                    const animation = self.el.buildAnimation();
-                    if (animation !== undefined) {
-                        self.setData({
-                            animation: self.el.buildAnimation(),
-                        });
-                    }
-                    else {
-                        self.setData({
-                            style: self.el.buildStyle(),
-                            windowID: newVal.windowID || "",
-                            subviews: newVal.subviews,
-                        });
-                    }
+                    UIView_1.UIViewElement.componentPropsChanged(this, UIWindowElement, newVal);
                 }
             }
-        };
-        this.data = {
-            style: ''
         };
         this.methods = {
             onTouchStarted: function (e) {
