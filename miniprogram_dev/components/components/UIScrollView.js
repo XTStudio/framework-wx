@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return __webpack_require__(__webpack_require__.s = 21);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -229,7 +229,7 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
 
 /***/ }),
 
-/***/ 1:
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -246,7 +246,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 18:
+/***/ 21:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,7 +260,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(0);
-var UIViewManager_1 = __webpack_require__(6);
+var UIViewManager_1 = __webpack_require__(8);
 
 var UIScrollViewElement = function (_UIView_1$UIViewEleme) {
     _inherits(UIScrollViewElement, _UIView_1$UIViewEleme);
@@ -394,7 +394,7 @@ Component(new UIScrollViewComponent());
 
 /***/ }),
 
-/***/ 6:
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -405,7 +405,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(1);
+var UUID_1 = __webpack_require__(2);
 
 var UIViewManager = function () {
     function UIViewManager() {

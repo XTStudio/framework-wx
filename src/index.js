@@ -6,6 +6,8 @@ Object.assign(module.exports, require('./uikit/UIEdgeInsets'));
 Object.assign(module.exports, require('./uikit/UIEnums'));
 Object.assign(module.exports, require('./uikit/UIFont'));
 Object.assign(module.exports, require('./uikit/UIGestureRecognizer'));
+Object.assign(module.exports, require('./uikit/UIImage'));
+Object.assign(module.exports, require('./uikit/UIImageView'));
 Object.assign(module.exports, require('./uikit/UILabel'));
 Object.assign(module.exports, require('./uikit/UILongPressGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UINavigationController'));

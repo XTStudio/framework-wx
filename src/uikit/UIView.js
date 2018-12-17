@@ -11,6 +11,7 @@ const MagicObject_1 = require("./helpers/MagicObject");
 const UIAnimator_1 = require("./UIAnimator");
 const UIViewManager_1 = require("../components/UIViewManager");
 const EventEmitter_1 = require("../kimi/EventEmitter");
+const UIEnums_1 = require("./UIEnums");
 exports.dirtyItems = [];
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
@@ -32,7 +33,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this.subviews = [];
         this._clipsToBounds = false;
         this._hidden = false;
-        // protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
+        this._contentMode = UIEnums_1.UIViewContentMode.scaleToFill;
         this._tintColor = undefined;
         this._alpha = 1.0;
         this._backgroundColor = undefined;
@@ -282,6 +283,13 @@ class UIView extends EventEmitter_1.EventEmitter {
     }
     get hidden() {
         return this._hidden;
+    }
+    get contentMode() {
+        return this._contentMode;
+    }
+    set contentMode(value) {
+        this._contentMode = value;
+        this.invalidate();
     }
     set tintColor(value) {
         this._tintColor = value;

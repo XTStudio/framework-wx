@@ -6,11 +6,14 @@ const {
     UIViewController,
     UINavigationController,
     UITabBarController,
+    UIImageView,
+    UIImage,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
 
     redView = new UIView
+    imgView = new UIImageView
 
     viewDidLoad() {
         super.viewDidLoad()
@@ -23,11 +26,14 @@ class FooViewController extends UIViewController {
         }))
         this.view.addSubview(this.redView)
         this.view.backgroundColor = UIColor.gray
+        this.imgView.image = UIImage.fromURL('https://avatars0.githubusercontent.com/u/5013664?s=460&v=4')
+        this.view.addSubview(this.imgView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
+        // this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
+        this.imgView.frame = UIRectMake(44, 44, 180, 180)
     }
 
 }

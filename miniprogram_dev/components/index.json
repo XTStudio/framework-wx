@@ -4,6 +4,7 @@
     "uiview": "./components/UIView",
     "uiscrollview": "./components/UIScrollView",
     "uiwindow": "./components/UIWindow",
-    "uilabel": "./components/UILabel"
+    "uilabel": "./components/UILabel",
+    "uiimageview": "./components/UIImageView"
   }
 }

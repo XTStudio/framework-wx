@@ -12,6 +12,7 @@ import { MagicObject } from "./helpers/MagicObject";
 import { UIAnimator } from "./UIAnimator";
 import { UIViewManager } from "../components/UIViewManager";
 import { EventEmitter } from "../kimi/EventEmitter";
+import { UIViewContentMode } from "./UIEnums";
 
 export let dirtyItems: UIView[] = []
 
@@ -324,7 +325,16 @@ export class UIView extends EventEmitter {
         return this._hidden
     }
 
-    // protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
+    private _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
+
+    public get contentMode(): UIViewContentMode {
+        return this._contentMode;
+    }
+
+    public set contentMode(value: UIViewContentMode) {
+        this._contentMode = value;
+        this.invalidate()
+    }
 
     private _tintColor: UIColor | undefined = undefined
 

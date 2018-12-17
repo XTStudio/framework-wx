@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 22);
+/******/ 	return __webpack_require__(__webpack_require__.s = 24);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -229,24 +229,7 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
 
 /***/ }),
 
-/***/ 2:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomUUID = function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
-};
-
-/***/ }),
-
-/***/ 22:
+/***/ 24:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -260,130 +243,58 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(0);
-var UIWindowManager_1 = __webpack_require__(9);
-// xt-framework/uiview.js
+var UIViewContentMode;
+(function (UIViewContentMode) {
+    UIViewContentMode[UIViewContentMode["scaleToFill"] = 0] = "scaleToFill";
+    UIViewContentMode[UIViewContentMode["scaleAspectFit"] = 1] = "scaleAspectFit";
+    UIViewContentMode[UIViewContentMode["scaleAspectFill"] = 2] = "scaleAspectFill";
+})(UIViewContentMode || (UIViewContentMode = {}));
 
-var UIWindowElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIWindowElement, _UIView_1$UIViewEleme);
+var UIImageViewElement = function (_UIView_1$UIViewEleme) {
+    _inherits(UIImageViewElement, _UIView_1$UIViewEleme);
 
-    function UIWindowElement() {
-        _classCallCheck(this, UIWindowElement);
+    function UIImageViewElement() {
+        _classCallCheck(this, UIImageViewElement);
 
         return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
     }
 
-    UIWindowElement.prototype.buildStyle = function buildStyle() {
-        var style = _UIView_1$UIViewEleme.prototype.buildStyle.call(this);
-        style += "\n        width: 100%;\n        height: 100%;\n        ";
-        return style;
-    };
-
-    UIWindowElement.prototype.buildProps = function buildProps() {
+    UIImageViewElement.prototype.buildProps = function buildProps() {
         var props = this.getProps();
-        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { windowID: props.windowID });
+        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { imageSource: props._image !== undefined ? props._image.imageSource : null, scaleMode: function () {
+                switch (props._contentMode) {
+                    case UIViewContentMode.scaleToFill:
+                        return "scaleToFill";
+                    case UIViewContentMode.scaleAspectFit:
+                        return "aspectFit";
+                    case UIViewContentMode.scaleAspectFill:
+                        return "aspectFill";
+                }
+                return "scaleToFill";
+            }() });
     };
 
-    return UIWindowElement;
+    return UIImageViewElement;
 }(UIView_1.UIViewElement);
 
-exports.UIWindowElement = UIWindowElement;
+exports.UIImageViewElement = UIImageViewElement;
 
-var UIWindowComponent = function UIWindowComponent() {
-    _classCallCheck(this, UIWindowComponent);
+var UIImageViewComponent = function UIImageViewComponent() {
+    _classCallCheck(this, UIImageViewComponent);
 
     this.properties = {
         props: {
             type: Object,
             value: {},
             observer: function observer(newVal, oldVal) {
-                UIView_1.UIViewElement.componentPropsChanged(this, UIWindowElement, newVal);
-            }
-        }
-    };
-    this.methods = {
-        onTouchStarted: function onTouchStarted(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchStart(e);
-                }
-            }
-        },
-        onTouchMoved: function onTouchMoved(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchMove(e);
-                }
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchEnd(e);
-                }
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchCancel(e);
-                }
+                UIView_1.UIViewElement.componentPropsChanged(this, UIImageViewElement, newVal);
             }
         }
     };
 };
 
-exports.UIWindowComponent = UIWindowComponent;
-Component(new UIWindowComponent());
-
-/***/ }),
-
-/***/ 9:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(2);
-
-var UIWindowManager = function () {
-    function UIWindowManager() {
-        _classCallCheck(this, UIWindowManager);
-
-        this.windows = {};
-    }
-
-    UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = UUID_1.randomUUID();
-        this.windows[window.windowID] = window;
-    };
-
-    UIWindowManager.prototype.fetchWindow = function fetchWindow(windowID) {
-        return this.windows[windowID];
-    };
-
-    _createClass(UIWindowManager, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().UIWindowManagerShared === undefined) {
-                getApp().UIWindowManagerShared = new UIWindowManager();
-            }
-            return getApp().UIWindowManagerShared;
-        }
-    }]);
-
-    return UIWindowManager;
-}();
-
-exports.UIWindowManager = UIWindowManager;
+exports.UIImageViewComponent = UIImageViewComponent;
+Component(new UIImageViewComponent());
 
 /***/ })
 
