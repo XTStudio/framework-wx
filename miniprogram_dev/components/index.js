@@ -2301,6 +2301,7 @@ Object.assign(module.exports, __webpack_require__(15));
 Object.assign(module.exports, __webpack_require__(26));
 Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(27));
+Object.assign(module.exports, __webpack_require__(33));
 Object.assign(module.exports, __webpack_require__(28));
 Object.assign(module.exports, __webpack_require__(4));
 Object.assign(module.exports, __webpack_require__(3));
@@ -3777,6 +3778,20 @@ var UIViewController = function (_EventEmitter_1$Event) {
         // hidesBottomBarWhenPushed: boolean = false
 
     }, {
+        key: "tabBarController",
+        get: function get() {
+            var current = this;
+            while (current != undefined) {
+                if (current.clazz === "UITabBarController") {
+                    return current;
+                }
+                current = current.parentViewController;
+            }
+            return undefined;
+        }
+        // tabBarItem = new UITabBarItem
+
+    }, {
         key: "window",
         get: function get() {
             var nextResponder = this.nextResponder();
@@ -3872,8 +3887,13 @@ var UINavigationController = function (_UIViewController_1$U) {
         if (this.childViewControllers.length === 1) {
             if (this.attachBlock) {
                 this.attachBlock();
+            } else if (this.childViewControllers[0].iView.superview === undefined) {
+                this.view.addSubview(this.childViewControllers[0].iView);
             }
         } else {
+            if (this.tabBarController) {
+                this.tabBarController.activedNavigationController = this;
+            }
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
         }
     };
@@ -3928,10 +3948,240 @@ var UINavigationController = function (_UIViewController_1$U) {
         return fromViewControllers;
     };
 
+    UINavigationController.prototype.popToRootViewController = function popToRootViewController() {
+        var animated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+        var rootViewController = this.childViewControllers[0];
+        if (rootViewController === undefined) {
+            return [];
+        }
+        return this.popToViewController(rootViewController, animated);
+    };
+
+    UINavigationController.prototype.viewWillLayoutSubviews = function viewWillLayoutSubviews() {
+        _UIViewController_1$U.prototype.viewWillLayoutSubviews.call(this);
+        if (this.childViewControllers[0]) {
+            this.childViewControllers[0].iView.frame = this.view.bounds;
+        }
+    };
+
     return UINavigationController;
 }(UIViewController_1.UIViewController);
 
 exports.UINavigationController = UINavigationController;
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIViewController_1 = __webpack_require__(31);
+var UITabBar_1 = __webpack_require__(34);
+
+var UITabBarController = function (_UIViewController_1$U) {
+    _inherits(UITabBarController, _UIViewController_1$U);
+
+    function UITabBarController() {
+        _classCallCheck(this, UITabBarController);
+
+        var _this = _possibleConstructorReturn(this, _UIViewController_1$U.apply(this, arguments));
+
+        _this.clazz = "UITabBarController";
+        _this.itemControllers = [];
+        _this._selectedIndex = -1;
+        _this.tabBar = new UITabBar_1.UITabBar();
+        _this.activedNavigationController = undefined;
+        return _this;
+    }
+
+    UITabBarController.prototype.attach = function attach(dataOwner, dataField) {
+        var _this2 = this;
+
+        if (this.activedNavigationController !== undefined) {
+            this.activedNavigationController.attach(dataOwner, dataField);
+            return;
+        }
+        this.iView.attach(dataOwner, dataField);
+        dataOwner.onShow = function () {
+            if (_this2.activedNavigationController) {
+                _this2.activedNavigationController.popToRootViewController();
+                _this2.activedNavigationController = undefined;
+            }
+        };
+    };
+
+    UITabBarController.prototype.setViewControllers = function setViewControllers(viewControllers) {
+        var _this3 = this;
+
+        var animated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        this.childViewControllers.forEach(function (it) {
+            it.removeFromParentViewController();
+            it.iView.removeFromSuperview();
+        });
+        this.itemControllers = viewControllers;
+        viewControllers.forEach(function (it, index) {
+            if (index == 0) {
+                _this3.addChildViewController(it);
+                _this3.iView.addSubview(it.iView);
+            }
+        });
+        this.iView.bringSubviewToFront(this.tabBar);
+        // this.tabBar.resetItems()
+        this.selectedIndex = 0;
+        this.viewWillLayoutSubviews();
+    };
+    // Implementation
+
+
+    UITabBarController.prototype.viewDidLoad = function viewDidLoad() {
+        // this.tabBar.tabBarController = this
+        this.iView.addSubview(this.tabBar);
+        _UIViewController_1$U.prototype.viewDidLoad.call(this);
+    };
+
+    UITabBarController.prototype.viewWillLayoutSubviews = function viewWillLayoutSubviews() {
+        var _this4 = this;
+
+        this.tabBar.frame = this.barFrame;
+        this.childViewControllers.forEach(function (it) {
+            if (it._isUINavigationController === true) {
+                it.iView.frame = _this4.navigationControllerFrame;
+            } else {
+                it.iView.frame = _this4.contentFrame;
+            }
+        });
+        _UIViewController_1$U.prototype.viewWillLayoutSubviews.call(this);
+    };
+
+    _createClass(UITabBarController, [{
+        key: "selectedIndex",
+        get: function get() {
+            return this._selectedIndex;
+        },
+        set: function set(value) {
+            var _this5 = this;
+
+            if (this._selectedIndex == value) {
+                this.emit("onSelectedViewController", this, true);
+                return;
+            }
+            if (value < 0) {
+                this._selectedIndex = value;
+                return;
+            }
+            var oldIndex = this._selectedIndex;
+            if (this.itemControllers[value]) {
+                var it = this.itemControllers[value];
+                if (it.parentViewController === undefined) {
+                    this.addChildViewController(it);
+                    this.iView.addSubview(it.iView);
+                    this.iView.bringSubviewToFront(this.tabBar);
+                    this.viewWillLayoutSubviews();
+                }
+            }
+            if (this.itemControllers[oldIndex]) {
+                this.itemControllers[oldIndex].viewWillDisappear(false);
+            }
+            if (this.itemControllers[value]) {
+                this.itemControllers[value].viewWillAppear(false);
+            }
+            this._selectedIndex = value;
+            this.childViewControllers.forEach(function (it) {
+                it.iView.hidden = _this5.itemControllers.indexOf(it) != value;
+            });
+            // this.tabBar.setSelectedIndex(value)
+            if (this.itemControllers[oldIndex]) {
+                this.itemControllers[oldIndex].viewDidDisappear(false);
+            }
+            if (this.itemControllers[value]) {
+                this.itemControllers[value].viewDidAppear(false);
+            }
+            this.emit("onSelectedViewController", this, false);
+        }
+    }, {
+        key: "selectedViewController",
+        get: function get() {
+            return this.itemControllers[this.selectedIndex];
+        },
+        set: function set(value) {
+            this.selectedIndex = Math.max(0, this.itemControllers.indexOf(value));
+        }
+    }, {
+        key: "barFrame",
+        get: function get() {
+            if (this.tabBar.hidden) {
+                return { x: 0.0, y: this.iView.bounds.height, width: this.iView.bounds.width, height: 0.0 };
+            }
+            return { x: 0.0, y: this.iView.bounds.height - this.tabBar.barHeight, width: this.iView.bounds.width, height: this.tabBar.barHeight };
+        }
+    }, {
+        key: "contentFrame",
+        get: function get() {
+            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height - this.barFrame.height };
+        }
+    }, {
+        key: "navigationControllerFrame",
+        get: function get() {
+            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
+        }
+    }, {
+        key: "hidesBottomBarContentFrame",
+        get: function get() {
+            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
+        }
+    }]);
+
+    return UITabBarController;
+}(UIViewController_1.UIViewController);
+
+exports.UITabBarController = UITabBarController;
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(3);
+var UIColor_1 = __webpack_require__(13);
+
+var UITabBar = function (_UIView_1$UIView) {
+    _inherits(UITabBar, _UIView_1$UIView);
+
+    function UITabBar() {
+        _classCallCheck(this, UITabBar);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.barHeight = 50.0;
+        _this.backgroundColor = UIColor_1.UIColor.yellow;
+        return _this;
+    }
+
+    return UITabBar;
+}(UIView_1.UIView);
+
+exports.UITabBar = UITabBar;
 
 /***/ })
 /******/ ]);

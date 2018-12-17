@@ -114,6 +114,17 @@ class UIViewController extends EventEmitter_1.EventEmitter {
     }
     // navigationItem = new UINavigationItem
     // hidesBottomBarWhenPushed: boolean = false
+    get tabBarController() {
+        var current = this;
+        while (current != undefined) {
+            if (current.clazz === "UITabBarController") {
+                return current;
+            }
+            current = current.parentViewController;
+        }
+        return undefined;
+    }
+    // tabBarItem = new UITabBarItem
     get window() {
         let nextResponder = this.nextResponder();
         while (nextResponder !== undefined) {

@@ -5,6 +5,7 @@ const {
     UITapGestureRecognizer,
     UIViewController,
     UINavigationController,
+    UITabBarController,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -59,13 +60,19 @@ class ThirdViewController extends UIViewController {
 
 }
 
-const main = new UINavigationController(new FooViewController)
+const tabBarController = new UITabBarController()
+
+tabBarController.setViewControllers([
+    // new FooViewController,
+    new UINavigationController(new FooViewController),
+])
+
+const main = tabBarController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({
     data: {},
     onLoad: function (options) {
-        console.log("load", options)
         main.attach(this, "main")
     }
 })

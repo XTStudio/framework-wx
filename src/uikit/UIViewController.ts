@@ -135,6 +135,19 @@ export class UIViewController extends EventEmitter {
 
     // hidesBottomBarWhenPushed: boolean = false
 
+    public get tabBarController(): any {
+        var current: UIViewController | undefined = this
+        while (current != undefined) {
+            if (current.clazz === "UITabBarController") {
+                return current as any
+            }
+            current = current.parentViewController
+        }
+        return undefined
+    }
+
+    // tabBarItem = new UITabBarItem
+
     public get window(): any {
         let nextResponder = this.nextResponder()
         while (nextResponder !== undefined) {

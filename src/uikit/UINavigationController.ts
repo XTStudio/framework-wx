@@ -45,8 +45,14 @@ export class UINavigationController extends UIViewController {
             if (this.attachBlock) {
                 this.attachBlock()
             }
+            else if (this.childViewControllers[0].iView.superview === undefined) {
+                this.view.addSubview(this.childViewControllers[0].iView)
+            }
         }
         else {
+            if (this.tabBarController) {
+                this.tabBarController.activedNavigationController = this
+            }
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) })
         }
     }
@@ -85,6 +91,21 @@ export class UINavigationController extends UIViewController {
         fromViewControllers.forEach(it => { it.viewDidDisappear(false) })
         toViewController.viewDidAppear(false)
         return fromViewControllers
+    }
+
+    popToRootViewController(animated: boolean = true): UIViewController[] {
+        const rootViewController = this.childViewControllers[0]
+        if (rootViewController === undefined) {
+            return []
+        }
+        return this.popToViewController(rootViewController, animated)
+    }
+
+    viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        if (this.childViewControllers[0]) {
+            this.childViewControllers[0].iView.frame = this.view.bounds
+        }
     }
 
 }
