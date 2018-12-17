@@ -2741,6 +2741,7 @@ exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+Object.assign(module.exports, __webpack_require__(39));
 Object.assign(module.exports, __webpack_require__(13));
 Object.assign(module.exports, __webpack_require__(15));
 Object.assign(module.exports, __webpack_require__(5));
@@ -4679,6 +4680,86 @@ var UITabBarItem = function () {
 }();
 
 exports.UITabBarItem = UITabBarItem;
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIAlertActionStyle;
+(function (UIAlertActionStyle) {
+    UIAlertActionStyle[UIAlertActionStyle["normal"] = 0] = "normal";
+    UIAlertActionStyle[UIAlertActionStyle["danger"] = 1] = "danger";
+    UIAlertActionStyle[UIAlertActionStyle["cancel"] = 2] = "cancel";
+})(UIAlertActionStyle || (UIAlertActionStyle = {}));
+
+var UIAlertAction = function UIAlertAction(title, style, callback) {
+    _classCallCheck(this, UIAlertAction);
+
+    this.title = title;
+    this.style = style;
+    this.callback = callback;
+};
+
+var UIActionSheet = function () {
+    function UIActionSheet() {
+        _classCallCheck(this, UIActionSheet);
+
+        this.message = "";
+        this.actions = [];
+    }
+
+    UIActionSheet.prototype.addRegularAction = function addRegularAction(title, actionBlock) {
+        this.actions.push(new UIAlertAction(title, UIAlertActionStyle.normal, actionBlock));
+    };
+
+    UIActionSheet.prototype.addDangerAction = function addDangerAction(title, actionBlock) {
+        this.actions.push(new UIAlertAction(title, UIAlertActionStyle.danger, actionBlock));
+    };
+
+    UIActionSheet.prototype.addCancelAction = function addCancelAction(title, actionBlock) {
+        this.actions.push(new UIAlertAction(title, UIAlertActionStyle.cancel, actionBlock));
+    };
+
+    UIActionSheet.prototype.show = function show() {
+        var _this = this;
+
+        wx.showActionSheet({
+            itemList: this.actions.filter(function (it) {
+                return it.style !== UIAlertActionStyle.cancel;
+            }).map(function (it) {
+                return it.title;
+            }),
+            itemColor: this.actions.filter(function (it) {
+                return it.style === UIAlertActionStyle.danger;
+            }).length > 0 ? "#ff0000" : "#000000",
+            success: function success(response) {
+                if (response && _this.actions[response.tapIndex]) {
+                    var callback = _this.actions[response.tapIndex].callback;
+                    if (callback) {
+                        callback();
+                    }
+                }
+            },
+            fail: function fail() {
+                _this.actions.forEach(function (it) {
+                    if (it.style === UIAlertActionStyle.cancel && it.callback) {
+                        it.callback();
+                    }
+                });
+            }
+        });
+    };
+
+    return UIActionSheet;
+}();
+
+exports.UIActionSheet = UIActionSheet;
 
 /***/ })
 /******/ ]);

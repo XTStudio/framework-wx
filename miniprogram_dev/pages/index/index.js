@@ -8,6 +8,7 @@ const {
     UITabBarController,
     UIImageView,
     UIImage,
+    UIActionSheet,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -20,10 +21,19 @@ class FooViewController extends UIViewController {
         this.title = "我的首页"
         this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            this.redView.backgroundColor = UIColor.yellow
-            if (this.navigationController) {
-                this.navigationController.pushViewController(new SecondViewController)
-            }
+            const actionSheet = new UIActionSheet
+            actionSheet.addDangerAction("退出登录", () => {
+                this.redView.backgroundColor = UIColor.red
+            })
+            actionSheet.addCancelAction("取消", () => {
+                this.redView.backgroundColor = UIColor.gray
+            })
+            actionSheet.show()
+            // this.redView.backgroundColor = UIColor.yellow
+            // if (this.navigationController) {
+            //     this.navigationController.pushViewController(new SecondViewController)
+            // }
+
         }))
         this.view.addSubview(this.redView)
         // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)

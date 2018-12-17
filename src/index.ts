@@ -1,6 +1,7 @@
 declare var module: any
 declare var require: any
 
+Object.assign(module.exports, require('./uikit/UIActionSheet'))
 Object.assign(module.exports, require('./uikit/UIAffineTransform'))
 Object.assign(module.exports, require('./uikit/UIAnimator'));
 Object.assign(module.exports, require('./uikit/UIColor'))
