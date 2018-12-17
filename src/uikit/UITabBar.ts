@@ -3,7 +3,7 @@ import { UIColor } from "./UIColor";
 import { UIImageView } from "./UIImageView";
 import { UILabel } from "./UILabel";
 import { UIFont } from "./UIFont";
-import { UITextAlignment } from "./UIEnums";
+import { UITextAlignment, UIViewContentMode } from "./UIEnums";
 import { UITabBarItem } from "./UITabBarItem";
 import { UITapGestureRecognizer } from "./UITapGestureRecognizer";
 import { UISizeZero } from "./UISize";
@@ -59,9 +59,11 @@ export class UITabBar extends UIView {
         super()
         this.barTintColor = UIColor.white
         this.tintColor = UIColor.black
-        // this.domElement.style.borderTop = "solid"
-        // this.domElement.style.borderTopWidth = (1.0 / devicePixelRatio).toString() + "px"
-        // this.domElement.style.borderTopColor = new UIColor(0x98 / 255.0, 0x96 / 255.0, 0x9b / 255.0, 0.75).toStyle()
+        this.extraStyles = `
+        border-top: solid;
+        border-top-width: 1px;
+        border-top-color: #98969b50;
+        `
     }
 
     resetItems() {
@@ -140,6 +142,7 @@ export class UITabBarButton extends UIView {
 
     constructor() {
         super()
+        this.iconImageView.contentMode = UIViewContentMode.scaleAspectFit
         this.addSubview(this.iconImageView)
         this.titleLabel.font = new UIFont(11.0)
         this.titleLabel.textAlignment = UITextAlignment.center
@@ -166,8 +169,8 @@ export class UITabBarButton extends UIView {
 
     layoutSubviews() {
         super.layoutSubviews()
-        const iconSize = this.iconImageView.intrinsicContentSize() || UISizeZero
-        const titleSize = this.titleLabel.intrinsicContentSize() || UISizeZero
+        const iconSize = { width: 26, height: 26 }
+        const titleSize = { width: 120, height: 18 }
         const imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsetsZero
         this.iconImageView.frame = {
             x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,

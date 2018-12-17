@@ -55,6 +55,7 @@ export class UINavigationController extends UIViewController {
             }
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) })
         }
+        this.updateBrowserTitle()
     }
 
     popViewController(animated: boolean = true): UIViewController | undefined {
@@ -67,6 +68,7 @@ export class UINavigationController extends UIViewController {
         fromViewController.iView.removeFromSuperview()
         fromViewController.viewDidDisappear(true)
         toViewController.viewDidAppear(true)
+        this.updateBrowserTitle()
         return fromViewController
     }
 
@@ -90,6 +92,7 @@ export class UINavigationController extends UIViewController {
         fromViewControllers.forEach(it => { it.iView.removeFromSuperview() })
         fromViewControllers.forEach(it => { it.viewDidDisappear(false) })
         toViewController.viewDidAppear(false)
+        this.updateBrowserTitle()
         return fromViewControllers
     }
 
@@ -105,6 +108,15 @@ export class UINavigationController extends UIViewController {
         super.viewWillLayoutSubviews()
         if (this.childViewControllers[0]) {
             this.childViewControllers[0].iView.frame = this.view.bounds
+        }
+    }
+
+    updateBrowserTitle() {
+        if (this.childViewControllers.length > 0) {
+            const title = this.childViewControllers[this.childViewControllers.length - 1].title
+            if (title) {
+                wx.setNavigationBarTitle({ title })
+            }
         }
     }
 

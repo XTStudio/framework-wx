@@ -18,9 +18,9 @@ export class UIViewController extends EventEmitter {
         this._title = value;
         // this.navigationItem.viewController = this
         // this.navigationItem.setNeedsUpdate()
-        // if (this.navigationController) {
-        //     this.navigationController.updateBrowserTitle()
-        // }
+        if (this.navigationController) {
+            this.navigationController.updateBrowserTitle()
+        }
     }
 
     protected _view: any = undefined

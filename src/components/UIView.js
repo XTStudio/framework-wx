@@ -54,6 +54,7 @@ class UIViewElement {
             display: ${props._hidden ? "none" : ""};
             overflow: ${props._clipsToBounds ? "hidden" : ""};
             transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
+            ${props._extraStyles}
         `;
     }
     buildAnimation() {

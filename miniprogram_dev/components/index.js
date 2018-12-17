@@ -145,6 +145,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this._tintColor = undefined;
         _this._alpha = 1.0;
         _this._backgroundColor = undefined;
+        _this._extraStyles = undefined;
         // GestureRecognizers
         _this._userInteractionEnabled = true;
         _this._gestureRecognizers = new MagicObject_1.MagicObject([]);
@@ -740,6 +741,15 @@ var UIView = function (_EventEmitter_1$Event) {
         },
         get: function get() {
             return this._backgroundColor;
+        }
+    }, {
+        key: "extraStyles",
+        get: function get() {
+            return this._extraStyles;
+        },
+        set: function set(value) {
+            this._extraStyles = value;
+            this.invalidate();
         }
     }, {
         key: "userInteractionEnabled",
@@ -1652,9 +1662,9 @@ var UIViewController = function (_EventEmitter_1$Event) {
             this._title = value;
             // this.navigationItem.viewController = this
             // this.navigationItem.setNeedsUpdate()
-            // if (this.navigationController) {
-            //     this.navigationController.updateBrowserTitle()
-            // }
+            if (this.navigationController) {
+                this.navigationController.updateBrowserTitle();
+            }
         }
     }, {
         key: "view",
@@ -3593,6 +3603,7 @@ var UINavigationController = function (_UIViewController_1$U) {
             }
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
         }
+        this.updateBrowserTitle();
     };
 
     UINavigationController.prototype.popViewController = function popViewController() {
@@ -3607,6 +3618,7 @@ var UINavigationController = function (_UIViewController_1$U) {
         fromViewController.iView.removeFromSuperview();
         fromViewController.viewDidDisappear(true);
         toViewController.viewDidAppear(true);
+        this.updateBrowserTitle();
         return fromViewController;
     };
 
@@ -3642,6 +3654,7 @@ var UINavigationController = function (_UIViewController_1$U) {
             it.viewDidDisappear(false);
         });
         toViewController.viewDidAppear(false);
+        this.updateBrowserTitle();
         return fromViewControllers;
     };
 
@@ -3659,6 +3672,15 @@ var UINavigationController = function (_UIViewController_1$U) {
         _UIViewController_1$U.prototype.viewWillLayoutSubviews.call(this);
         if (this.childViewControllers[0]) {
             this.childViewControllers[0].iView.frame = this.view.bounds;
+        }
+    };
+
+    UINavigationController.prototype.updateBrowserTitle = function updateBrowserTitle() {
+        if (this.childViewControllers.length > 0) {
+            var title = this.childViewControllers[this.childViewControllers.length - 1].title;
+            if (title) {
+                wx.setNavigationBarTitle({ title: title });
+            }
         }
     };
 
@@ -4054,10 +4076,14 @@ var UITabBarController = function (_UIViewController_1$U) {
         this.tabBar.resetItems();
         this.selectedIndex = 0;
         this.viewWillLayoutSubviews();
+        this.updateBrowserTitle();
     };
     // Implementation
 
 
+    // private get hidesBottomBarContentFrame(): UIRect {
+    //     return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
+    // }
     UITabBarController.prototype.viewDidLoad = function viewDidLoad() {
         this.tabBar.tabBarController = this;
         this.iView.addSubview(this.tabBar);
@@ -4076,6 +4102,18 @@ var UITabBarController = function (_UIViewController_1$U) {
             }
         });
         _UIViewController_1$U.prototype.viewWillLayoutSubviews.call(this);
+    };
+
+    UITabBarController.prototype.updateBrowserTitle = function updateBrowserTitle() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                this.selectedViewController.updateBrowserTitle();
+            } else {
+                wx.setNavigationBarTitle({
+                    title: this.selectedViewController.title
+                });
+            }
+        }
     };
 
     _createClass(UITabBarController, [{
@@ -4124,6 +4162,7 @@ var UITabBarController = function (_UIViewController_1$U) {
                 this.itemControllers[value].viewDidAppear(false);
             }
             this.emit("onSelectedViewController", this, false);
+            this.updateBrowserTitle();
         }
     }, {
         key: "selectedViewController",
@@ -4148,11 +4187,6 @@ var UITabBarController = function (_UIViewController_1$U) {
         }
     }, {
         key: "navigationControllerFrame",
-        get: function get() {
-            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
-        }
-    }, {
-        key: "hidesBottomBarContentFrame",
         get: function get() {
             return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
         }
@@ -4186,7 +4220,6 @@ var UILabel_1 = __webpack_require__(28);
 var UIFont_1 = __webpack_require__(26);
 var UIEnums_1 = __webpack_require__(16);
 var UITapGestureRecognizer_1 = __webpack_require__(20);
-var UISize_1 = __webpack_require__(19);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var MagicObject_1 = __webpack_require__(11);
 
@@ -4207,9 +4240,7 @@ var UITabBar = function (_UIView_1$UIView) {
         _this.barButtons = [];
         _this.barTintColor = UIColor_1.UIColor.white;
         _this.tintColor = UIColor_1.UIColor.black;
-        // this.domElement.style.borderTop = "solid"
-        // this.domElement.style.borderTopWidth = (1.0 / devicePixelRatio).toString() + "px"
-        // this.domElement.style.borderTopColor = new UIColor(0x98 / 255.0, 0x96 / 255.0, 0x9b / 255.0, 0.75).toStyle()
+        _this.extraStyles = "\n        border-top: solid;\n        border-top-width: 1px;\n        border-top-color: #98969b50;\n        ";
         return _this;
     }
 
@@ -4311,6 +4342,7 @@ var UITabBarButton = function (_UIView_1$UIView2) {
         _this5._itemSelected = false;
         _this5.iconImageView = new UIImageView_1.UIImageView();
         _this5.titleLabel = new UILabel_1.UILabel();
+        _this5.iconImageView.contentMode = UIEnums_1.UIViewContentMode.scaleAspectFit;
         _this5.addSubview(_this5.iconImageView);
         _this5.titleLabel.font = new UIFont_1.UIFont(11.0);
         _this5.titleLabel.textAlignment = UIEnums_1.UITextAlignment.center;
@@ -4340,8 +4372,8 @@ var UITabBarButton = function (_UIView_1$UIView2) {
 
     UITabBarButton.prototype.layoutSubviews = function layoutSubviews() {
         _UIView_1$UIView2.prototype.layoutSubviews.call(this);
-        var iconSize = this.iconImageView.intrinsicContentSize() || UISize_1.UISizeZero;
-        var titleSize = this.titleLabel.intrinsicContentSize() || UISize_1.UISizeZero;
+        var iconSize = { width: 26, height: 26 };
+        var titleSize = { width: 120, height: 18 };
         var imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsets_1.UIEdgeInsetsZero;
         this.iconImageView.frame = {
             x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,

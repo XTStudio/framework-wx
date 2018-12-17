@@ -382,6 +382,17 @@ export class UIView extends EventEmitter {
         return this._backgroundColor
     }
 
+    private _extraStyles: string | undefined = undefined
+
+    public get extraStyles(): string | undefined {
+        return this._extraStyles;
+    }
+
+    public set extraStyles(value: string | undefined) {
+        this._extraStyles = value;
+        this.invalidate()
+    }
+
     convertPointToView(point: UIPoint, toView: UIView): UIPoint {
         const fromPoint = this.convertPointToWindow(point)
         if (!fromPoint) {

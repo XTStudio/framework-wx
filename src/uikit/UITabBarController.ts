@@ -69,6 +69,7 @@ export class UITabBarController extends UIViewController {
             this.itemControllers[value].viewDidAppear(false)
         }
         this.emit("onSelectedViewController", this, false)
+        this.updateBrowserTitle()
     }
 
     public get selectedViewController(): UIViewController {
@@ -95,6 +96,7 @@ export class UITabBarController extends UIViewController {
         this.tabBar.resetItems()
         this.selectedIndex = 0
         this.viewWillLayoutSubviews()
+        this.updateBrowserTitle()
     }
 
     tabBar: UITabBar = new UITabBar
@@ -116,9 +118,9 @@ export class UITabBarController extends UIViewController {
         return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
     }
 
-    private get hidesBottomBarContentFrame(): UIRect {
-        return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
-    }
+    // private get hidesBottomBarContentFrame(): UIRect {
+    //     return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
+    // }
 
     viewDidLoad() {
         this.tabBar.tabBarController = this
@@ -137,6 +139,19 @@ export class UITabBarController extends UIViewController {
             }
         })
         super.viewWillLayoutSubviews()
+    }
+
+    updateBrowserTitle() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                (this.selectedViewController as any).updateBrowserTitle()
+            }
+            else {
+                wx.setNavigationBarTitle({
+                    title: this.selectedViewController.title
+                })
+            }
+        }
     }
 
     activedNavigationController: any = undefined

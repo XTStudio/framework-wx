@@ -50,6 +50,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
             }
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
         }
+        this.updateBrowserTitle();
     }
     popViewController(animated = true) {
         const fromViewController = this.childViewControllers[this.childViewControllers.length - 1];
@@ -61,6 +62,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         fromViewController.iView.removeFromSuperview();
         fromViewController.viewDidDisappear(true);
         toViewController.viewDidAppear(true);
+        this.updateBrowserTitle();
         return fromViewController;
     }
     popToViewController(viewController, animated = true) {
@@ -85,6 +87,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         fromViewControllers.forEach(it => { it.iView.removeFromSuperview(); });
         fromViewControllers.forEach(it => { it.viewDidDisappear(false); });
         toViewController.viewDidAppear(false);
+        this.updateBrowserTitle();
         return fromViewControllers;
     }
     popToRootViewController(animated = true) {
@@ -98,6 +101,14 @@ class UINavigationController extends UIViewController_1.UIViewController {
         super.viewWillLayoutSubviews();
         if (this.childViewControllers[0]) {
             this.childViewControllers[0].iView.frame = this.view.bounds;
+        }
+    }
+    updateBrowserTitle() {
+        if (this.childViewControllers.length > 0) {
+            const title = this.childViewControllers[this.childViewControllers.length - 1].title;
+            if (title) {
+                wx.setNavigationBarTitle({ title });
+            }
         }
     }
 }

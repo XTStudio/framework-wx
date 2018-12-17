@@ -66,6 +66,7 @@ class UITabBarController extends UIViewController_1.UIViewController {
             this.itemControllers[value].viewDidAppear(false);
         }
         this.emit("onSelectedViewController", this, false);
+        this.updateBrowserTitle();
     }
     get selectedViewController() {
         return this.itemControllers[this.selectedIndex];
@@ -89,6 +90,7 @@ class UITabBarController extends UIViewController_1.UIViewController {
         this.tabBar.resetItems();
         this.selectedIndex = 0;
         this.viewWillLayoutSubviews();
+        this.updateBrowserTitle();
     }
     // Implementation
     get barFrame() {
@@ -103,9 +105,9 @@ class UITabBarController extends UIViewController_1.UIViewController {
     get navigationControllerFrame() {
         return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
     }
-    get hidesBottomBarContentFrame() {
-        return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
-    }
+    // private get hidesBottomBarContentFrame(): UIRect {
+    //     return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
+    // }
     viewDidLoad() {
         this.tabBar.tabBarController = this;
         this.iView.addSubview(this.tabBar);
@@ -122,6 +124,18 @@ class UITabBarController extends UIViewController_1.UIViewController {
             }
         });
         super.viewWillLayoutSubviews();
+    }
+    updateBrowserTitle() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                this.selectedViewController.updateBrowserTitle();
+            }
+            else {
+                wx.setNavigationBarTitle({
+                    title: this.selectedViewController.title
+                });
+            }
+        }
     }
 }
 exports.UITabBarController = UITabBarController;

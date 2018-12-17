@@ -37,6 +37,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this._tintColor = undefined;
         this._alpha = 1.0;
         this._backgroundColor = undefined;
+        this._extraStyles = undefined;
         // GestureRecognizers
         this._userInteractionEnabled = true;
         this._gestureRecognizers = new MagicObject_1.MagicObject([]);
@@ -325,6 +326,13 @@ class UIView extends EventEmitter_1.EventEmitter {
     }
     get backgroundColor() {
         return this._backgroundColor;
+    }
+    get extraStyles() {
+        return this._extraStyles;
+    }
+    set extraStyles(value) {
+        this._extraStyles = value;
+        this.invalidate();
     }
     convertPointToView(point, toView) {
         const fromPoint = this.convertPointToWindow(point);

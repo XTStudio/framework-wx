@@ -7,7 +7,6 @@ const UILabel_1 = require("./UILabel");
 const UIFont_1 = require("./UIFont");
 const UIEnums_1 = require("./UIEnums");
 const UITapGestureRecognizer_1 = require("./UITapGestureRecognizer");
-const UISize_1 = require("./UISize");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const MagicObject_1 = require("./helpers/MagicObject");
 class UITabBar extends UIView_1.UIView {
@@ -22,9 +21,11 @@ class UITabBar extends UIView_1.UIView {
         this.barButtons = [];
         this.barTintColor = UIColor_1.UIColor.white;
         this.tintColor = UIColor_1.UIColor.black;
-        // this.domElement.style.borderTop = "solid"
-        // this.domElement.style.borderTopWidth = (1.0 / devicePixelRatio).toString() + "px"
-        // this.domElement.style.borderTopColor = new UIColor(0x98 / 255.0, 0x96 / 255.0, 0x9b / 255.0, 0.75).toStyle()
+        this.extraStyles = `
+        border-top: solid;
+        border-top-width: 1px;
+        border-top-color: #98969b50;
+        `;
     }
     get hidden() {
         return this._hidden;
@@ -99,6 +100,7 @@ class UITabBarButton extends UIView_1.UIView {
         this._itemSelected = false;
         this.iconImageView = new UIImageView_1.UIImageView;
         this.titleLabel = new UILabel_1.UILabel;
+        this.iconImageView.contentMode = UIEnums_1.UIViewContentMode.scaleAspectFit;
         this.addSubview(this.iconImageView);
         this.titleLabel.font = new UIFont_1.UIFont(11.0);
         this.titleLabel.textAlignment = UIEnums_1.UITextAlignment.center;
@@ -136,8 +138,8 @@ class UITabBarButton extends UIView_1.UIView {
     }
     layoutSubviews() {
         super.layoutSubviews();
-        const iconSize = this.iconImageView.intrinsicContentSize() || UISize_1.UISizeZero;
-        const titleSize = this.titleLabel.intrinsicContentSize() || UISize_1.UISizeZero;
+        const iconSize = { width: 26, height: 26 };
+        const titleSize = { width: 120, height: 18 };
         const imageInsets = this.barItem ? this.barItem.imageInsets : UIEdgeInsets_1.UIEdgeInsetsZero;
         this.iconImageView.frame = {
             x: imageInsets.left + (this.bounds.width - iconSize.width) / 2.0 - imageInsets.right,
