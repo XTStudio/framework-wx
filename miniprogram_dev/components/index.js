@@ -2741,6 +2741,12 @@ exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+Object.assign(module.exports, __webpack_require__(45));
+Object.assign(module.exports, __webpack_require__(43));
+Object.assign(module.exports, __webpack_require__(44));
+Object.assign(module.exports, __webpack_require__(46));
+Object.assign(module.exports, __webpack_require__(47));
+Object.assign(module.exports, __webpack_require__(48));
 Object.assign(module.exports, __webpack_require__(42));
 Object.assign(module.exports, __webpack_require__(41));
 Object.assign(module.exports, __webpack_require__(39));
@@ -4891,6 +4897,464 @@ var UserDefaults = function () {
 
 UserDefaults.standard = new UserDefaults();
 exports.UserDefaults = UserDefaults;
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Timer = function () {
+    function Timer(timeInterval, block, repeats) {
+        var _this = this;
+
+        _classCallCheck(this, Timer);
+
+        this.repeats = repeats;
+        this.cancelled = false;
+        if (repeats) {
+            this.handler = setInterval(function () {
+                if (!_this.cancelled && block) {
+                    block();
+                }
+            }, timeInterval * 1000);
+        } else {
+            this.handler = setTimeout(function () {
+                if (!_this.cancelled && block) {
+                    block();
+                }
+            }, timeInterval * 1000);
+        }
+    }
+
+    Timer.sleep = function sleep(timeInterval) {
+        return new Promise(function (resolver) {
+            new Timer(timeInterval, function () {
+                resolver();
+            }, false);
+        });
+    };
+
+    Timer.prototype.invalidate = function invalidate() {
+        this.cancelled = true;
+        if (this.repeats) {
+            clearInterval(this.handler);
+        } else {
+            clearTimeout(this.handler);
+        }
+    };
+
+    return Timer;
+}();
+
+exports.Timer = Timer;
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var URL = function () {
+    function URL(URLString) {
+        _classCallCheck(this, URL);
+
+        this.URLString = URLString;
+    }
+
+    URL.URLWithString = function URLWithString(string, baseURL) {
+        // if (baseURL !== undefined) {
+        // if (windowURL !== undefined) {
+        //     return new URL(new windowURL(string, baseURL.absoluteString).href)
+        // }
+        // }
+        return new URL(string);
+    };
+
+    URL.fileURLWithPath = function fileURLWithPath(path) {
+        throw Error();
+    };
+
+    _createClass(URL, [{
+        key: "absoluteString",
+        get: function get() {
+            return this.URLString;
+        }
+    }]);
+
+    return URL;
+}();
+
+exports.URL = URL;
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Data = function () {
+    function Data(value) {
+        _classCallCheck(this, Data);
+
+        this._arrayBuffer = new ArrayBuffer(0);
+        if (value instanceof ArrayBuffer) {
+            this._arrayBuffer = value.slice(0);
+        } else if (value !== undefined) {
+            if (typeof value.utf8String === "string") {
+                if (typeof TextEncoder === "function") {
+                    return new Data(new TextEncoder().encode(value.utf8String).buffer);
+                } else {
+                    var trimValue = unescape(encodeURIComponent(value.utf8String));
+                    var arrayBuffer = new ArrayBuffer(trimValue.length);
+                    var bufferView = new Uint8Array(arrayBuffer);
+                    for (var i = 0, count = trimValue.length; i < count; i++) {
+                        bufferView[i] = trimValue.charCodeAt(i);
+                    }
+                    this._arrayBuffer = arrayBuffer;
+                }
+            } else if (value.base64EncodedData instanceof Data) {
+                var binaryString = window.atob(new Uint8Array(value.base64EncodedData._arrayBuffer).reduce(function (data, byte) {
+                    return data + String.fromCharCode(byte);
+                }, ''));
+                var len = binaryString.length;
+                var bytes = new Uint8Array(len);
+                for (var i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                this._arrayBuffer = bytes.buffer;
+            } else if (typeof value.base64EncodedString === "string") {
+                var binaryString = window.atob(value.base64EncodedString);
+                var len = binaryString.length;
+                var bytes = new Uint8Array(len);
+                for (var i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                this._arrayBuffer = bytes.buffer;
+            }
+        }
+    }
+
+    Data.prototype.arrayBuffer = function arrayBuffer() {
+        return this._arrayBuffer;
+    };
+
+    Data.prototype.json = function json() {
+        var utf8String = this.utf8String();
+        if (utf8String !== undefined) {
+            try {
+                return JSON.parse(utf8String);
+            } catch (error) {
+                return undefined;
+            }
+        }
+        return undefined;
+    };
+
+    Data.prototype.utf8String = function utf8String() {
+        if (typeof TextDecoder === "function") {
+            return new TextDecoder().decode(this._arrayBuffer);
+        }
+        return decodeURIComponent(escape(new Uint8Array(this._arrayBuffer).reduce(function (data, byte) {
+            return data + String.fromCharCode(byte);
+        }, '')));
+    };
+
+    Data.prototype.base64EncodedData = function base64EncodedData() {
+        return new Data({ utf8String: this.base64EncodedString() });
+    };
+
+    Data.prototype.base64EncodedString = function base64EncodedString() {
+        return window.btoa(new Uint8Array(this._arrayBuffer).reduce(function (data, byte) {
+            return data + String.fromCharCode(byte);
+        }, ''));
+    };
+
+    Data.prototype.mutable = function mutable() {
+        return new MutableData(this._arrayBuffer);
+    };
+
+    return Data;
+}();
+
+exports.Data = Data;
+
+var MutableData = function (_Data) {
+    _inherits(MutableData, _Data);
+
+    function MutableData() {
+        _classCallCheck(this, MutableData);
+
+        return _possibleConstructorReturn(this, _Data.apply(this, arguments));
+    }
+
+    MutableData.prototype.appendData = function appendData(data) {
+        this._arrayBuffer = new Uint8Array([].concat(new Uint8Array(this._arrayBuffer), new Uint8Array(data._arrayBuffer))).buffer;
+    };
+
+    MutableData.prototype.appendArrayBuffer = function appendArrayBuffer(arrayBuffer) {
+        this._arrayBuffer = new Uint8Array([].concat(new Uint8Array(this._arrayBuffer), new Uint8Array(arrayBuffer))).buffer;
+    };
+
+    MutableData.prototype.setData = function setData(data) {
+        this._arrayBuffer = data._arrayBuffer.slice(0);
+    };
+
+    MutableData.prototype.immutable = function immutable() {
+        return new Data(this._arrayBuffer);
+    };
+
+    return MutableData;
+}(Data);
+
+exports.MutableData = MutableData;
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var URL_1 = __webpack_require__(44);
+var URLRequestCachePolicy;
+(function (URLRequestCachePolicy) {
+    URLRequestCachePolicy[URLRequestCachePolicy["useProtocol"] = 0] = "useProtocol";
+    URLRequestCachePolicy[URLRequestCachePolicy["ignoringLocalCache"] = 1] = "ignoringLocalCache";
+    URLRequestCachePolicy[URLRequestCachePolicy["returnCacheElseLoad"] = 2] = "returnCacheElseLoad";
+    URLRequestCachePolicy[URLRequestCachePolicy["returnCacheDontLoad"] = 3] = "returnCacheDontLoad";
+})(URLRequestCachePolicy = exports.URLRequestCachePolicy || (exports.URLRequestCachePolicy = {}));
+
+var URLRequest = function () {
+    function URLRequest(aURL) {
+        var cachePolicy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : URLRequestCachePolicy.useProtocol;
+        var timeout = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 15;
+
+        _classCallCheck(this, URLRequest);
+
+        this.cachePolicy = cachePolicy;
+        this.timeout = timeout;
+        this.HTTPMethod = undefined;
+        this.allHTTPHeaderFields = undefined;
+        this.URL = aURL instanceof URL_1.URL ? aURL : function () {
+            var url = URL_1.URL.URLWithString(aURL);
+            if (url === undefined) {
+                throw Error("invalid URLString.");
+            }
+            return url;
+        }();
+    }
+
+    URLRequest.prototype.valueForHTTPHeaderField = function valueForHTTPHeaderField(field) {
+        return undefined;
+    };
+
+    URLRequest.prototype.mutable = function mutable() {
+        return Object.assign(new MutableURLRequest(this.URL, this.cachePolicy, this.timeout), this);
+    };
+
+    return URLRequest;
+}();
+
+exports.URLRequest = URLRequest;
+
+var MutableURLRequest = function (_URLRequest) {
+    _inherits(MutableURLRequest, _URLRequest);
+
+    function MutableURLRequest() {
+        _classCallCheck(this, MutableURLRequest);
+
+        var _this = _possibleConstructorReturn(this, _URLRequest.apply(this, arguments));
+
+        _this.HTTPMethod = "GET";
+        _this.allHTTPHeaderFields = {};
+        _this.HTTPBody = undefined;
+        return _this;
+    }
+
+    MutableURLRequest.prototype.setValueForHTTPHeaderField = function setValueForHTTPHeaderField(value, field) {
+        if (this.allHTTPHeaderFields === undefined) {
+            this.allHTTPHeaderFields = {};
+        }
+        this.allHTTPHeaderFields[field] = value;
+    };
+
+    MutableURLRequest.prototype.immutable = function immutable() {
+        return Object.assign(new URLRequest(this.URL, this.cachePolicy, this.timeout), this);
+    };
+
+    return MutableURLRequest;
+}(URLRequest);
+
+exports.MutableURLRequest = MutableURLRequest;
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var URLResponse = function URLResponse() {
+    _classCallCheck(this, URLResponse);
+
+    this.URL = undefined;
+    this.expectedContentLength = 0;
+    this.MIMEType = undefined;
+    this.textEncodingName = undefined;
+    this.statusCode = 0;
+    this.allHeaderFields = {};
+};
+
+exports.URLResponse = URLResponse;
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var URLRequest_1 = __webpack_require__(46);
+var URL_1 = __webpack_require__(44);
+var Data_1 = __webpack_require__(45);
+var URLResponse_1 = __webpack_require__(47);
+
+var URLSession = function () {
+    function URLSession() {
+        _classCallCheck(this, URLSession);
+    }
+
+    URLSession.prototype.fetch = function fetch(request) {
+        var _this = this;
+
+        return new Promise(function (resolver, rejector) {
+            _this.dataTask(request, function (data, response, error) {
+                if (error && data !== undefined) {
+                    rejector(error);
+                } else {
+                    resolver(data);
+                }
+            }).resume();
+        });
+    };
+
+    URLSession.prototype.dataTask = function dataTask(req, complete) {
+        if (req instanceof URLRequest_1.URLRequest) {
+            return new URLSessionTask(req, complete);
+        } else if (req instanceof URL_1.URL) {
+            return new URLSessionTask(new URLRequest_1.URLRequest(req), complete);
+        } else {
+            var currentURL = URL_1.URL.URLWithString(req);
+            if (currentURL !== undefined) {
+                return new URLSessionTask(new URLRequest_1.URLRequest(currentURL), complete);
+            } else {
+                throw Error("invalid url.");
+            }
+        }
+    };
+
+    return URLSession;
+}();
+
+URLSession.shared = new URLSession();
+exports.URLSession = URLSession;
+var URLSessionTaskState;
+(function (URLSessionTaskState) {
+    URLSessionTaskState[URLSessionTaskState["running"] = 0] = "running";
+    URLSessionTaskState[URLSessionTaskState["suspended"] = 1] = "suspended";
+    URLSessionTaskState[URLSessionTaskState["cancelling"] = 2] = "cancelling";
+    URLSessionTaskState[URLSessionTaskState["completed"] = 3] = "completed";
+})(URLSessionTaskState = exports.URLSessionTaskState || (exports.URLSessionTaskState = {}));
+
+var URLSessionTask = function () {
+    function URLSessionTask(request, complete) {
+        _classCallCheck(this, URLSessionTask);
+
+        this.request = request;
+        this.complete = complete;
+        this.state = URLSessionTaskState.suspended;
+        this.countOfBytesExpectedToReceive = 0;
+        this.countOfBytesReceived = 0;
+        this.countOfBytesExpectedToSend = 0;
+        this.countOfBytesSent = 0;
+        this._taskHandler = undefined;
+    }
+
+    URLSessionTask.prototype.resume = function resume() {
+        var _this2 = this;
+
+        this._taskHandler = wx.request({
+            url: this.request.URL.absoluteString,
+            data: this.request.HTTPBody,
+            header: this.request.allHTTPHeaderFields,
+            method: this.request.HTTPMethod || "GET",
+            dataType: "",
+            responseType: "arraybuffer",
+            success: function success(response) {
+                if (_this2.complete) {
+                    if (response) {
+                        var res = new URLResponse_1.URLResponse();
+                        res.statusCode = response.statusCode;
+                        res.allHeaderFields = response.header || {};
+                        _this2.complete(response.data instanceof ArrayBuffer ? new Data_1.Data(response.data) : undefined, res, undefined);
+                    }
+                }
+            },
+            fail: function fail(e) {
+                if (_this2.complete) {
+                    _this2.complete(undefined, undefined, e || Error("unknown error"));
+                }
+            }
+        });
+    };
+
+    URLSessionTask.prototype.cancel = function cancel() {
+        if (this._taskHandler) {
+            this._taskHandler.abort();
+        }
+        this.state = URLSessionTaskState.cancelling;
+    };
+
+    return URLSessionTask;
+}();
+
+exports.URLSessionTask = URLSessionTask;
 
 /***/ })
 /******/ ]);

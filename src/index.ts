@@ -1,6 +1,12 @@
 declare var module: any
 declare var require: any
 
+Object.assign(module.exports, require('./foundation/Data'))
+Object.assign(module.exports, require('./foundation/Timer'))
+Object.assign(module.exports, require('./foundation/URL'))
+Object.assign(module.exports, require('./foundation/URLRequest'))
+Object.assign(module.exports, require('./foundation/URLResponse'))
+Object.assign(module.exports, require('./foundation/URLSession'))
 Object.assign(module.exports, require('./foundation/UserDefaults'))
 Object.assign(module.exports, require('./foundation/UUID'))
 

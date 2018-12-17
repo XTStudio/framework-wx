@@ -8,9 +8,8 @@ const {
     UITabBarController,
     UIImageView,
     UIImage,
-    UIActionSheet,
-    UIDevice,
     UserDefaults,
+    URLSession,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -20,25 +19,12 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
-        // UserDefaults.standard.setValue("dhlkashflds", "testKey")
-        // UserDefaults.standard.reset()
-        console.log(UserDefaults.standard.valueForKey("testKey"))
         this.title = "我的首页"
         this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            const actionSheet = new UIActionSheet
-            actionSheet.addDangerAction("退出登录", () => {
-                this.redView.backgroundColor = UIColor.red
+            URLSession.shared.fetch('https://api.github.com/').then((data) => {
+                console.log(data.json())
             })
-            actionSheet.addCancelAction("取消", () => {
-                this.redView.backgroundColor = UIColor.gray
-            })
-            actionSheet.show()
-            // this.redView.backgroundColor = UIColor.yellow
-            // if (this.navigationController) {
-            //     this.navigationController.pushViewController(new SecondViewController)
-            // }
-
         }))
         this.view.addSubview(this.redView)
         // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)
