@@ -12,34 +12,33 @@ const {
     UILabel,
     UIFont,
     UITextAlignment,
+    UIViewController,
 } = require("../../components/index")
 
-const window = new UIWindow
+class FooViewController extends UIViewController {
 
-const mainView = new UIView
-mainView.backgroundColor = UIColor.yellow
-mainView.clipsToBounds = true
-mainView.frame = UIRectMake(0, 0, 300, 300)
+    redView = new UIView
 
-const fooLabel = new UILabel
-fooLabel.frame = UIRectMake(0, 0, 300, 300)
-fooLabel.text = "We continuously monitor the status of github.com and all its related services. If there are any interruptions in service, a note will be posted here."
-// fooLabel.textColor = UIColor.red
-fooLabel.numberOfLines = 3
-fooLabel.font = new UIFont(20)
-mainView.addSubview(fooLabel)
+    viewDidLoad() {
+        super.viewDidLoad()
+        this.redView.backgroundColor = UIColor.red
+        this.view.addSubview(this.redView)
+        this.view.backgroundColor = UIColor.gray
+    }
 
-window.addSubview(mainView)
+    viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
+    }
 
-window.backgroundColor = UIColor.gray
-// window.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-//     window.backgroundColor = UIColor.yellow
-// }))
+}
+
+const main = new FooViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({
     data: {},
     onLoad: function () {
-        window.attach(this, "main")
+        main.attach(this, "main")
     },
 })

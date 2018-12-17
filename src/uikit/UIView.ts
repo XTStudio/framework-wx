@@ -103,9 +103,17 @@ export class UIView extends EventEmitter {
 
     public tag: number = 0
 
-    public viewDelegate: any = undefined
+    private _viewDelegate: MagicObject = new MagicObject()
 
-    _superview = new MagicObject()
+    get viewDelegate(): any {
+        return this._viewDelegate.get()
+    }
+
+    set viewDelegate(value: any) {
+        this._viewDelegate.set(value)
+    }
+
+    private _superview = new MagicObject()
 
     public get superview(): UIView | undefined {
         return this._superview.get()

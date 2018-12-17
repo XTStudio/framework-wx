@@ -238,7 +238,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
         _this.tag = 0;
-        _this.viewDelegate = undefined;
+        _this._viewDelegate = new MagicObject_1.MagicObject();
         _this._superview = new MagicObject_1.MagicObject();
         _this.subviews = [];
         _this._clipsToBounds = false;
@@ -735,6 +735,14 @@ var UIView = function (_EventEmitter_1$Event) {
             }
             this._transform = value;
             this.invalidate();
+        }
+    }, {
+        key: "viewDelegate",
+        get: function get() {
+            return this._viewDelegate.get();
+        },
+        set: function set(value) {
+            this._viewDelegate.set(value);
         }
     }, {
         key: "superview",
@@ -2295,6 +2303,7 @@ Object.assign(module.exports, __webpack_require__(27));
 Object.assign(module.exports, __webpack_require__(28));
 Object.assign(module.exports, __webpack_require__(4));
 Object.assign(module.exports, __webpack_require__(3));
+Object.assign(module.exports, __webpack_require__(31));
 Component({
     properties: {
         view: {
@@ -3576,6 +3585,187 @@ var UIStatusBarStyle;
     UIStatusBarStyle[UIStatusBarStyle["default"] = 0] = "default";
     UIStatusBarStyle[UIStatusBarStyle["lightContent"] = 1] = "lightContent";
 })(UIStatusBarStyle = exports.UIStatusBarStyle || (exports.UIStatusBarStyle = {}));
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var EventEmitter_1 = __webpack_require__(14);
+var UIView_1 = __webpack_require__(3);
+var UIEdgeInsets_1 = __webpack_require__(8);
+var UIColor_1 = __webpack_require__(13);
+
+var UIViewController = function (_EventEmitter_1$Event) {
+    _inherits(UIViewController, _EventEmitter_1$Event);
+
+    function UIViewController() {
+        _classCallCheck(this, UIViewController);
+
+        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
+
+        _this._title = undefined;
+        _this._view = undefined;
+        _this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this.parentViewController = undefined;
+        _this.childViewControllers = [];
+        return _this;
+    }
+
+    UIViewController.prototype.loadViewIfNeed = function loadViewIfNeed() {
+        if (this._view === undefined) {
+            this.loadView();
+            if (this._view) {
+                this._view.viewDelegate = this;
+            }
+            this.viewDidLoad();
+        }
+    };
+
+    UIViewController.prototype.attach = function attach(dataOwner, dataField) {
+        this.iView.attach(dataOwner, dataField);
+    };
+
+    UIViewController.prototype.loadView = function loadView() {
+        this.view = new UIView_1.UIView();
+        this.iView.backgroundColor = UIColor_1.UIColor.white;
+    };
+
+    UIViewController.prototype.viewDidLoad = function viewDidLoad() {};
+
+    UIViewController.prototype.viewWillAppear = function viewWillAppear(animated) {
+        this.childViewControllers.forEach(function (it) {
+            return it.viewWillAppear(animated);
+        });
+    };
+
+    UIViewController.prototype.viewDidAppear = function viewDidAppear(animated) {
+        this.childViewControllers.forEach(function (it) {
+            return it.viewDidAppear(animated);
+        });
+    };
+
+    UIViewController.prototype.viewWillDisappear = function viewWillDisappear(animated) {
+        this.childViewControllers.forEach(function (it) {
+            return it.viewWillDisappear(animated);
+        });
+    };
+
+    UIViewController.prototype.viewDidDisappear = function viewDidDisappear(animated) {
+        this.childViewControllers.forEach(function (it) {
+            return it.viewDidDisappear(animated);
+        });
+    };
+
+    UIViewController.prototype.viewWillLayoutSubviews = function viewWillLayoutSubviews() {
+        this.emit("viewWillLayoutSubviews", this);
+    };
+
+    UIViewController.prototype.viewDidLayoutSubviews = function viewDidLayoutSubviews() {};
+
+    UIViewController.prototype.addChildViewController = function addChildViewController(viewController) {
+        if (viewController == this) {
+            return;
+        }
+        if (viewController.parentViewController) {
+            if (viewController.parentViewController == this) {
+                return;
+            }
+            viewController.parentViewController.removeFromParentViewController();
+        }
+        viewController.willMoveToParentViewController(this);
+        this.childViewControllers.push(viewController);
+        viewController.parentViewController = this;
+        viewController.didMoveToParentViewController(this);
+    };
+
+    UIViewController.prototype.removeFromParentViewController = function removeFromParentViewController() {
+        if (this.parentViewController) {
+            var it = this.parentViewController;
+            this.willMoveToParentViewController(undefined);
+            var idx = it.childViewControllers.indexOf(this);
+            if (idx >= 0) {
+                it.childViewControllers.splice(idx, 1);
+            }
+            this.parentViewController = undefined;
+            this.didMoveToParentViewController(undefined);
+        }
+    };
+
+    UIViewController.prototype.willMoveToParentViewController = function willMoveToParentViewController(parent) {};
+
+    UIViewController.prototype.didMoveToParentViewController = function didMoveToParentViewController(parent) {};
+
+    UIViewController.prototype.didAddSubview = function didAddSubview(subview) {};
+    // Helpers
+
+
+    UIViewController.prototype.nextResponder = function nextResponder() {
+        if (this.parentViewController) {
+            return this.parentViewController.view;
+        } else if (this._view && this._view.superview) {
+            return this._view.superview;
+        }
+        return undefined;
+    };
+
+    UIViewController.prototype.invalidate = function invalidate() {
+        var dirty = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var nextResponder = this.nextResponder();
+        if (nextResponder !== undefined) {
+            nextResponder.invalidate(true, force);
+        }
+    };
+
+    _createClass(UIViewController, [{
+        key: "title",
+        get: function get() {
+            return this._title;
+        },
+        set: function set(value) {
+            this._title = value;
+            // this.navigationItem.viewController = this
+            // this.navigationItem.setNeedsUpdate()
+            // if (this.navigationController) {
+            //     this.navigationController.updateBrowserTitle()
+            // }
+        }
+    }, {
+        key: "view",
+        set: function set(value) {
+            if (this._view !== undefined) {
+                return;
+            }
+            this._view = value;
+        },
+        get: function get() {
+            return this.iView;
+        }
+    }, {
+        key: "iView",
+        get: function get() {
+            this.loadViewIfNeed();
+            return this._view;
+        }
+    }]);
+
+    return UIViewController;
+}(EventEmitter_1.EventEmitter);
+
+exports.UIViewController = UIViewController;
 
 /***/ })
 /******/ ]);

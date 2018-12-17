@@ -27,7 +27,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
         this.tag = 0;
-        this.viewDelegate = undefined;
+        this._viewDelegate = new MagicObject_1.MagicObject();
         this._superview = new MagicObject_1.MagicObject();
         this.subviews = [];
         this._clipsToBounds = false;
@@ -98,6 +98,12 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
         this._transform = value;
         this.invalidate();
+    }
+    get viewDelegate() {
+        return this._viewDelegate.get();
+    }
+    set viewDelegate(value) {
+        this._viewDelegate.set(value);
     }
     get superview() {
         return this._superview.get();

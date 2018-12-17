@@ -18,6 +18,7 @@ Object.assign(module.exports, require('./uikit/UIScrollView'));
 Object.assign(module.exports, require('./uikit/UITapGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UITouch'));
 Object.assign(module.exports, require('./uikit/UIView'));
+Object.assign(module.exports, require('./uikit/UIViewController'));
 Component({
     properties: {
         view: {
