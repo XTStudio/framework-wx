@@ -1,5 +1,8 @@
 "use strict";
+Object.assign(module.exports, require('./foundation/Bundle'));
 Object.assign(module.exports, require('./foundation/Data'));
+Object.assign(module.exports, require('./foundation/DispatchQueue'));
+Object.assign(module.exports, require('./foundation/FileManager'));
 Object.assign(module.exports, require('./foundation/Timer'));
 Object.assign(module.exports, require('./foundation/URL'));
 Object.assign(module.exports, require('./foundation/URLRequest'));

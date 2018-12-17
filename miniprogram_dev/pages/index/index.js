@@ -10,6 +10,8 @@ const {
     UIImage,
     UserDefaults,
     URLSession,
+    FileManager,
+    Data,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -19,6 +21,11 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
+        const path = FileManager.cacheDirectory + "fooDir/foo.txt"
+        const data = new Data({utf8String: 'Hello, World!你好吗'})
+        // const toPath = FileManager.cacheDirectory + "fooDir/foo2.txt"
+        FileManager.defaultManager.createFile(path, data)
+        console.log(FileManager.defaultManager.readFile(path).utf8String())
         this.title = "我的首页"
         this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
         this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {

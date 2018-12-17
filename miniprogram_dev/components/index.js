@@ -2741,7 +2741,10 @@ exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+Object.assign(module.exports, __webpack_require__(50));
 Object.assign(module.exports, __webpack_require__(45));
+Object.assign(module.exports, __webpack_require__(49));
+Object.assign(module.exports, __webpack_require__(51));
 Object.assign(module.exports, __webpack_require__(43));
 Object.assign(module.exports, __webpack_require__(44));
 Object.assign(module.exports, __webpack_require__(46));
@@ -5355,6 +5358,299 @@ var URLSessionTask = function () {
 }();
 
 exports.URLSessionTask = URLSessionTask;
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var DispatchQueue = function () {
+    function DispatchQueue(identifier) {
+        _classCallCheck(this, DispatchQueue);
+    }
+
+    DispatchQueue.prototype.async = function async(asyncBlock) {
+        setTimeout(asyncBlock, 0);
+    };
+
+    DispatchQueue.prototype.asyncAfter = function asyncAfter(delayInSeconds, asyncBlock) {
+        setTimeout(asyncBlock, delayInSeconds * 1000);
+    };
+
+    DispatchQueue.prototype.isolate = function isolate(isolateBlock) {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+        }
+
+        setTimeout(function () {
+            isolateBlock.apply(undefined, args);
+        }, 0);
+    };
+
+    return DispatchQueue;
+}();
+
+DispatchQueue.main = new DispatchQueue();
+DispatchQueue.global = new DispatchQueue();
+exports.DispatchQueue = DispatchQueue;
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var URL_1 = __webpack_require__(44);
+var Data_1 = __webpack_require__(45);
+
+var Bundle = function () {
+    function Bundle(type) {
+        _classCallCheck(this, Bundle);
+
+        this.type = type;
+        this.resources = {};
+    }
+
+    Bundle.prototype.resourcePath = function resourcePath(name, type, inDirectory) {
+        if (this.type === "native") {
+            if (inDirectory !== undefined) {
+                return inDirectory + "/" + name + (type !== undefined ? "." + type : "");
+            } else {
+                return "" + name + (type !== undefined ? "." + type : "");
+            }
+        } else if (this.type === "js") {
+            if (inDirectory !== undefined && this.resources[inDirectory + "/" + name + (type !== undefined ? "." + type : "")] !== undefined) {
+                return "xt://" + inDirectory + "/" + name + (type !== undefined ? "." + type : "");
+            } else if (this.resources["" + name + (type !== undefined ? "." + type : "")] !== undefined) {
+                return "xt://" + name + (type !== undefined ? "." + type : "");
+            }
+        }
+    };
+
+    Bundle.prototype.resourceURL = function resourceURL(name, type, inDirectory) {
+        var path = this.resourcePath(name, type, inDirectory);
+        return path !== undefined ? URL_1.URL.URLWithString(path) : undefined;
+    };
+
+    Bundle.prototype.addResource = function addResource(path, base64String) {
+        if (this.type === "js") {
+            this.resources[path] = new Data_1.Data({ base64EncodedString: base64String });
+        }
+    };
+
+    return Bundle;
+}();
+
+Bundle.native = new Bundle("native");
+Bundle.js = new Bundle("js");
+exports.Bundle = Bundle;
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Data_1 = __webpack_require__(45);
+var Bundle_1 = __webpack_require__(50);
+var fs = wx.getFileSystemManager();
+
+var FileManager = function () {
+    function FileManager() {
+        _classCallCheck(this, FileManager);
+
+        this.tmpFiles = {};
+    }
+
+    FileManager.prototype.subpaths = function subpaths(atPath, deepSearch) {
+        if (atPath.indexOf("xt://") === 0) {
+            return Object.keys(Bundle_1.Bundle.js.resources).filter(function (it) {
+                return it.indexOf(atPath.replace("xt://", "")) === 0;
+            });
+        } else if (atPath.indexOf("tmp://") === 0) {
+            return Object.keys(this.tmpFiles).filter(function (it) {
+                return it.indexOf(atPath) === 0;
+            });
+        }
+        return [];
+    };
+
+    FileManager.prototype.createDirectory = function createDirectory(atPath, withIntermediateDirectories) {
+        if (withIntermediateDirectories) {
+            try {
+                var currentPath = FileManager.wxPath;
+                atPath.replace(FileManager.wxPath, "").split('/').filter(function (it) {
+                    return it.length > 0;
+                }).forEach(function (it, idx) {
+                    currentPath += '/' + it;
+                    try {
+                        if (fs.accessSync(currentPath)) {
+                            var stat = fs.statSync(currentPath);
+                            if (stat.isDirectory() || stat.isFile()) {
+                                return;
+                            }
+                        }
+                    } catch (error) {
+                        fs.mkdirSync(currentPath, false);
+                    }
+                });
+            } catch (error) {
+                return error;
+            }
+        } else {
+            try {
+                fs.mkdirSync(atPath, false);
+            } catch (error) {
+                return error;
+            }
+        }
+    };
+
+    FileManager.prototype.createFile = function createFile(atPath, data) {
+        if (atPath.indexOf("xt://") === 0) {
+            return Error("readonly");
+        } else if (atPath.indexOf("tmp://") === 0) {
+            this.tmpFiles[atPath] = data;
+            return undefined;
+        } else {
+            try {
+                fs.writeFileSync(atPath, data.arrayBuffer());
+            } catch (error) {
+                return error;
+            }
+        }
+    };
+
+    FileManager.prototype.readFile = function readFile(atPath) {
+        if (atPath.indexOf("xt://") === 0) {
+            return Bundle_1.Bundle.js.resources[atPath.replace("xt://", "")];
+        } else if (atPath.indexOf("tmp://") === 0) {
+            return this.tmpFiles[atPath];
+        } else {
+            try {
+                return new Data_1.Data(fs.readFileSync(atPath));
+            } catch (error) {}
+        }
+        return undefined;
+    };
+
+    FileManager.prototype.removeItem = function removeItem(atPath) {
+        if (atPath.indexOf("xt://") === 0) {
+            delete Bundle_1.Bundle.js.resources[atPath.replace("xt://", "")];
+            return undefined;
+        } else if (atPath.indexOf("tmp://") === 0) {
+            delete this.tmpFiles[atPath];
+            return undefined;
+        } else {
+            try {
+                if (fs.statSync(atPath).isDirectory()) {
+                    fs.rmdirSync(atPath);
+                } else {
+                    fs.unlinkSync(atPath);
+                }
+            } catch (error) {
+                return error;
+            }
+        }
+    };
+
+    FileManager.prototype.copyItem = function copyItem(atPath, toPath) {
+        if (toPath.indexOf("xt://") === 0) {
+            return Error("readonly");
+        } else if (toPath.indexOf("tmp://") === 0) {
+            var data = this.readFile(atPath);
+            if (data) {
+                this.createFile(toPath, data);
+            } else {
+                return Error("file not found.");
+            }
+        } else {
+            try {
+                fs.copyFileSync(atPath, toPath);
+            } catch (error) {
+                return error;
+            }
+        }
+    };
+
+    FileManager.prototype.moveItem = function moveItem(atPath, toPath) {
+        if (toPath.indexOf("xt://") === 0) {
+            return Error("readonly");
+        } else if (toPath.indexOf("tmp://") === 0) {
+            var data = this.readFile(atPath);
+            if (data) {
+                this.createFile(toPath, data);
+                this.removeItem(atPath);
+            } else {
+                return Error("file not found.");
+            }
+        } else {
+            try {
+                {
+                    var error = this.copyItem(atPath, toPath);
+                    if (error instanceof Error) {
+                        throw error;
+                    }
+                }
+                {
+                    var _error = this.removeItem(atPath);
+                    if (_error instanceof Error) {
+                        throw _error;
+                    }
+                }
+            } catch (error) {
+                return error;
+            }
+        }
+    };
+
+    FileManager.prototype.fileExists = function fileExists(atPath) {
+        if (atPath.indexOf("xt://") === 0) {
+            return Bundle_1.Bundle.js.resources[atPath.replace("xt://", "")] instanceof Data_1.Data;
+        } else if (atPath.indexOf("tmp://") === 0) {
+            return this.tmpFiles[atPath] !== undefined;
+        } else {
+            try {
+                return fs.statSync(atPath).isFile();
+            } catch (error) {
+                return false;
+            }
+        }
+    };
+
+    FileManager.prototype.dirExists = function dirExists(atPath) {
+        try {
+            return fs.statSync(atPath).isDirectory();
+        } catch (error) {
+            return false;
+        }
+    };
+
+    return FileManager;
+}();
+
+FileManager.wxPath = wx.env.USER_DATA_PATH;
+FileManager.defaultManager = new FileManager();
+FileManager.documentDirectory = FileManager.wxPath + "/document/";
+FileManager.libraryDirectory = FileManager.wxPath + "/library/";
+FileManager.cacheDirectory = FileManager.wxPath + "/cache/";
+FileManager.temporaryDirectory = "tmp://tmp/";
+FileManager.jsBundleDirectory = "xt://";
+exports.FileManager = FileManager;
 
 /***/ })
 /******/ ]);
