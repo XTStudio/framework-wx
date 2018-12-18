@@ -85,17 +85,19 @@ module.exports =
 /******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-// xt-framework/uiview.js
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(53);
+// xt-framework/uiview.js
 var emptyAnimation = function () {
     var animation = wx.createAnimation({ duration: 0 });
     animation.step();
@@ -109,6 +111,10 @@ var UIViewElement = function () {
         }
         if (newProps.isDirty !== true && owner.el !== undefined) {
             return;
+        }
+        if (newProps.viewID) {
+            owner.viewID = newProps.viewID;
+            UIComponentManager_1.UIComponentManager.shared.addComponent(owner, newProps.viewID);
         }
         if (owner.el === undefined) {
             owner.el = new elementClazz(owner);
@@ -165,6 +171,9 @@ var UIViewElement = function () {
                 styles += "border-radius: " + props._layer._cornerRadius + "px;";
             }
         }
+        if (props._extraStyles) {
+            styles += props._extraStyles;
+        }
         return styles;
     };
 
@@ -212,8 +221,21 @@ var UIViewComponent = function UIViewComponent() {
         props: {
             type: Object,
             value: {},
-            observer: function observer(newVal, oldVal) {
-                UIViewElement.componentPropsChanged(this, UIViewElement, newVal);
+            observer: function observer(newVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                if (newVal.viewID) {
+                    this.viewID = newVal.viewID;
+                    UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                }
+            }
+        }
+    };
+    this.lifetimes = {
+        detached: function detached() {
+            if (this.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
             }
         }
     };
@@ -247,5 +269,54 @@ var UIAffineTransformIsIdentity = function UIAffineTransformIsIdentity(transform
     return UIAffineTransformEqualToTransform(transform, UIAffineTransformIdentity);
 };
 
+/***/ }),
+
+/***/ 53:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIComponentManager = function () {
+    function UIComponentManager() {
+        _classCallCheck(this, UIComponentManager);
+
+        this.components = {};
+    }
+
+    UIComponentManager.prototype.addComponent = function addComponent(component, viewID) {
+        this.components[viewID] = component;
+    };
+
+    UIComponentManager.prototype.fetchComponent = function fetchComponent(viewID) {
+        return this.components[viewID];
+    };
+
+    UIComponentManager.prototype.deleteComponent = function deleteComponent(viewID) {
+        delete this.components[viewID];
+    };
+
+    _createClass(UIComponentManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIComponentManagerShared === undefined) {
+                getApp().UIComponentManagerShared = new UIComponentManager();
+            }
+            return getApp().UIComponentManagerShared;
+        }
+    }]);
+
+    return UIComponentManager;
+}();
+
+exports.UIComponentManager = UIComponentManager;
+
 /***/ })
-/******/ ]);
+
+/******/ });

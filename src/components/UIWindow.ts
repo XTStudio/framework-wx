@@ -1,69 +1,37 @@
-import { UIViewElement } from "./UIView";
-import { UIWindowManager } from "./UIWindowManager";
+import { UIComponentManager } from "./UIComponentManager";
+import { UIViewManager } from "./UIViewManager";
+import { UIViewComponent } from "./UIView";
 
-// xt-framework/uiview.js
-
-export class UIWindowElement extends UIViewElement {
-
-    buildStyle() {
-        let style = super.buildStyle()
-        style += `
-        width: 100%;
-        height: 100%;
-        `
-        return style
-    }
-
-    buildProps() {
-        const props = this.getProps()
-        return {
-            ... super.buildProps(),
-            windowID: props.windowID,
-        }
-    }
-
-}
-
-export class UIWindowComponent {
-
-    properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function (newVal: any, oldVal: any) {
-                UIViewElement.componentPropsChanged(this as any, UIWindowElement, newVal)
-            }
-        }
-    }
+export class UIWindowComponent extends UIViewComponent {
 
     methods = {
         onTouchStarted: function (e: any) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                const window = UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid)
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                const window = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
                 if (window) {
                     window.handleTouchStart(e)
                 }
             }
         },
         onTouchMoved: function (e: any) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                const window = UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid)
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                const window = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
                 if (window) {
                     window.handleTouchMove(e)
                 }
             }
         },
         onTouchEnded: function (e: any) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                const window = UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid)
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                const window = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
                 if (window) {
                     window.handleTouchEnd(e)
                 }
             }
         },
         onTouchCancelled: function (e: any) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                const window = UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid)
+            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                const window = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
                 if (window) {
                     window.handleTouchCancel(e)
                 }

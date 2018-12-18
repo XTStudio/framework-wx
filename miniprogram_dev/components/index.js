@@ -106,7 +106,6 @@ var UIRect_1 = __webpack_require__(17);
 var UIAffineTransform_1 = __webpack_require__(13);
 var Matrix_1 = __webpack_require__(14);
 var UIColor_1 = __webpack_require__(5);
-var UIWindowManager_1 = __webpack_require__(9);
 var UITouch_1 = __webpack_require__(4);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var MagicObject_1 = __webpack_require__(11);
@@ -115,6 +114,7 @@ var UIViewManager_1 = __webpack_require__(8);
 var EventEmitter_1 = __webpack_require__(10);
 var UIEnums_1 = __webpack_require__(16);
 var CALayer_1 = __webpack_require__(52);
+var UIComponentManager_1 = __webpack_require__(53);
 exports.dirtyItems = [];
 
 var UIView = function (_EventEmitter_1$Event) {
@@ -126,9 +126,9 @@ var UIView = function (_EventEmitter_1$Event) {
         var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.call(this));
 
         _this.clazz = "UIView";
-        _this.isDirty = true;
         _this.dataOwner = undefined;
         _this.dataField = undefined;
+        _this.viewID = undefined;
         _this.animationProps = {};
         _this.animationValues = {};
         _this._layer = undefined;
@@ -151,6 +151,9 @@ var UIView = function (_EventEmitter_1$Event) {
         // GestureRecognizers
         _this._userInteractionEnabled = true;
         _this._gestureRecognizers = new MagicObject_1.MagicObject([]);
+        // Component Data Builder
+        _this.isStyleDirty = true;
+        _this.isHierarchyDirty = true;
         _this.invalidateCallHandler = undefined;
         UIViewManager_1.UIViewManager.shared.addView(_this);
         exports.dirtyItems.push(_this);
@@ -175,7 +178,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return it !== _this2;
             });
             this.superview = undefined;
-            superview.invalidate();
+            superview.invalidateHierarchy();
             this.didMoveToSuperview();
             this.didRemovedFromWindow();
         }
@@ -194,8 +197,8 @@ var UIView = function (_EventEmitter_1$Event) {
         view.willMoveToSuperview(this);
         view.superview = this;
         this.subviews.splice(index, 0, view);
-        this.invalidate();
-        view.invalidate();
+        this.invalidateHierarchy();
+        view.invalidateHierarchy();
         view.didMoveToSuperview();
         this.didAddSubview(view);
     };
@@ -204,7 +207,7 @@ var UIView = function (_EventEmitter_1$Event) {
         var index2View = this.subviews[index2];
         this.subviews[index2] = this.subviews[index1];
         this.subviews[index1] = index2View;
-        this.invalidate();
+        this.invalidateHierarchy();
     };
 
     UIView.prototype.addSubview = function addSubview(view) {
@@ -217,8 +220,8 @@ var UIView = function (_EventEmitter_1$Event) {
         }
         view.superview = this;
         this.subviews.push(view);
-        this.invalidate();
-        view.invalidate();
+        this.invalidateHierarchy();
+        view.invalidateHierarchy();
         view.didMoveToSuperview();
         this.didAddSubview(view);
         view.didMoveToWindow();
@@ -243,7 +246,7 @@ var UIView = function (_EventEmitter_1$Event) {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.push(view);
-            this.invalidate();
+            this.invalidateHierarchy();
         }
     };
 
@@ -252,7 +255,7 @@ var UIView = function (_EventEmitter_1$Event) {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.unshift(view);
-            this.invalidate();
+            this.invalidateHierarchy();
         }
     };
 
@@ -534,51 +537,76 @@ var UIView = function (_EventEmitter_1$Event) {
         return point.x >= 0.0 - this.touchAreaInsets.left && point.y >= 0.0 - this.touchAreaInsets.top && point.x <= this.frame.width + this.touchAreaInsets.right && point.y <= this.frame.height + this.touchAreaInsets.bottom;
     };
 
+    UIView.prototype.invalidateStyle = function invalidateStyle() {
+        this.isStyleDirty = true;
+        this.invalidate();
+    };
+
+    UIView.prototype.invalidateHierarchy = function invalidateHierarchy() {
+        this.isHierarchyDirty = true;
+        this.invalidate();
+    };
+
     UIView.prototype.invalidate = function invalidate() {
         var _this3 = this;
 
-        var dirty = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-        var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-        if (dirty) {
-            this.isDirty = true;
-            exports.dirtyItems.push(this);
-        }
-        var nextResponder = this.nextResponder();
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force);
-        } else {
-            if (force) {
-                if (this.dataOwner && this.dataField) {
-                    var _dataOwner$setData;
-
-                    this.dataOwner.setData((_dataOwner$setData = {}, _dataOwner$setData[this.dataField] = this, _dataOwner$setData));
-                }
-                exports.dirtyItems.forEach(function (it) {
-                    it.isDirty = false;
-                    it.animationProps = {};
-                    it.animationValues = {};
-                });
-                exports.dirtyItems = [];
-                return;
-            }
-            if (this.invalidateCallHandler === undefined) {
-                this.invalidateCallHandler = setTimeout(function () {
-                    _this3.invalidateCallHandler = undefined;
-                    if (_this3.dataOwner && _this3.dataField) {
-                        var _this3$dataOwner$setD;
-
-                        _this3.dataOwner.setData((_this3$dataOwner$setD = {}, _this3$dataOwner$setD[_this3.dataField] = _this3, _this3$dataOwner$setD));
+        if (this.invalidateCallHandler === undefined) {
+            this.invalidateCallHandler = setTimeout(function () {
+                _this3.invalidateCallHandler = undefined;
+                if (_this3.viewID) {
+                    var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(_this3.viewID);
+                    if (component) {
+                        var data = {};
+                        data.viewID = _this3.viewID;
+                        if (_this3.isStyleDirty) {
+                            data.style = _this3.buildStyle();
+                        }
+                        if (_this3.isHierarchyDirty) {
+                            _this3.subviews.forEach(function (it) {
+                                if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                    it.invalidateStyle();
+                                    it.invalidateHierarchy();
+                                }
+                            });
+                            data.subviews = _this3.subviews;
+                        }
+                        component.setData(data);
                     }
-                    exports.dirtyItems.forEach(function (it) {
-                        it.isDirty = false;
-                        it.animationProps = {};
-                        it.animationValues = {};
-                    });
-                    exports.dirtyItems = [];
-                });
+                }
+                _this3.isStyleDirty = false;
+                _this3.isHierarchyDirty = false;
+                _this3.animationProps = {};
+                _this3.animationValues = {};
+            });
+        }
+    };
+
+    UIView.prototype.buildStyle = function buildStyle() {
+        var styles = "\n            position: absolute;\n            left: " + this._frame.x + "px;\n            top: " + this._frame.y + "px;\n            width: " + this._frame.width + "px;\n            height: " + this._frame.height + "px; \n        ";
+        if (this._backgroundColor !== undefined) {
+            styles += "background-color: " + UIColor_1.UIColor.toStyle(this._backgroundColor) + ";";
+        }
+        if (this._alpha < 1.0) {
+            styles += "opacity: " + this._alpha + ";";
+        }
+        if (this._hidden) {
+            styles += "display: none;";
+        }
+        if (this._clipsToBounds) {
+            styles += "overflow: hidden;";
+        }
+        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
+            styles += "transform: " + ('matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')') + ";";
+        }
+        if (this._layer) {
+            if (this._layer._cornerRadius > 0) {
+                styles += "border-radius: " + this._layer._cornerRadius + "px;";
             }
         }
+        if (this._extraStyles) {
+            styles += this._extraStyles;
+        }
+        return styles;
     };
 
     _createClass(UIView, [{
@@ -617,7 +645,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 this.bounds = { x: 0, y: 0, width: value.width, height: value.height };
                 this.setNeedsLayout(true);
             }
-            this.invalidate();
+            this.invalidateStyle();
         },
         get: function get() {
             return this._frame;
@@ -644,7 +672,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 this.animationValues["transform"] = value;
             }
             this._transform = value;
-            this.invalidate();
+            this.invalidateStyle();
         }
     }, {
         key: "viewDelegate",
@@ -692,7 +720,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             this._clipsToBounds = value;
-            this.invalidate();
+            this.invalidateStyle();
         }
     }, {
         key: "hidden",
@@ -701,7 +729,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             this._hidden = value;
-            this.invalidate();
+            this.invalidateStyle();
         },
         get: function get() {
             return this._hidden;
@@ -712,12 +740,23 @@ var UIView = function (_EventEmitter_1$Event) {
             return this._contentMode;
         },
         set: function set(value) {
+            if (this._contentMode === value) {
+                return;
+            }
             this._contentMode = value;
-            this.invalidate();
+            this.invalidateStyle();
         }
     }, {
         key: "tintColor",
         set: function set(value) {
+            if (this._tintColor === value) {
+                return;
+            }
+            if (this._tintColor !== undefined && value !== undefined) {
+                if (this._tintColor.toStyle() === value.toStyle()) {
+                    return;
+                }
+            }
             this._tintColor = value;
             this.tintColorDidChange();
         },
@@ -735,7 +774,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 this.animationValues["alpha"] = value;
             }
             this._alpha = value;
-            this.invalidate();
+            this.invalidateStyle();
         },
         get: function get() {
             return this._alpha;
@@ -743,12 +782,20 @@ var UIView = function (_EventEmitter_1$Event) {
     }, {
         key: "backgroundColor",
         set: function set(value) {
+            if (this._backgroundColor === value) {
+                return;
+            }
+            if (this._backgroundColor !== undefined && value !== undefined) {
+                if (this._backgroundColor.toStyle() === value.toStyle()) {
+                    return;
+                }
+            }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["backgroundColor"] = value;
             }
             this._backgroundColor = value;
-            this.invalidate();
+            this.invalidateStyle();
         },
         get: function get() {
             return this._backgroundColor;
@@ -760,7 +807,7 @@ var UIView = function (_EventEmitter_1$Event) {
         },
         set: function set(value) {
             this._extraStyles = value;
-            this.invalidate();
+            this.invalidateStyle();
         }
     }, {
         key: "userInteractionEnabled",
@@ -810,7 +857,7 @@ var UIWindow = function (_UIView) {
     function UIWindow() {
         _classCallCheck(this, UIWindow);
 
-        var _this4 = _possibleConstructorReturn(this, _UIView.call(this));
+        var _this4 = _possibleConstructorReturn(this, _UIView.apply(this, arguments));
 
         _this4.clazz = "UIWindow";
         // touches
@@ -818,11 +865,12 @@ var UIWindow = function (_UIView) {
         _this4._touches = new MagicObject_1.MagicObject({});
         _this4.upCount = new Map();
         _this4.upTimestamp = new Map();
-        UIWindowManager_1.UIWindowManager.shared.addWindow(_this4);
         return _this4;
     }
 
     UIWindow.prototype.attach = function attach(dataOwner, dataField) {
+        var _dataOwner$setData;
+
         var rootView = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
         if (rootView) {
@@ -832,7 +880,9 @@ var UIWindow = function (_UIView) {
         }
         this.dataOwner = dataOwner;
         this.dataField = dataField;
-        this.invalidate();
+        this.dataOwner.setData((_dataOwner$setData = {}, _dataOwner$setData[this.dataField] = this, _dataOwner$setData));
+        this.invalidateStyle();
+        this.invalidateHierarchy();
     };
 
     UIWindow.prototype.layoutSubviews = function layoutSubviews() {
@@ -1013,6 +1063,14 @@ var UIWindow = function (_UIView) {
 
     UIWindow.prototype.standardlizeTouchIdentifier = function standardlizeTouchIdentifier(touch) {
         return typeof touch.identifier_2 === "number" ? touch.identifier_2 : touch.identifier;
+    };
+    // Component Data Builder
+
+
+    UIWindow.prototype.buildStyle = function buildStyle() {
+        var style = _UIView.prototype.buildStyle.call(this);
+        style += "\n        width: 100%;\n        height: 100%;\n        ";
+        return style;
     };
 
     _createClass(UIWindow, [{
@@ -1429,51 +1487,7 @@ var UIViewManager = function () {
 exports.UIViewManager = UIViewManager;
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(2);
-
-var UIWindowManager = function () {
-    function UIWindowManager() {
-        _classCallCheck(this, UIWindowManager);
-
-        this.windows = {};
-    }
-
-    UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = UUID_1.randomUUID();
-        this.windows[window.windowID] = window;
-    };
-
-    UIWindowManager.prototype.fetchWindow = function fetchWindow(windowID) {
-        return this.windows[windowID];
-    };
-
-    _createClass(UIWindowManager, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().UIWindowManagerShared === undefined) {
-                getApp().UIWindowManagerShared = new UIWindowManager();
-            }
-            return getApp().UIWindowManagerShared;
-        }
-    }]);
-
-    return UIWindowManager;
-}();
-
-exports.UIWindowManager = UIWindowManager;
-
-/***/ }),
+/* 9 */,
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5902,6 +5916,53 @@ var CALayer = function () {
 }();
 
 exports.CALayer = CALayer;
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIComponentManager = function () {
+    function UIComponentManager() {
+        _classCallCheck(this, UIComponentManager);
+
+        this.components = {};
+    }
+
+    UIComponentManager.prototype.addComponent = function addComponent(component, viewID) {
+        this.components[viewID] = component;
+    };
+
+    UIComponentManager.prototype.fetchComponent = function fetchComponent(viewID) {
+        return this.components[viewID];
+    };
+
+    UIComponentManager.prototype.deleteComponent = function deleteComponent(viewID) {
+        delete this.components[viewID];
+    };
+
+    _createClass(UIComponentManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIComponentManagerShared === undefined) {
+                getApp().UIComponentManagerShared = new UIComponentManager();
+            }
+            return getApp().UIComponentManagerShared;
+        }
+    }]);
+
+    return UIComponentManager;
+}();
+
+exports.UIComponentManager = UIComponentManager;
 
 /***/ })
 /******/ ]);

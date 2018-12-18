@@ -12,6 +12,7 @@ const {
     URLSession,
     FileManager,
     Data,
+    UIWindow,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -74,26 +75,42 @@ class ThirdViewController extends UIViewController {
 
 }
 
-const tabBarController = new UITabBarController()
-tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
-tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
+// const tabBarController = new UITabBarController()
+// tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
+// tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
 
-const firstViewController = new UINavigationController(new FooViewController)
-firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
-firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
-firstViewController.tabBarItem.title = "首页"
+// const firstViewController = new UINavigationController(new FooViewController)
+// firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
+// firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
+// firstViewController.tabBarItem.title = "首页"
 
-const secondViewController = new UINavigationController(new SecondViewController)
-secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
-secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
-secondViewController.tabBarItem.title = "我的"
+// const secondViewController = new UINavigationController(new SecondViewController)
+// secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
+// secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
+// secondViewController.tabBarItem.title = "我的"
 
-tabBarController.setViewControllers([
-    firstViewController,
-    secondViewController,
-])
+// tabBarController.setViewControllers([
+//     firstViewController,
+//     secondViewController,
+// ])
 
-const main = tabBarController
+// const main = tabBarController
+
+const window = new UIWindow
+window.backgroundColor = UIColor.gray
+{
+    const view = new UIView
+    view.frame = UIRectMake(44, 44, 44, 44)
+    view.backgroundColor = UIColor.yellow
+    view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+        view.backgroundColor = UIColor.green
+    }))
+    window.addSubview(view)
+}
+window.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+    window.backgroundColor = UIColor.green
+}))
+const main = window
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

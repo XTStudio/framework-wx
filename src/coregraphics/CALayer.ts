@@ -50,7 +50,7 @@ export class CALayer {
         }
     }
 
-    private _cornerRadius: number = 0.0
+    _cornerRadius: number = 0.0
 
     public get cornerRadius(): number {
         return this._cornerRadius;

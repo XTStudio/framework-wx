@@ -92,11 +92,12 @@ module.exports =
 
 "use strict";
 
-// xt-framework/uiview.js
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(53);
+// xt-framework/uiview.js
 var emptyAnimation = function () {
     var animation = wx.createAnimation({ duration: 0 });
     animation.step();
@@ -110,6 +111,10 @@ var UIViewElement = function () {
         }
         if (newProps.isDirty !== true && owner.el !== undefined) {
             return;
+        }
+        if (newProps.viewID) {
+            owner.viewID = newProps.viewID;
+            UIComponentManager_1.UIComponentManager.shared.addComponent(owner, newProps.viewID);
         }
         if (owner.el === undefined) {
             owner.el = new elementClazz(owner);
@@ -166,6 +171,9 @@ var UIViewElement = function () {
                 styles += "border-radius: " + props._layer._cornerRadius + "px;";
             }
         }
+        if (props._extraStyles) {
+            styles += props._extraStyles;
+        }
         return styles;
     };
 
@@ -213,8 +221,21 @@ var UIViewComponent = function UIViewComponent() {
         props: {
             type: Object,
             value: {},
-            observer: function observer(newVal, oldVal) {
-                UIViewElement.componentPropsChanged(this, UIViewElement, newVal);
+            observer: function observer(newVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                if (newVal.viewID) {
+                    this.viewID = newVal.viewID;
+                    UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                }
+            }
+        }
+    };
+    this.lifetimes = {
+        detached: function detached() {
+            if (this.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
             }
         }
     };
@@ -280,89 +301,111 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UIViewManager_1 = __webpack_require__(8);
 var UIView_1 = __webpack_require__(0);
-var UIWindowManager_1 = __webpack_require__(9);
-// xt-framework/uiview.js
 
-var UIWindowElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIWindowElement, _UIView_1$UIViewEleme);
+var UIWindowComponent = function (_UIView_1$UIViewCompo) {
+    _inherits(UIWindowComponent, _UIView_1$UIViewCompo);
 
-    function UIWindowElement() {
-        _classCallCheck(this, UIWindowElement);
+    function UIWindowComponent() {
+        _classCallCheck(this, UIWindowComponent);
 
-        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+
+        _this.methods = {
+            onTouchStarted: function onTouchStarted(e) {
+                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                    if (window) {
+                        window.handleTouchStart(e);
+                    }
+                }
+            },
+            onTouchMoved: function onTouchMoved(e) {
+                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                    if (window) {
+                        window.handleTouchMove(e);
+                    }
+                }
+            },
+            onTouchEnded: function onTouchEnded(e) {
+                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                    if (window) {
+                        window.handleTouchEnd(e);
+                    }
+                }
+            },
+            onTouchCancelled: function onTouchCancelled(e) {
+                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
+                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                    if (window) {
+                        window.handleTouchCancel(e);
+                    }
+                }
+            }
+        };
+        return _this;
     }
 
-    UIWindowElement.prototype.buildStyle = function buildStyle() {
-        var style = _UIView_1$UIViewEleme.prototype.buildStyle.call(this);
-        style += "\n        width: 100%;\n        height: 100%;\n        ";
-        return style;
-    };
-
-    UIWindowElement.prototype.buildProps = function buildProps() {
-        var props = this.getProps();
-        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { windowID: props.windowID });
-    };
-
-    return UIWindowElement;
-}(UIView_1.UIViewElement);
-
-exports.UIWindowElement = UIWindowElement;
-
-var UIWindowComponent = function UIWindowComponent() {
-    _classCallCheck(this, UIWindowComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                UIView_1.UIViewElement.componentPropsChanged(this, UIWindowElement, newVal);
-            }
-        }
-    };
-    this.methods = {
-        onTouchStarted: function onTouchStarted(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchStart(e);
-                }
-            }
-        },
-        onTouchMoved: function onTouchMoved(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchMove(e);
-                }
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchEnd(e);
-                }
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.windowid) {
-                var window = UIWindowManager_1.UIWindowManager.shared.fetchWindow(e.currentTarget.dataset.windowid);
-                if (window) {
-                    window.handleTouchCancel(e);
-                }
-            }
-        }
-    };
-};
+    return UIWindowComponent;
+}(UIView_1.UIViewComponent);
 
 exports.UIWindowComponent = UIWindowComponent;
 Component(new UIWindowComponent());
 
 /***/ }),
 
-/***/ 9:
+/***/ 53:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIComponentManager = function () {
+    function UIComponentManager() {
+        _classCallCheck(this, UIComponentManager);
+
+        this.components = {};
+    }
+
+    UIComponentManager.prototype.addComponent = function addComponent(component, viewID) {
+        this.components[viewID] = component;
+    };
+
+    UIComponentManager.prototype.fetchComponent = function fetchComponent(viewID) {
+        return this.components[viewID];
+    };
+
+    UIComponentManager.prototype.deleteComponent = function deleteComponent(viewID) {
+        delete this.components[viewID];
+    };
+
+    _createClass(UIComponentManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIComponentManagerShared === undefined) {
+                getApp().UIComponentManagerShared = new UIComponentManager();
+            }
+            return getApp().UIComponentManagerShared;
+        }
+    }]);
+
+    return UIComponentManager;
+}();
+
+exports.UIComponentManager = UIComponentManager;
+
+/***/ }),
+
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -375,36 +418,44 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 Object.defineProperty(exports, "__esModule", { value: true });
 var UUID_1 = __webpack_require__(2);
 
-var UIWindowManager = function () {
-    function UIWindowManager() {
-        _classCallCheck(this, UIWindowManager);
+var UIViewManager = function () {
+    function UIViewManager() {
+        _classCallCheck(this, UIViewManager);
 
-        this.windows = {};
+        this.views = {};
     }
 
-    UIWindowManager.prototype.addWindow = function addWindow(window) {
-        window.windowID = UUID_1.randomUUID();
-        this.windows[window.windowID] = window;
+    UIViewManager.prototype.addView = function addView(view) {
+        view.viewID = UUID_1.randomUUID();
+        this.views[view.viewID] = view;
     };
 
-    UIWindowManager.prototype.fetchWindow = function fetchWindow(windowID) {
-        return this.windows[windowID];
+    UIViewManager.prototype.fetchView = function fetchView(viewID) {
+        return this.views[viewID];
     };
 
-    _createClass(UIWindowManager, null, [{
+    UIViewManager.prototype.fetchViews = function fetchViews() {
+        var _this = this;
+
+        return Object.keys(this.views).map(function (it) {
+            return _this.views[it];
+        });
+    };
+
+    _createClass(UIViewManager, null, [{
         key: "shared",
         get: function get() {
-            if (getApp().UIWindowManagerShared === undefined) {
-                getApp().UIWindowManagerShared = new UIWindowManager();
+            if (getApp().UIViewManagerManagerShared === undefined) {
+                getApp().UIViewManagerManagerShared = new UIViewManager();
             }
-            return getApp().UIWindowManagerShared;
+            return getApp().UIViewManagerManagerShared;
         }
     }]);
 
-    return UIWindowManager;
+    return UIViewManager;
 }();
 
-exports.UIWindowManager = UIWindowManager;
+exports.UIViewManager = UIViewManager;
 
 /***/ })
 

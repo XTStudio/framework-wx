@@ -1,3 +1,5 @@
+import { UIComponentManager } from "./UIComponentManager";
+
 // xt-framework/uiview.js
 
 const emptyAnimation = (() => {
@@ -11,6 +13,10 @@ export class UIViewElement {
     static componentPropsChanged(owner: WeApp.Page, elementClazz: typeof UIViewElement, newProps: any) {
         if (newProps === undefined || newProps === null) { return }
         if (newProps.isDirty !== true && owner.el !== undefined) { return }
+        if (newProps.viewID) {
+            owner.viewID = newProps.viewID
+            UIComponentManager.shared.addComponent(owner, newProps.viewID)
+        }
         if (owner.el === undefined) {
             owner.el = new elementClazz(owner)
         }
@@ -73,6 +79,9 @@ export class UIViewElement {
                 styles += `border-radius: ${props._layer._cornerRadius}px;`
             }
         }
+        if (props._extraStyles) {
+            styles += props._extraStyles
+        }
         return styles
     }
 
@@ -123,10 +132,22 @@ export class UIViewComponent {
         props: {
             type: Object,
             value: {},
-            observer: function (newVal: any, oldVal: any) {
-                UIViewElement.componentPropsChanged(this as any, UIViewElement, newVal)
+            observer: function (newVal: any) {
+                if (newVal === undefined || newVal === null) { return }
+                if (newVal.viewID) {
+                    (this as any).viewID = newVal.viewID
+                    UIComponentManager.shared.addComponent(this, newVal.viewID)
+                }
             }
-        },
+        }
+    }
+
+    lifetimes = {
+        detached: function () {
+            if ((this as any).viewID) {
+                UIComponentManager.shared.deleteComponent((this as any).viewID)
+            }
+        }
     }
 
 }

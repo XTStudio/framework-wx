@@ -1,6 +1,7 @@
 "use strict";
-// xt-framework/uiview.js
 Object.defineProperty(exports, "__esModule", { value: true });
+const UIComponentManager_1 = require("./UIComponentManager");
+// xt-framework/uiview.js
 const emptyAnimation = (() => {
     let animation = wx.createAnimation({ duration: 0 });
     animation.step();
@@ -13,6 +14,10 @@ class UIViewElement {
         }
         if (newProps.isDirty !== true && owner.el !== undefined) {
             return;
+        }
+        if (newProps.viewID) {
+            owner.viewID = newProps.viewID;
+            UIComponentManager_1.UIComponentManager.shared.addComponent(owner, newProps.viewID);
         }
         if (owner.el === undefined) {
             owner.el = new elementClazz(owner);
@@ -70,6 +75,9 @@ class UIViewElement {
                 styles += `border-radius: ${props._layer._cornerRadius}px;`;
             }
         }
+        if (props._extraStyles) {
+            styles += props._extraStyles;
+        }
         return styles;
     }
     buildAnimation() {
@@ -118,10 +126,23 @@ class UIViewComponent {
             props: {
                 type: Object,
                 value: {},
-                observer: function (newVal, oldVal) {
-                    UIViewElement.componentPropsChanged(this, UIViewElement, newVal);
+                observer: function (newVal) {
+                    if (newVal === undefined || newVal === null) {
+                        return;
+                    }
+                    if (newVal.viewID) {
+                        this.viewID = newVal.viewID;
+                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                    }
                 }
-            },
+            }
+        };
+        this.lifetimes = {
+            detached: function () {
+                if (this.viewID) {
+                    UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
+                }
+            }
         };
     }
 }

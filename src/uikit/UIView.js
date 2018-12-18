@@ -4,7 +4,6 @@ const UIRect_1 = require("./UIRect");
 const UIAffineTransform_1 = require("./UIAffineTransform");
 const Matrix_1 = require("./helpers/Matrix");
 const UIColor_1 = require("./UIColor");
-const UIWindowManager_1 = require("../components/UIWindowManager");
 const UITouch_1 = require("./UITouch");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const MagicObject_1 = require("./helpers/MagicObject");
@@ -13,14 +12,15 @@ const UIViewManager_1 = require("../components/UIViewManager");
 const EventEmitter_1 = require("../kimi/EventEmitter");
 const UIEnums_1 = require("./UIEnums");
 const CALayer_1 = require("../coregraphics/CALayer");
+const UIComponentManager_1 = require("../components/UIComponentManager");
 exports.dirtyItems = [];
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
         super();
         this.clazz = "UIView";
-        this.isDirty = true;
         this.dataOwner = undefined;
         this.dataField = undefined;
+        this.viewID = undefined;
         this.animationProps = {};
         this.animationValues = {};
         this._layer = undefined;
@@ -43,6 +43,9 @@ class UIView extends EventEmitter_1.EventEmitter {
         // GestureRecognizers
         this._userInteractionEnabled = true;
         this._gestureRecognizers = new MagicObject_1.MagicObject([]);
+        // Component Data Builder
+        this.isStyleDirty = true;
+        this.isHierarchyDirty = true;
         this.invalidateCallHandler = undefined;
         UIViewManager_1.UIViewManager.shared.addView(this);
         exports.dirtyItems.push(this);
@@ -85,7 +88,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height };
             this.setNeedsLayout(true);
         }
-        this.invalidate();
+        this.invalidateStyle();
     }
     get frame() {
         return this._frame;
@@ -108,7 +111,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.animationValues["transform"] = value;
         }
         this._transform = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     get viewDelegate() {
         return this._viewDelegate.get();
@@ -147,7 +150,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.willMoveToSuperview(undefined);
             superview.subviews = this.superview.subviews.filter(it => it !== this);
             this.superview = undefined;
-            superview.invalidate();
+            superview.invalidateHierarchy();
             this.didMoveToSuperview();
             this.didRemovedFromWindow();
         }
@@ -162,8 +165,8 @@ class UIView extends EventEmitter_1.EventEmitter {
         view.willMoveToSuperview(this);
         view.superview = this;
         this.subviews.splice(index, 0, view);
-        this.invalidate();
-        view.invalidate();
+        this.invalidateHierarchy();
+        view.invalidateHierarchy();
         view.didMoveToSuperview();
         this.didAddSubview(view);
     }
@@ -171,7 +174,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         const index2View = this.subviews[index2];
         this.subviews[index2] = this.subviews[index1];
         this.subviews[index1] = index2View;
-        this.invalidate();
+        this.invalidateHierarchy();
     }
     addSubview(view) {
         if (view.superview !== undefined) {
@@ -183,8 +186,8 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
         view.superview = this;
         this.subviews.push(view);
-        this.invalidate();
-        view.invalidate();
+        this.invalidateHierarchy();
+        view.invalidateHierarchy();
         view.didMoveToSuperview();
         this.didAddSubview(view);
         view.didMoveToWindow();
@@ -206,7 +209,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.push(view);
-            this.invalidate();
+            this.invalidateHierarchy();
         }
     }
     sendSubviewToBack(view) {
@@ -214,7 +217,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.unshift(view);
-            this.invalidate();
+            this.invalidateHierarchy();
         }
     }
     isDescendantOfView(view) {
@@ -282,14 +285,14 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         this._clipsToBounds = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     set hidden(value) {
         if (this._hidden === value) {
             return;
         }
         this._hidden = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     get hidden() {
         return this._hidden;
@@ -298,10 +301,21 @@ class UIView extends EventEmitter_1.EventEmitter {
         return this._contentMode;
     }
     set contentMode(value) {
+        if (this._contentMode === value) {
+            return;
+        }
         this._contentMode = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     set tintColor(value) {
+        if (this._tintColor === value) {
+            return;
+        }
+        if (this._tintColor !== undefined && value !== undefined) {
+            if (this._tintColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
         this._tintColor = value;
         this.tintColorDidChange();
     }
@@ -320,18 +334,26 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.animationValues["alpha"] = value;
         }
         this._alpha = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     get alpha() {
         return this._alpha;
     }
     set backgroundColor(value) {
+        if (this._backgroundColor === value) {
+            return;
+        }
+        if (this._backgroundColor !== undefined && value !== undefined) {
+            if (this._backgroundColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["backgroundColor"] = value;
         }
         this._backgroundColor = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     get backgroundColor() {
         return this._backgroundColor;
@@ -341,7 +363,7 @@ class UIView extends EventEmitter_1.EventEmitter {
     }
     set extraStyles(value) {
         this._extraStyles = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
     convertPointToView(point, toView) {
         const fromPoint = this.convertPointToWindow(point);
@@ -544,60 +566,89 @@ class UIView extends EventEmitter_1.EventEmitter {
         //     })
         // }
     }
-    invalidate(dirty = true, force = false) {
-        if (dirty) {
-            this.isDirty = true;
-            exports.dirtyItems.push(this);
-        }
-        let nextResponder = this.nextResponder();
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force);
-        }
-        else {
-            if (force) {
-                if (this.dataOwner && this.dataField) {
-                    this.dataOwner.setData({
-                        [this.dataField]: this
-                    });
-                }
-                exports.dirtyItems.forEach(it => {
-                    it.isDirty = false;
-                    it.animationProps = {};
-                    it.animationValues = {};
-                });
-                exports.dirtyItems = [];
-                return;
-            }
-            if (this.invalidateCallHandler === undefined) {
-                this.invalidateCallHandler = setTimeout(() => {
-                    this.invalidateCallHandler = undefined;
-                    if (this.dataOwner && this.dataField) {
-                        this.dataOwner.setData({
-                            [this.dataField]: this
-                        });
+    invalidateStyle() {
+        this.isStyleDirty = true;
+        this.invalidate();
+    }
+    invalidateHierarchy() {
+        this.isHierarchyDirty = true;
+        this.invalidate();
+    }
+    invalidate() {
+        if (this.invalidateCallHandler === undefined) {
+            this.invalidateCallHandler = setTimeout(() => {
+                this.invalidateCallHandler = undefined;
+                if (this.viewID) {
+                    const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+                    if (component) {
+                        let data = {};
+                        data.viewID = this.viewID;
+                        if (this.isStyleDirty) {
+                            data.style = this.buildStyle();
+                        }
+                        if (this.isHierarchyDirty) {
+                            this.subviews.forEach(it => {
+                                if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                    it.invalidateStyle();
+                                    it.invalidateHierarchy();
+                                }
+                            });
+                            data.subviews = this.subviews;
+                        }
+                        component.setData(data);
                     }
-                    exports.dirtyItems.forEach(it => {
-                        it.isDirty = false;
-                        it.animationProps = {};
-                        it.animationValues = {};
-                    });
-                    exports.dirtyItems = [];
-                });
+                }
+                this.isStyleDirty = false;
+                this.isHierarchyDirty = false;
+                this.animationProps = {};
+                this.animationValues = {};
+            });
+        }
+    }
+    buildStyle() {
+        let styles = `
+            position: absolute;
+            left: ${this._frame.x}px;
+            top: ${this._frame.y}px;
+            width: ${this._frame.width}px;
+            height: ${this._frame.height}px; 
+        `;
+        if (this._backgroundColor !== undefined) {
+            styles += `background-color: ${UIColor_1.UIColor.toStyle(this._backgroundColor)};`;
+        }
+        if (this._alpha < 1.0) {
+            styles += `opacity: ${this._alpha};`;
+        }
+        if (this._hidden) {
+            styles += `display: none;`;
+        }
+        if (this._clipsToBounds) {
+            styles += "overflow: hidden;";
+        }
+        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
+            styles += `transform: ${'matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')'};`;
+        }
+        if (this._layer) {
+            if (this._layer._cornerRadius > 0) {
+                styles += `border-radius: ${this._layer._cornerRadius}px;`;
             }
         }
+        if (this._extraStyles) {
+            styles += this._extraStyles;
+        }
+        return styles;
     }
 }
 exports.UIView = UIView;
 class UIWindow extends UIView {
     constructor() {
-        super();
+        super(...arguments);
         this.clazz = "UIWindow";
         // touches
         this.currentTouchesID = [];
         this._touches = new MagicObject_1.MagicObject({});
         this.upCount = new Map();
         this.upTimestamp = new Map();
-        UIWindowManager_1.UIWindowManager.shared.addWindow(this);
     }
     attach(dataOwner, dataField, rootView = undefined) {
         if (rootView) {
@@ -607,7 +658,11 @@ class UIWindow extends UIView {
         }
         this.dataOwner = dataOwner;
         this.dataField = dataField;
-        this.invalidate();
+        this.dataOwner.setData({
+            [this.dataField]: this
+        });
+        this.invalidateStyle();
+        this.invalidateHierarchy();
     }
     layoutSubviews() {
         super.layoutSubviews();
@@ -789,6 +844,15 @@ class UIWindow extends UIView {
     }
     standardlizeTouchIdentifier(touch) {
         return typeof touch.identifier_2 === "number" ? touch.identifier_2 : touch.identifier;
+    }
+    // Component Data Builder
+    buildStyle() {
+        let style = super.buildStyle();
+        style += `
+        width: 100%;
+        height: 100%;
+        `;
+        return style;
     }
 }
 exports.UIWindow = UIWindow;

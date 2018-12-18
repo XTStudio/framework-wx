@@ -4,7 +4,6 @@ import { UIPoint } from "./UIPoint";
 import { Matrix } from "./helpers/Matrix";
 import { UIColor } from "./UIColor";
 import { UIGestureRecognizer } from "./UIGestureRecognizer";
-import { UIWindowManager } from "../components/UIWindowManager";
 import { UITouch, UITouchPhase, VelocityTracker, } from "./UITouch";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UISize } from "./UISize";
@@ -14,17 +13,20 @@ import { UIViewManager } from "../components/UIViewManager";
 import { EventEmitter } from "../kimi/EventEmitter";
 import { UIViewContentMode } from "./UIEnums";
 import { CALayer } from "../coregraphics/CALayer";
+import { UIComponentManager } from "../components/UIComponentManager";
 
 export let dirtyItems: UIView[] = []
 
 export class UIView extends EventEmitter {
 
     clazz: string = "UIView"
-    isDirty: boolean = true
     dataOwner: any = undefined
     dataField: string | undefined = undefined
+    viewID: string | undefined = undefined
     animationProps: { [key: string]: any } = {}
     animationValues: { [key: string]: any } = {}
+
+    
 
     constructor() {
         super()
@@ -74,7 +76,7 @@ export class UIView extends EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height }
             this.setNeedsLayout(true)
         }
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     get frame(): UIRect {
@@ -108,7 +110,7 @@ export class UIView extends EventEmitter {
             this.animationValues["transform"] = value;
         }
         this._transform = value;
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     // hierarchy
@@ -164,7 +166,7 @@ export class UIView extends EventEmitter {
             this.willMoveToSuperview(undefined)
             superview.subviews = this.superview.subviews.filter(it => it !== this)
             this.superview = undefined
-            superview.invalidate()
+            superview.invalidateHierarchy()
             this.didMoveToSuperview()
             this.didRemovedFromWindow()
         }
@@ -181,8 +183,8 @@ export class UIView extends EventEmitter {
         view.willMoveToSuperview(this)
         view.superview = this
         this.subviews.splice(index, 0, view)
-        this.invalidate()
-        view.invalidate()
+        this.invalidateHierarchy()
+        view.invalidateHierarchy()
         view.didMoveToSuperview()
         this.didAddSubview(view)
     }
@@ -191,7 +193,7 @@ export class UIView extends EventEmitter {
         const index2View = this.subviews[index2]
         this.subviews[index2] = this.subviews[index1]
         this.subviews[index1] = index2View
-        this.invalidate()
+        this.invalidateHierarchy()
     }
 
     addSubview(view: UIView): void {
@@ -204,8 +206,8 @@ export class UIView extends EventEmitter {
         }
         view.superview = this
         this.subviews.push(view)
-        this.invalidate()
-        view.invalidate()
+        this.invalidateHierarchy()
+        view.invalidateHierarchy()
         view.didMoveToSuperview()
         this.didAddSubview(view)
         view.didMoveToWindow()
@@ -230,7 +232,7 @@ export class UIView extends EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1)
             this.subviews.push(view)
-            this.invalidate()
+            this.invalidateHierarchy()
         }
     }
 
@@ -239,7 +241,7 @@ export class UIView extends EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1)
             this.subviews.unshift(view)
-            this.invalidate()
+            this.invalidateHierarchy()
         }
     }
 
@@ -321,7 +323,7 @@ export class UIView extends EventEmitter {
     public set clipsToBounds(value: boolean) {
         if (this._clipsToBounds === value) { return }
         this._clipsToBounds = value;
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     public _hidden: boolean = false
@@ -329,7 +331,7 @@ export class UIView extends EventEmitter {
     set hidden(value) {
         if (this._hidden === value) { return }
         this._hidden = value
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     get hidden() {
@@ -343,13 +345,18 @@ export class UIView extends EventEmitter {
     }
 
     public set contentMode(value: UIViewContentMode) {
+        if (this._contentMode === value) { return }
         this._contentMode = value;
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     private _tintColor: UIColor | undefined = undefined
 
     set tintColor(value: UIColor) {
+        if (this._tintColor === value) { return }
+        if (this._tintColor !== undefined && value !== undefined) {
+            if (this._tintColor.toStyle() === value.toStyle()) { return }
+        }
         this._tintColor = value;
         this.tintColorDidChange()
     }
@@ -371,7 +378,7 @@ export class UIView extends EventEmitter {
             this.animationValues["alpha"] = value;
         }
         this._alpha = value;
-        this.invalidate();
+        this.invalidateStyle();
     }
 
     get alpha() {
@@ -381,12 +388,16 @@ export class UIView extends EventEmitter {
     _backgroundColor: UIColor | undefined = undefined
 
     set backgroundColor(value: UIColor | undefined) {
+        if (this._backgroundColor === value) { return }
+        if (this._backgroundColor !== undefined && value !== undefined) {
+            if (this._backgroundColor.toStyle() === value.toStyle()) { return }
+        }
         if (UIAnimator.activeAnimator !== undefined) {
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["backgroundColor"] = value;
         }
         this._backgroundColor = value
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     get backgroundColor(): UIColor | undefined {
@@ -401,7 +412,7 @@ export class UIView extends EventEmitter {
 
     public set extraStyles(value: string | undefined) {
         this._extraStyles = value;
-        this.invalidate()
+        this.invalidateStyle()
     }
 
     convertPointToView(point: UIPoint, toView: UIView): UIPoint {
@@ -632,49 +643,86 @@ export class UIView extends EventEmitter {
         // }
     }
 
-    invalidateCallHandler: any = undefined
+    // Component Data Builder
 
-    invalidate(dirty: boolean = true, force: boolean = false) {
-        if (dirty) {
-            this.isDirty = true
-            dirtyItems.push(this)
-        }
-        let nextResponder = this.nextResponder()
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force)
-        }
-        else {
-            if (force) {
-                if (this.dataOwner && this.dataField) {
-                    this.dataOwner.setData({
-                        [this.dataField]: this
-                    })
-                }
-                dirtyItems.forEach(it => {
-                    it.isDirty = false
-                    it.animationProps = {}
-                    it.animationValues = {}
-                })
-                dirtyItems = []
-                return
-            }
-            if (this.invalidateCallHandler === undefined) {
-                this.invalidateCallHandler = setTimeout(() => {
-                    this.invalidateCallHandler = undefined;
-                    if (this.dataOwner && this.dataField) {
-                        this.dataOwner.setData({
-                            [this.dataField]: this
-                        })
+    private isStyleDirty: boolean = true
+    private isHierarchyDirty: boolean = true
+    private invalidateCallHandler: any = undefined
+
+    invalidateStyle() {
+        this.isStyleDirty = true
+        this.invalidate()
+    }
+
+    invalidateHierarchy() {
+        this.isHierarchyDirty = true
+        this.invalidate()
+    }
+
+    invalidate() {
+        if (this.invalidateCallHandler === undefined) {
+            this.invalidateCallHandler = setTimeout(() => {
+                this.invalidateCallHandler = undefined;
+                if (this.viewID) {
+                    const component = UIComponentManager.shared.fetchComponent(this.viewID)
+                    if (component) {
+                        let data: any = {}
+                        data.viewID = this.viewID
+                        if (this.isStyleDirty) {
+                            data.style = this.buildStyle()
+                        }
+                        if (this.isHierarchyDirty) {
+                            this.subviews.forEach(it => {
+                                if (it.viewID && UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                    it.invalidateStyle()
+                                    it.invalidateHierarchy()
+                                }
+                            })
+                            data.subviews = this.subviews
+                        }
+                        component.setData(data)
                     }
-                    dirtyItems.forEach(it => {
-                        it.isDirty = false
-                        it.animationProps = {}
-                        it.animationValues = {}
-                    })
-                    dirtyItems = []
-                })
+                }
+                this.isStyleDirty = false
+                this.isHierarchyDirty = false
+                this.animationProps = {}
+                this.animationValues = {}
+            })
+        }
+    }
+
+    buildStyle() {
+        let styles = `
+            position: absolute;
+            left: ${this._frame.x}px;
+            top: ${this._frame.y}px;
+            width: ${this._frame.width}px;
+            height: ${this._frame.height}px; 
+        `
+        if (this._backgroundColor !== undefined) {
+            styles += `background-color: ${UIColor.toStyle(this._backgroundColor)};`
+        }
+        if (this._alpha < 1.0) {
+            styles += `opacity: ${this._alpha};`
+        }
+        if (this._hidden) {
+            styles += `display: none;`
+        }
+        if (this._clipsToBounds) {
+            styles += "overflow: hidden;"
+        }
+        if (!UIAffineTransformIsIdentity(this._transform)) {
+            styles += `transform: ${'matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')'};`
+        }
+        if (this._layer) {
+            if (this._layer._cornerRadius > 0) {
+                styles += `border-radius: ${this._layer._cornerRadius}px;`
             }
         }
+        if (this._extraStyles) {
+            styles += this._extraStyles
+        }
+        return styles
     }
 
 }
@@ -685,11 +733,6 @@ export class UIWindow extends UIView {
 
     rootView: UIView | undefined
 
-    constructor() {
-        super()
-        UIWindowManager.shared.addWindow(this)
-    }
-
     attach(dataOwner: any, dataField: string, rootView: UIView | undefined = undefined) {
         if (rootView) {
             this.rootView = rootView
@@ -698,7 +741,11 @@ export class UIWindow extends UIView {
         }
         this.dataOwner = dataOwner
         this.dataField = dataField
-        this.invalidate()
+        this.dataOwner.setData({
+            [this.dataField]: this
+        })
+        this.invalidateStyle()
+        this.invalidateHierarchy()
     }
 
     layoutSubviews() {
@@ -898,6 +945,17 @@ export class UIWindow extends UIView {
 
     private standardlizeTouchIdentifier(touch: any): number {
         return typeof touch.identifier_2 === "number" ? touch.identifier_2 : touch.identifier
+    }
+
+    // Component Data Builder
+
+    buildStyle() {
+        let style = super.buildStyle()
+        style += `
+        width: 100%;
+        height: 100%;
+        `
+        return style
     }
 
 }
