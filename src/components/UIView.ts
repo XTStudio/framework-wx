@@ -46,20 +46,34 @@ export class UIViewElement {
 
     buildStyle() {
         const props = this.getProps()
-        return `
+        let styles = `
             position: absolute;
             left: ${props._frame.x}px;
             top: ${props._frame.y}px;
             width: ${props._frame.width}px;
             height: ${props._frame.height}px; 
-            background-color: ${props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent'};
-            opacity: ${props._alpha};
-            display: ${props._hidden ? "none" : ""};
-            overflow: ${props._clipsToBounds ? "hidden" : ""};
-            transform: ${UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};
-            border-radius: ${props._layer && props._layer._cornerRadius ? props._layer._cornerRadius : 0}px;
-            ${props._extraStyles}
         `
+        if (props._backgroundColor !== undefined) {
+            styles += `background-color: ${UIColor.toStyle(props._backgroundColor)};`
+        }
+        if (props._alpha < 1.0) {
+            styles += `opacity: ${props._alpha};`
+        }
+        if (props._hidden) {
+            styles += `display: none;`
+        }
+        if (props._clipsToBounds) {
+            styles += "overflow: hidden;"
+        }
+        if (!UIAffineTransformIsIdentity(props._transform)) {
+            styles += `transform: ${'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')'};`
+        }
+        if (props._layer) {
+            if (props._layer._cornerRadius > 0) {
+                styles += `border-radius: ${props._layer._cornerRadius}px;`
+            }
+        }
+        return styles
     }
 
     buildAnimation() {

@@ -145,7 +145,28 @@ var UIViewElement = function () {
 
     UIViewElement.prototype.buildStyle = function buildStyle() {
         var props = this.getProps();
-        return "\n            position: absolute;\n            left: " + props._frame.x + "px;\n            top: " + props._frame.y + "px;\n            width: " + props._frame.width + "px;\n            height: " + props._frame.height + "px; \n            background-color: " + (props._backgroundColor !== undefined ? UIColor.toStyle(props._backgroundColor) : 'transparent') + ";\n            opacity: " + props._alpha + ";\n            display: " + (props._hidden ? "none" : "") + ";\n            overflow: " + (props._clipsToBounds ? "hidden" : "") + ";\n            transform: " + (UIAffineTransformIsIdentity(props._transform) ? "matrix()" : 'matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')') + ";\n            border-radius: " + (props._layer && props._layer._cornerRadius ? props._layer._cornerRadius : 0) + "px;\n            " + props._extraStyles + "\n        ";
+        var styles = "\n            position: absolute;\n            left: " + props._frame.x + "px;\n            top: " + props._frame.y + "px;\n            width: " + props._frame.width + "px;\n            height: " + props._frame.height + "px; \n        ";
+        if (props._backgroundColor !== undefined) {
+            styles += "background-color: " + UIColor.toStyle(props._backgroundColor) + ";";
+        }
+        if (props._alpha < 1.0) {
+            styles += "opacity: " + props._alpha + ";";
+        }
+        if (props._hidden) {
+            styles += "display: none;";
+        }
+        if (props._clipsToBounds) {
+            styles += "overflow: hidden;";
+        }
+        if (!UIAffineTransformIsIdentity(props._transform)) {
+            styles += "transform: " + ('matrix(' + props._transform.a + ', ' + props._transform.b + ', ' + props._transform.c + ', ' + props._transform.d + ', ' + props._transform.tx + ', ' + props._transform.ty + ')') + ";";
+        }
+        if (props._layer) {
+            if (props._layer._cornerRadius > 0) {
+                styles += "border-radius: " + props._layer._cornerRadius + "px;";
+            }
+        }
+        return styles;
     };
 
     UIViewElement.prototype.buildAnimation = function buildAnimation() {
