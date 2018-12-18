@@ -1,7 +1,7 @@
-<movable-area style='{{style}}; pointer-events: {{pointerEvents}}' data-viewID="{{viewID}}" animation='{{animation}}' >
+<!-- <movable-area style='{{style}}' data-viewID="{{viewID}}">
   <movable-view 
     data-viewID="{{viewID}}" 
-    direction="{{direction}}" 
+    direction="vertical" 
     inertia="{{inertia}}" 
     out-of-bounds="{{bounces}}" 
     x="{{contentOffsetX}}"
@@ -11,9 +11,36 @@
     bindtouchstart="onTouchStarted"
     bindtouchend="onTouchEnded"
     bindtouchcancel="onTouchCancelled"
-    style="width: {{contentSize.width}}px; height:{{contentSize.height}}px;">
+    style="width: 300px; height:2000px;background-color:blue;">
     <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
       <factory view="{{item}}"></factory>
     </view>
   </movable-view>
-</movable-area>
+</movable-area> -->
+
+<!-- <movable-area style="height: 100px; width: 100px; background: red;">
+    <movable-view
+      style="height: 200px; width: 200px; background: blue;"
+      direction="all"
+    >
+    </movable-view>
+  </movable-area> -->
+
+<scroll-view 
+    style='{{style}};' 
+    scroll-x="{{direction == 'horizontal' || direction == 'all'}}" 
+    scroll-y="{{direction == 'vertical' || direction == 'all'}}" 
+    scroll-top="{{contentOffsetY}}"
+    scroll-left="{{contentOffsetX}}"
+    scroll-with-animation="{{scrollWithAnimation}}"
+    enable-back-to-top="{{scrollsToTop}}"
+    bindscroll="onScroll"
+    bindtouchstart="onTouchStarted"
+    bindtouchend="onTouchEnded"
+    bindtouchcancel="onTouchCancelled"
+    data-viewID="{{viewID}}">
+    <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+      <factory view="{{item}}"></factory>
+    </view>
+    <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>
+</scroll-view>

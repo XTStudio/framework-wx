@@ -13,8 +13,6 @@ export class UIScrollView extends UIView {
 
     private _contentOffset: UIPoint = UIPointZero
 
-    private _contentOffsetAnimated: boolean = false
-
     constructor() {
         super()
         this._panGesture.enabled = false
@@ -26,7 +24,9 @@ export class UIScrollView extends UIView {
 
     set contentOffset(value: UIPoint) {
         this._contentOffset = value
-        this._contentOffsetAnimated = false
+        this.isContentOffsetDirty = true
+        this.isContentOffsetScrollAnimatedDirty = true
+        this.isContentOffsetScrollAnimated = false
         this.invalidate()
     }
 
@@ -43,7 +43,7 @@ export class UIScrollView extends UIView {
 
     contentInset: UIEdgeInsets = UIEdgeInsetsZero
     directionalLockEnabled: boolean = false
-    
+
     private _bounces: boolean = true
 
     public get bounces(): boolean {
@@ -79,14 +79,14 @@ export class UIScrollView extends UIView {
 
     private _pagingEnabled: boolean = false
 
-	public get pagingEnabled(): boolean  {
-		return this._pagingEnabled;
+    public get pagingEnabled(): boolean {
+        return this._pagingEnabled;
     }
-    
-	public set pagingEnabled(value: boolean ) {
+
+    public set pagingEnabled(value: boolean) {
         this._pagingEnabled = value;
         this.invalidate()
-	}
+    }
 
     // private _scrollDisabledTemporary: boolean = false
 
@@ -114,14 +114,9 @@ export class UIScrollView extends UIView {
 
     public showsVerticalScrollIndicator: boolean = true // todo
 
-    setContentOffset(contentOffset: UIPoint, animated: boolean): void {
+    setContentOffset(contentOffset: UIPoint, animated: boolean = false): void {
         this.contentOffset = contentOffset
-        this._contentOffsetAnimated = animated
-        if (this._contentOffsetAnimated) {
-            setTimeout(() => {
-                this._contentOffsetAnimated = false
-            }, 32)
-        }
+        this.isContentOffsetScrollAnimated = animated
     }
 
     scrollRectToVisible(rect: UIRect, animated: boolean): void {
@@ -200,7 +195,7 @@ export class UIScrollView extends UIView {
                 else {
                     this.setContentOffset({ x: 0, y: currentPageY }, true)
                 }
-                this.invalidate(true, true)
+                this.invalidate()
             }
             else if (this.contentSize.height < this.bounds.height) {
                 if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) { return }
@@ -215,7 +210,7 @@ export class UIScrollView extends UIView {
                 else {
                     this.setContentOffset({ x: currentPageX, y: 0 }, true)
                 }
-                this.invalidate(true, true)
+                this.invalidate()
             }
         }
     }
@@ -236,6 +231,58 @@ export class UIScrollView extends UIView {
 
     didScrollToTop() {
         this.emit("didScrollToTop", this)
+    }
+
+    // Build Data
+
+    private isContentOffsetDirty = false
+    private isContentOffsetScrollAnimatedDirty = false
+    private isContentOffsetScrollAnimated = false
+
+    buildExtras() {
+        let data = super.buildExtras()
+        if (this.isContentOffsetDirty) {
+            if (this.isContentOffsetScrollAnimatedDirty) {
+                data.scrollWithAnimation = this.isContentOffsetScrollAnimated
+                setTimeout(() => {
+                    this.isContentOffsetDirty = true
+                    this.isContentOffsetScrollAnimatedDirty = false
+                    this.invalidate()
+                }, 0)
+                return data
+            }
+            data.contentOffsetX = this._contentOffset.x
+            data.contentOffsetY = this._contentOffset.y
+            return data
+        }
+        data.inertia = this._pagingEnabled === true ? false : true
+        data.direction = (() => {
+            if (!this._scrollEnabled) {
+                return "none"
+            }
+            else if (this._contentSize.width > this.bounds.width && this._contentSize.height > this.bounds.height) {
+                return "all"
+            }
+            else if (this._contentSize.width > this.bounds.width) {
+                return "horizontal"
+            }
+            else if (this._contentSize.height > this.bounds.height) {
+                return "vertical"
+            }
+            else {
+                return "none"
+            }
+        })()
+        data.bounces = this._bounces
+        data.contentSize = this._contentSize
+        data.scrollsToTop = this._scrollsToTop
+        return data
+    }
+
+    clearDirtyFlags() {
+        super.clearDirtyFlags()
+        this.isContentOffsetDirty = false
+        this.isContentOffsetScrollAnimated = false
     }
 
 }

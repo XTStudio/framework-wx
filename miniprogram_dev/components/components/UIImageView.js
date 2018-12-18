@@ -285,55 +285,18 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(0);
-var UIViewContentMode;
-(function (UIViewContentMode) {
-    UIViewContentMode[UIViewContentMode["scaleToFill"] = 0] = "scaleToFill";
-    UIViewContentMode[UIViewContentMode["scaleAspectFit"] = 1] = "scaleAspectFit";
-    UIViewContentMode[UIViewContentMode["scaleAspectFill"] = 2] = "scaleAspectFill";
-})(UIViewContentMode || (UIViewContentMode = {}));
 
-var UIImageViewElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIImageViewElement, _UIView_1$UIViewEleme);
+var UIImageViewComponent = function (_UIView_1$UIViewCompo) {
+  _inherits(UIImageViewComponent, _UIView_1$UIViewCompo);
 
-    function UIImageViewElement() {
-        _classCallCheck(this, UIImageViewElement);
-
-        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
-    }
-
-    UIImageViewElement.prototype.buildProps = function buildProps() {
-        var props = this.getProps();
-        return Object.assign({}, _UIView_1$UIViewEleme.prototype.buildProps.call(this), { imageSource: props._image !== undefined ? props._image.imageSource : null, scaleMode: function () {
-                switch (props._contentMode) {
-                    case UIViewContentMode.scaleToFill:
-                        return "scaleToFill";
-                    case UIViewContentMode.scaleAspectFit:
-                        return "aspectFit";
-                    case UIViewContentMode.scaleAspectFill:
-                        return "aspectFill";
-                }
-                return "scaleToFill";
-            }() });
-    };
-
-    return UIImageViewElement;
-}(UIView_1.UIViewElement);
-
-exports.UIImageViewElement = UIImageViewElement;
-
-var UIImageViewComponent = function UIImageViewComponent() {
+  function UIImageViewComponent() {
     _classCallCheck(this, UIImageViewComponent);
 
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                UIView_1.UIViewElement.componentPropsChanged(this, UIImageViewElement, newVal);
-            }
-        }
-    };
-};
+    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+  }
+
+  return UIImageViewComponent;
+}(UIView_1.UIViewComponent);
 
 exports.UIImageViewComponent = UIImageViewComponent;
 Component(new UIImageViewComponent());

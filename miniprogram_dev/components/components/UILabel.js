@@ -321,19 +321,17 @@ var UILabelElement = function (_UIView_1$UIViewEleme) {
 
 exports.UILabelElement = UILabelElement;
 
-var UILabelComponent = function UILabelComponent() {
-    _classCallCheck(this, UILabelComponent);
+var UILabelComponent = function (_UIView_1$UIViewCompo) {
+    _inherits(UILabelComponent, _UIView_1$UIViewCompo);
 
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                UIView_1.UIViewElement.componentPropsChanged(this, UILabelElement, newVal);
-            }
-        }
-    };
-};
+    function UILabelComponent() {
+        _classCallCheck(this, UILabelComponent);
+
+        return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+    }
+
+    return UILabelComponent;
+}(UIView_1.UIViewComponent);
 
 exports.UILabelComponent = UILabelComponent;
 Component(new UILabelComponent());

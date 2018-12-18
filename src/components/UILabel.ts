@@ -1,4 +1,4 @@
-import { UIViewElement, UIColor } from "./UIView";
+import { UIViewElement, UIColor, UIViewComponent } from "./UIView";
 
 export class UILabelElement extends UIViewElement {
 
@@ -26,42 +26,30 @@ export class UILabelElement extends UIViewElement {
                     return "left"
                 })()};
             ${(() => {
-                if (props._numberOfLines === 1)  {
-                    return `
+                    if (props._numberOfLines === 1) {
+                        return `
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: inline-block;
                     white-space: nowrap;
                     `
-                }
-                else {
-                    return `
+                    }
+                    else {
+                        return `
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: -webkit-box;
                     webkit-box-orient: vertical;
                     `
-                }
-            })()}
+                    }
+                })()}
             `
         }
     }
 
 }
 
-export class UILabelComponent {
-
-    properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function (newVal: any, oldVal: any) {
-                UIViewElement.componentPropsChanged(this as any, UILabelElement, newVal)
-            }
-        }
-    }
-
-}
+export class UILabelComponent extends UIViewComponent { }
 
 Component(new UILabelComponent())
 

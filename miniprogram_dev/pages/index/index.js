@@ -13,6 +13,10 @@ const {
     FileManager,
     Data,
     UIWindow,
+    UIAnimator,
+    UILabel,
+    UIFont,
+    UIScrollView,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -23,18 +27,48 @@ class FooViewController extends UIViewController {
     viewDidLoad() {
         super.viewDidLoad()
         this.title = "我的首页"
-        this.redView.layer.cornerRadius = 22.0
-        this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
-        this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            this.redView.backgroundColor = UIColor.red
-            // URLSession.shared.fetch('https://api.github.com/').then((data) => {
-            //     console.log(data.json())
-            // })
-        }))
-        this.view.addSubview(this.redView)
-        // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)
-        this.imgView.image = UIImage.fromURL('https://avatars0.githubusercontent.com/u/5013664?s=460&v=4')
-        this.view.addSubview(this.imgView)
+        const scrollView = new UIScrollView
+        scrollView.frame = UIRectMake(0, 0, 300, 300)
+        scrollView.contentSize = { width: 0, height: 900 }
+        // scrollView.backgroundColor = UIColor.yellow
+        // scrollView.clipsToBounds = true
+        {
+            const view = new UIView
+            view.backgroundColor = UIColor.red
+            view.frame = UIRectMake(0, 0, 44, 44)
+            scrollView.addSubview(view)
+        }
+        {
+            const view = new UIView
+            view.backgroundColor = UIColor.red
+            view.frame = UIRectMake(0, 300, 44, 44)
+            scrollView.addSubview(view)
+        }
+        {
+            const view = new UIView
+            view.backgroundColor = UIColor.red
+            view.frame = UIRectMake(0, 600, 44, 44)
+            view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                view.backgroundColor = UIColor.yellow
+            }))
+            scrollView.addSubview(view)
+        }
+        this.view.addSubview(scrollView)
+
+        // this.redView.layer.cornerRadius = 22.0
+        // this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
+        // this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+        //     this.redView.backgroundColor = UIColor.red
+        //     // URLSession.shared.fetch('https://api.github.com/').then((data) => {
+        //     //     console.log(data.json())
+        //     // })
+        // }))
+        // this.view.addSubview(this.redView)
+        // // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)
+        // this.imgView.layer.cornerRadius = 20.0
+        // this.imgView.clipsToBounds = true
+        // this.imgView.image = UIImage.fromURL('https://avatars0.githubusercontent.com/u/5013664?s=460&v=4')
+        // this.view.addSubview(this.imgView)
     }
 
     viewWillLayoutSubviews() {
@@ -96,21 +130,7 @@ class ThirdViewController extends UIViewController {
 
 // const main = tabBarController
 
-const window = new UIWindow
-window.backgroundColor = UIColor.gray
-{
-    const view = new UIView
-    view.frame = UIRectMake(44, 44, 44, 44)
-    view.backgroundColor = UIColor.yellow
-    view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-        view.backgroundColor = UIColor.green
-    }))
-    window.addSubview(view)
-}
-window.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-    window.backgroundColor = UIColor.green
-}))
-const main = window
+const main = new FooViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

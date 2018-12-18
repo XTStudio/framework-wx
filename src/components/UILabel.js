@@ -44,18 +44,7 @@ class UILabelElement extends UIView_1.UIViewElement {
     }
 }
 exports.UILabelElement = UILabelElement;
-class UILabelComponent {
-    constructor() {
-        this.properties = {
-            props: {
-                type: Object,
-                value: {},
-                observer: function (newVal, oldVal) {
-                    UIView_1.UIViewElement.componentPropsChanged(this, UILabelElement, newVal);
-                }
-            }
-        };
-    }
+class UILabelComponent extends UIView_1.UIViewComponent {
 }
 exports.UILabelComponent = UILabelComponent;
 Component(new UILabelComponent());

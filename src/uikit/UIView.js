@@ -21,8 +21,6 @@ class UIView extends EventEmitter_1.EventEmitter {
         this.dataOwner = undefined;
         this.dataField = undefined;
         this.viewID = undefined;
-        this.animationProps = {};
-        this.animationValues = {};
         this._layer = undefined;
         this._frame = UIRect_1.UIRectZero;
         this.bounds = UIRect_1.UIRectZero;
@@ -46,6 +44,9 @@ class UIView extends EventEmitter_1.EventEmitter {
         // Component Data Builder
         this.isStyleDirty = true;
         this.isHierarchyDirty = true;
+        this.isAnimationDirty = false;
+        this.animationProps = {};
+        this.animationValues = {};
         this.invalidateCallHandler = undefined;
         UIViewManager_1.UIViewManager.shared.addView(this);
         exports.dirtyItems.push(this);
@@ -68,6 +69,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             if (Math.abs(this._frame.x - value.x) > 0.001) {
                 this.animationValues["frame.x"] = value.x;
@@ -330,6 +332,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["alpha"] = value;
         }
@@ -349,6 +352,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             }
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["backgroundColor"] = value;
         }
@@ -583,27 +587,45 @@ class UIView extends EventEmitter_1.EventEmitter {
                     if (component) {
                         let data = {};
                         data.viewID = this.viewID;
-                        if (this.isStyleDirty) {
-                            data.style = this.buildStyle();
+                        if (this.isAnimationDirty) {
+                            data.animation = this.buildAnimation();
                         }
-                        if (this.isHierarchyDirty) {
-                            this.subviews.forEach(it => {
-                                if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                    it.invalidateStyle();
-                                    it.invalidateHierarchy();
-                                }
-                            });
-                            data.subviews = this.subviews;
+                        else {
+                            if (this.isStyleDirty) {
+                                data.style = this.buildStyle();
+                            }
+                            if (this.isHierarchyDirty) {
+                                this.subviews.forEach(it => {
+                                    if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                        it.markAllFlagsDirty();
+                                        it.invalidate();
+                                    }
+                                });
+                                data.subviews = this.subviews;
+                            }
+                            data.animation = emptyAnimation;
+                            Object.assign(data, this.buildExtras());
                         }
                         component.setData(data);
+                        this.clearDirtyFlags();
                     }
                 }
-                this.isStyleDirty = false;
-                this.isHierarchyDirty = false;
-                this.animationProps = {};
-                this.animationValues = {};
             });
         }
+    }
+    markAllFlagsDirty() {
+        this.isStyleDirty = true;
+        this.isHierarchyDirty = true;
+    }
+    clearDirtyFlags() {
+        this.isStyleDirty = false;
+        this.isHierarchyDirty = false;
+        this.isAnimationDirty = false;
+        this.animationProps = {};
+        this.animationValues = {};
+    }
+    buildExtras() {
+        return {};
     }
     buildStyle() {
         let styles = `
@@ -637,6 +659,48 @@ class UIView extends EventEmitter_1.EventEmitter {
             styles += this._extraStyles;
         }
         return styles;
+    }
+    buildAnimation() {
+        if (Object.keys(this.animationValues).length > 0) {
+            const animation = wx.createAnimation(this.animationProps);
+            for (const animationKey in this.animationValues) {
+                const endValue = this.animationValues[animationKey];
+                if (animationKey === "alpha") {
+                    animation.opacity(endValue);
+                }
+                else if (animationKey === "frame.x") {
+                    animation.left(endValue);
+                }
+                else if (animationKey === "frame.y") {
+                    animation.top(endValue);
+                }
+                else if (animationKey === "frame.width") {
+                    animation.width(endValue);
+                }
+                else if (animationKey === "frame.height") {
+                    animation.height(endValue);
+                }
+                else if (animationKey === "backgroundColor") {
+                    if (this._backgroundColor) {
+                        animation.backgroundColor(UIColor_1.UIColor.toStyle(this._backgroundColor));
+                    }
+                    else {
+                        animation.backgroundColor('transparent');
+                    }
+                }
+                else if (animationKey === "transform") {
+                    animation.matrix(endValue.a, endValue.b, endValue.c, endValue.d, endValue.tx, endValue.ty);
+                }
+            }
+            if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
+                animation.matrix(this._transform.a, this._transform.b, this._transform.c, this._transform.d, this._transform.tx, this._transform.ty);
+            }
+            animation.step();
+            return animation.export();
+        }
+        else {
+            return undefined;
+        }
     }
 }
 exports.UIView = UIView;
@@ -857,3 +921,8 @@ class UIWindow extends UIView {
 }
 exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker;
+const emptyAnimation = (() => {
+    let animation = wx.createAnimation({ duration: 0 });
+    animation.step();
+    return animation.export();
+})();

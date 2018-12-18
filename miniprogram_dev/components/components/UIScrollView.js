@@ -304,132 +304,69 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(0);
 var UIViewManager_1 = __webpack_require__(8);
 
-var UIScrollViewElement = function (_UIView_1$UIViewEleme) {
-    _inherits(UIScrollViewElement, _UIView_1$UIViewEleme);
+var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
+    _inherits(UIScrollViewComponent, _UIView_1$UIViewCompo);
 
-    function UIScrollViewElement() {
-        _classCallCheck(this, UIScrollViewElement);
+    function UIScrollViewComponent() {
+        _classCallCheck(this, UIScrollViewComponent);
 
-        return _possibleConstructorReturn(this, _UIView_1$UIViewEleme.apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+
+        _this.methods = {
+            onScroll: function onScroll(e) {
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                if (view) {
+                    if (false) { var deltaY, deltaX; } else {
+                        var _deltaX = e.detail.deltaX;
+                        var _deltaY = e.detail.deltaY;
+                        view._contentOffset = { x: e.detail.scrollLeft, y: e.detail.scrollTop };
+                        view.didScroll();
+                        if (view._touchStarted === true) {
+                            if (view.tracking === false && view.dragging === false) {
+                                view.willBeginDragging();
+                            }
+                        }
+                        if (typeof view._lastScrollTimeStamp === "number") {
+                            view._velocity = {
+                                x: _deltaX === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / _deltaX * 1000,
+                                y: _deltaY === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / _deltaY * 1000
+                            };
+                        }
+                        view._lastScrollTimeStamp = e.timeStamp;
+                    }
+                }
+            },
+            onTouchStarted: function onTouchStarted(e) {
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                if (view) {
+                    view._lastScrollTimeStamp = undefined;
+                    view._touchStarted = true;
+                }
+            },
+            onTouchEnded: function onTouchEnded(e) {
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                if (view) {
+                    if (view._touchStarted === true && view.tracking === true && view.dragging === true) {
+                        view.willEndDragging(view._velocity);
+                        view.didEndDragging(false);
+                        view.willBeginDecelerating();
+                        view.didEndDecelerating();
+                    }
+                    view._touchStarted = false;
+                }
+            },
+            onTouchCancelled: function onTouchCancelled(e) {
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                if (view) {
+                    view._touchStarted = false;
+                }
+            }
+        };
+        return _this;
     }
 
-    return UIScrollViewElement;
-}(UIView_1.UIViewElement);
-
-exports.UIScrollViewElement = UIScrollViewElement;
-
-var UIScrollViewComponent = function UIScrollViewComponent() {
-    _classCallCheck(this, UIScrollViewComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal, oldVal) {
-                if (newVal === undefined || newVal === null) {
-                    return;
-                }
-                var self = this;
-                if (newVal.isDirty !== true && self.el !== undefined) {
-                    return;
-                }
-                if (self.el === undefined) {
-                    self.el = new UIScrollViewElement(self);
-                }
-                var animation = self.el.buildAnimation();
-                if (animation !== undefined) {
-                    self.setData({
-                        animation: self.el.buildAnimation()
-                    });
-                } else {
-                    if (newVal._contentOffsetAnimated) {
-                        self.setData({
-                            contentOffsetX: -newVal._contentOffset.x,
-                            contentOffsetY: -newVal._contentOffset.y,
-                            scrollWithAnimation: newVal._contentOffsetAnimated
-                        });
-                        return;
-                    }
-                    self.setData({
-                        style: self.el.buildStyle(),
-                        viewID: newVal.viewID,
-                        inertia: newVal._pagingEnabled === true ? false : true,
-                        direction: function () {
-                            if (!newVal._scrollEnabled) {
-                                return "none";
-                            } else if (newVal._contentSize.width > newVal.bounds.width && newVal._contentSize.height > newVal.bounds.height) {
-                                return "all";
-                            } else if (newVal._contentSize.width > newVal.bounds.width) {
-                                return "horizontal";
-                            } else if (newVal._contentSize.height > newVal.bounds.height) {
-                                return "vertical";
-                            } else {
-                                return "none";
-                            }
-                        }(),
-                        bounces: newVal._bounces,
-                        contentSize: newVal._contentSize,
-                        contentOffsetX: -newVal._contentOffset.x,
-                        contentOffsetY: -newVal._contentOffset.y,
-                        pointerEvents: newVal._scrollDisabledTemporary === true ? "none" : "auto",
-                        subviews: newVal.subviews
-                    });
-                }
-            }
-        }
-    };
-    this.data = {
-        style: ''
-    };
-    this.methods = {
-        onScroll: function onScroll(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                var deltaX = view._contentOffset.x - -e.detail.x;
-                var deltaY = view._contentOffset.y - -e.detail.y;
-                view._contentOffset = { x: -e.detail.x, y: -e.detail.y };
-                view.didScroll();
-                if (view._touchStarted === true) {
-                    if (view.tracking === false && view.dragging === false) {
-                        view.willBeginDragging();
-                    }
-                }
-                if (typeof view._lastScrollTimeStamp === "number") {
-                    view._velocity = {
-                        x: deltaX === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaX * 1000,
-                        y: deltaY === 0.0 ? 0.0 : (e.timeStamp - view._lastScrollTimeStamp) / deltaY * 1000
-                    };
-                }
-                view._lastScrollTimeStamp = e.timeStamp;
-            }
-        },
-        onTouchStarted: function onTouchStarted(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                view._lastScrollTimeStamp = undefined;
-                view._touchStarted = true;
-            }
-        },
-        onTouchEnded: function onTouchEnded(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                if (view._touchStarted === true && view.tracking === true && view.dragging === true) {
-                    view.willEndDragging(view._velocity);
-                    view.didEndDragging(false);
-                    view.willBeginDecelerating();
-                    view.didEndDecelerating();
-                }
-                view._touchStarted = false;
-            }
-        },
-        onTouchCancelled: function onTouchCancelled(e) {
-            var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-            if (view) {
-                view._touchStarted = false;
-            }
-        }
-    };
-};
+    return UIScrollViewComponent;
+}(UIView_1.UIViewComponent);
 
 exports.UIScrollViewComponent = UIScrollViewComponent;
 Component(new UIScrollViewComponent());

@@ -23,10 +23,6 @@ export class UIView extends EventEmitter {
     dataOwner: any = undefined
     dataField: string | undefined = undefined
     viewID: string | undefined = undefined
-    animationProps: { [key: string]: any } = {}
-    animationValues: { [key: string]: any } = {}
-
-    
 
     constructor() {
         super()
@@ -56,6 +52,7 @@ export class UIView extends EventEmitter {
     set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             if (Math.abs(this._frame.x - value.x) > 0.001) {
                 this.animationValues["frame.x"] = value.x;
@@ -338,7 +335,7 @@ export class UIView extends EventEmitter {
         return this._hidden
     }
 
-    private _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
+    protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
 
     public get contentMode(): UIViewContentMode {
         return this._contentMode;
@@ -374,6 +371,7 @@ export class UIView extends EventEmitter {
     set alpha(value) {
         if (this._alpha === value) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["alpha"] = value;
         }
@@ -393,6 +391,7 @@ export class UIView extends EventEmitter {
             if (this._backgroundColor.toStyle() === value.toStyle()) { return }
         }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["backgroundColor"] = value;
         }
@@ -645,9 +644,12 @@ export class UIView extends EventEmitter {
 
     // Component Data Builder
 
-    private isStyleDirty: boolean = true
-    private isHierarchyDirty: boolean = true
-    private invalidateCallHandler: any = undefined
+    protected isStyleDirty: boolean = true
+    protected isHierarchyDirty: boolean = true
+    protected isAnimationDirty: boolean = false
+    protected animationProps: { [key: string]: any } = {}
+    protected animationValues: { [key: string]: any } = {}
+    protected invalidateCallHandler: any = undefined
 
     invalidateStyle() {
         this.isStyleDirty = true
@@ -668,27 +670,48 @@ export class UIView extends EventEmitter {
                     if (component) {
                         let data: any = {}
                         data.viewID = this.viewID
-                        if (this.isStyleDirty) {
-                            data.style = this.buildStyle()
+                        if (this.isAnimationDirty) {
+                            data.animation = this.buildAnimation()
                         }
-                        if (this.isHierarchyDirty) {
-                            this.subviews.forEach(it => {
-                                if (it.viewID && UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                    it.invalidateStyle()
-                                    it.invalidateHierarchy()
-                                }
-                            })
-                            data.subviews = this.subviews
+                        else {
+                            if (this.isStyleDirty) {
+                                data.style = this.buildStyle()
+                            }
+                            if (this.isHierarchyDirty) {
+                                this.subviews.forEach(it => {
+                                    if (it.viewID && UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                        it.markAllFlagsDirty()
+                                        it.invalidate()
+                                    }
+                                })
+                                data.subviews = this.subviews
+                            }
+                            data.animation = emptyAnimation
+                            Object.assign(data, this.buildExtras())
                         }
                         component.setData(data)
+                        this.clearDirtyFlags()
                     }
                 }
-                this.isStyleDirty = false
-                this.isHierarchyDirty = false
-                this.animationProps = {}
-                this.animationValues = {}
             })
         }
+    }
+
+    markAllFlagsDirty() {
+        this.isStyleDirty = true
+        this.isHierarchyDirty = true
+    }
+
+    clearDirtyFlags() {
+        this.isStyleDirty = false
+        this.isHierarchyDirty = false
+        this.isAnimationDirty = false
+        this.animationProps = {}
+        this.animationValues = {}
+    }
+
+    buildExtras(): any {
+        return {}
     }
 
     buildStyle() {
@@ -723,6 +746,49 @@ export class UIView extends EventEmitter {
             styles += this._extraStyles
         }
         return styles
+    }
+
+    buildAnimation() {
+        if (Object.keys(this.animationValues).length > 0) {
+            const animation = wx.createAnimation(this.animationProps)
+            for (const animationKey in this.animationValues) {
+                const endValue = this.animationValues[animationKey];
+                if (animationKey === "alpha") {
+                    animation.opacity(endValue)
+                }
+                else if (animationKey === "frame.x") {
+                    animation.left(endValue)
+                }
+                else if (animationKey === "frame.y") {
+                    animation.top(endValue)
+                }
+                else if (animationKey === "frame.width") {
+                    animation.width(endValue)
+                }
+                else if (animationKey === "frame.height") {
+                    animation.height(endValue)
+                }
+                else if (animationKey === "backgroundColor") {
+                    if (this._backgroundColor) {
+                        animation.backgroundColor(UIColor.toStyle(this._backgroundColor))
+                    }
+                    else {
+                        animation.backgroundColor('transparent')
+                    }
+                }
+                else if (animationKey === "transform") {
+                    animation.matrix(endValue.a, endValue.b, endValue.c, endValue.d, endValue.tx, endValue.ty)
+                }
+            }
+            if (!UIAffineTransformIsIdentity(this._transform)) {
+                animation.matrix(this._transform.a, this._transform.b, this._transform.c, this._transform.d, this._transform.tx, this._transform.ty)
+            }
+            animation.step()
+            return animation.export()
+        }
+        else {
+            return undefined
+        }
     }
 
 }
@@ -961,3 +1027,9 @@ export class UIWindow extends UIView {
 }
 
 export const sharedVelocityTracker = new VelocityTracker
+
+const emptyAnimation = (() => {
+    let animation = wx.createAnimation({ duration: 0 })
+    animation.step()
+    return animation.export()
+})()

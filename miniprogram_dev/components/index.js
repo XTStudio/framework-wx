@@ -129,8 +129,6 @@ var UIView = function (_EventEmitter_1$Event) {
         _this.dataOwner = undefined;
         _this.dataField = undefined;
         _this.viewID = undefined;
-        _this.animationProps = {};
-        _this.animationValues = {};
         _this._layer = undefined;
         _this._frame = UIRect_1.UIRectZero;
         _this.bounds = UIRect_1.UIRectZero;
@@ -154,6 +152,9 @@ var UIView = function (_EventEmitter_1$Event) {
         // Component Data Builder
         _this.isStyleDirty = true;
         _this.isHierarchyDirty = true;
+        _this.isAnimationDirty = false;
+        _this.animationProps = {};
+        _this.animationValues = {};
         _this.invalidateCallHandler = undefined;
         UIViewManager_1.UIViewManager.shared.addView(_this);
         exports.dirtyItems.push(_this);
@@ -558,27 +559,47 @@ var UIView = function (_EventEmitter_1$Event) {
                     if (component) {
                         var data = {};
                         data.viewID = _this3.viewID;
-                        if (_this3.isStyleDirty) {
-                            data.style = _this3.buildStyle();
-                        }
-                        if (_this3.isHierarchyDirty) {
-                            _this3.subviews.forEach(function (it) {
-                                if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                    it.invalidateStyle();
-                                    it.invalidateHierarchy();
-                                }
-                            });
-                            data.subviews = _this3.subviews;
+                        if (_this3.isAnimationDirty) {
+                            data.animation = _this3.buildAnimation();
+                        } else {
+                            if (_this3.isStyleDirty) {
+                                data.style = _this3.buildStyle();
+                            }
+                            if (_this3.isHierarchyDirty) {
+                                _this3.subviews.forEach(function (it) {
+                                    if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
+                                        it.markAllFlagsDirty();
+                                        it.invalidate();
+                                    }
+                                });
+                                data.subviews = _this3.subviews;
+                            }
+                            data.animation = emptyAnimation;
+                            Object.assign(data, _this3.buildExtras());
                         }
                         component.setData(data);
+                        _this3.clearDirtyFlags();
                     }
                 }
-                _this3.isStyleDirty = false;
-                _this3.isHierarchyDirty = false;
-                _this3.animationProps = {};
-                _this3.animationValues = {};
             });
         }
+    };
+
+    UIView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        this.isStyleDirty = true;
+        this.isHierarchyDirty = true;
+    };
+
+    UIView.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        this.isStyleDirty = false;
+        this.isHierarchyDirty = false;
+        this.isAnimationDirty = false;
+        this.animationProps = {};
+        this.animationValues = {};
+    };
+
+    UIView.prototype.buildExtras = function buildExtras() {
+        return {};
     };
 
     UIView.prototype.buildStyle = function buildStyle() {
@@ -609,6 +630,41 @@ var UIView = function (_EventEmitter_1$Event) {
         return styles;
     };
 
+    UIView.prototype.buildAnimation = function buildAnimation() {
+        if (Object.keys(this.animationValues).length > 0) {
+            var animation = wx.createAnimation(this.animationProps);
+            for (var animationKey in this.animationValues) {
+                var endValue = this.animationValues[animationKey];
+                if (animationKey === "alpha") {
+                    animation.opacity(endValue);
+                } else if (animationKey === "frame.x") {
+                    animation.left(endValue);
+                } else if (animationKey === "frame.y") {
+                    animation.top(endValue);
+                } else if (animationKey === "frame.width") {
+                    animation.width(endValue);
+                } else if (animationKey === "frame.height") {
+                    animation.height(endValue);
+                } else if (animationKey === "backgroundColor") {
+                    if (this._backgroundColor) {
+                        animation.backgroundColor(UIColor_1.UIColor.toStyle(this._backgroundColor));
+                    } else {
+                        animation.backgroundColor('transparent');
+                    }
+                } else if (animationKey === "transform") {
+                    animation.matrix(endValue.a, endValue.b, endValue.c, endValue.d, endValue.tx, endValue.ty);
+                }
+            }
+            if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
+                animation.matrix(this._transform.a, this._transform.b, this._transform.c, this._transform.d, this._transform.tx, this._transform.ty);
+            }
+            animation.step();
+            return animation.export();
+        } else {
+            return undefined;
+        }
+    };
+
     _createClass(UIView, [{
         key: "layer",
         get: function get() {
@@ -625,6 +681,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 if (Math.abs(this._frame.x - value.x) > 0.001) {
                     this.animationValues["frame.x"] = value.x;
@@ -770,6 +827,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["alpha"] = value;
             }
@@ -791,6 +849,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 }
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["backgroundColor"] = value;
             }
@@ -1112,6 +1171,11 @@ var UIWindow = function (_UIView) {
 
 exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker();
+var emptyAnimation = function () {
+    var animation = wx.createAnimation({ duration: 0 });
+    animation.step();
+    return animation.export();
+}();
 
 /***/ }),
 /* 2 */
@@ -3370,6 +3434,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
+var UIColor_1 = __webpack_require__(5);
 var UIEnums_1 = __webpack_require__(16);
 
 var UILabel = function (_UIView_1$UIView) {
@@ -3386,8 +3451,62 @@ var UILabel = function (_UIView_1$UIView) {
         _this._textColor = undefined;
         _this._textAlignment = UIEnums_1.UITextAlignment.left;
         _this._numberOfLines = 1;
+        // invalidate
+        _this.isTextDirty = true;
+        _this.isTextStyleDirty = true;
         return _this;
     }
+
+    UILabel.prototype.invalidateText = function invalidateText() {
+        this.isTextDirty = true;
+        this.invalidate();
+    };
+
+    UILabel.prototype.invalidateTextStyle = function invalidateTextStyle() {
+        this.isTextStyleDirty = true;
+        this.invalidate();
+    };
+
+    UILabel.prototype.buildExtras = function buildExtras() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        if (this.isTextDirty) {
+            data.text = this._text;
+        }
+        if (this.isTextStyleDirty) {
+            data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
+                switch (_this2._textAlignment) {
+                    case UIEnums_1.UITextAlignment.left:
+                        return "left";
+                    case UIEnums_1.UITextAlignment.center:
+                        return "center";
+                    case UIEnums_1.UITextAlignment.right:
+                        return "right";
+                }
+                return "left";
+            }() + ";\n            " + function () {
+                if (_this2._numberOfLines === 1) {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
+                } else {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
+                }
+            }() + "\n        }";
+        }
+        return data;
+    };
+
+    UILabel.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
+        this.isTextDirty = true;
+        this.isTextStyleDirty = true;
+    };
+
+    UILabel.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isTextDirty = false;
+        this.isTextStyleDirty = false;
+    };
 
     _createClass(UILabel, [{
         key: "text",
@@ -3399,7 +3518,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._text = value;
-            this.invalidate();
+            this.invalidateText();
         }
     }, {
         key: "font",
@@ -3411,7 +3530,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._font = value;
-            this.invalidate();
+            this.invalidateTextStyle();
         }
     }, {
         key: "textColor",
@@ -3423,7 +3542,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._textColor = value;
-            this.invalidate();
+            this.invalidateTextStyle();
         }
     }, {
         key: "textAlignment",
@@ -3435,7 +3554,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._textAlignment = value;
-            this.invalidate();
+            this.invalidateTextStyle();
         }
     }, {
         key: "numberOfLines",
@@ -3447,7 +3566,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._numberOfLines = value;
-            this.invalidate();
+            this.invalidateTextStyle();
         }
     }]);
 
@@ -3832,7 +3951,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.clazz = "UIScrollView";
         _this._panGesture = new UIPanGestureRecognizer_1.UIPanGestureRecognizer();
         _this._contentOffset = UIPoint_1.UIPointZero;
-        _this._contentOffsetAnimated = false;
         _this._contentSize = UISize_1.UISizeZero;
         _this.contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
         _this.directionalLockEnabled = false;
@@ -3856,20 +3974,19 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.decelerating = false;
         _this._scrollsToTop = false;
         _this._endDraggingVelocity = UIPoint_1.UIPointZero;
+        // Build Data
+        _this.isContentOffsetDirty = false;
+        _this.isContentOffsetScrollAnimatedDirty = false;
+        _this.isContentOffsetScrollAnimated = false;
         _this._panGesture.enabled = false;
         return _this;
     }
 
-    UIScrollView.prototype.setContentOffset = function setContentOffset(contentOffset, animated) {
-        var _this2 = this;
+    UIScrollView.prototype.setContentOffset = function setContentOffset(contentOffset) {
+        var animated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
         this.contentOffset = contentOffset;
-        this._contentOffsetAnimated = animated;
-        if (this._contentOffsetAnimated) {
-            setTimeout(function () {
-                _this2._contentOffsetAnimated = false;
-            }, 32);
-        }
+        this.isContentOffsetScrollAnimated = animated;
     };
 
     UIScrollView.prototype.scrollRectToVisible = function scrollRectToVisible(rect, animated) {
@@ -3926,7 +4043,7 @@ var UIScrollView = function (_UIView_1$UIView) {
                 } else {
                     this.setContentOffset({ x: 0, y: currentPageY }, true);
                 }
-                this.invalidate(true, true);
+                this.invalidate();
             } else if (this.contentSize.height < this.bounds.height) {
                 if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) {
                     return;
@@ -3940,7 +4057,7 @@ var UIScrollView = function (_UIView_1$UIView) {
                 } else {
                     this.setContentOffset({ x: currentPageX, y: 0 }, true);
                 }
-                this.invalidate(true, true);
+                this.invalidate();
             }
         }
     };
@@ -3963,6 +4080,50 @@ var UIScrollView = function (_UIView_1$UIView) {
         this.emit("didScrollToTop", this);
     };
 
+    UIScrollView.prototype.buildExtras = function buildExtras() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        if (this.isContentOffsetDirty) {
+            if (this.isContentOffsetScrollAnimatedDirty) {
+                data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
+                setTimeout(function () {
+                    _this2.isContentOffsetDirty = true;
+                    _this2.isContentOffsetScrollAnimatedDirty = false;
+                    _this2.invalidate();
+                }, 0);
+                return data;
+            }
+            data.contentOffsetX = this._contentOffset.x;
+            data.contentOffsetY = this._contentOffset.y;
+            return data;
+        }
+        data.inertia = this._pagingEnabled === true ? false : true;
+        data.direction = function () {
+            if (!_this2._scrollEnabled) {
+                return "none";
+            } else if (_this2._contentSize.width > _this2.bounds.width && _this2._contentSize.height > _this2.bounds.height) {
+                return "all";
+            } else if (_this2._contentSize.width > _this2.bounds.width) {
+                return "horizontal";
+            } else if (_this2._contentSize.height > _this2.bounds.height) {
+                return "vertical";
+            } else {
+                return "none";
+            }
+        }();
+        data.bounces = this._bounces;
+        data.contentSize = this._contentSize;
+        data.scrollsToTop = this._scrollsToTop;
+        return data;
+    };
+
+    UIScrollView.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isContentOffsetDirty = false;
+        this.isContentOffsetScrollAnimated = false;
+    };
+
     _createClass(UIScrollView, [{
         key: "contentOffset",
         get: function get() {
@@ -3970,7 +4131,9 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentOffset = value;
-            this._contentOffsetAnimated = false;
+            this.isContentOffsetDirty = true;
+            this.isContentOffsetScrollAnimatedDirty = true;
+            this.isContentOffsetScrollAnimated = false;
             this.invalidate();
         }
     }, {
@@ -4469,6 +4632,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
+var UIEnums_1 = __webpack_require__(16);
 
 var UIImageView = function (_UIView_1$UIView) {
     _inherits(UIImageView, _UIView_1$UIView);
@@ -4480,8 +4644,42 @@ var UIImageView = function (_UIView_1$UIView) {
 
         _this.clazz = "UIImageView";
         _this._image = undefined;
+        _this.isImageDirty = false;
         return _this;
     }
+
+    UIImageView.prototype.buildExtras = function buildExtras() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        if (this.isImageDirty) {
+            data.imageSource = this._image !== undefined ? this._image.imageSource : null;
+        }
+        if (this.isStyleDirty) {
+            data.scaleMode = function () {
+                switch (_this2._contentMode) {
+                    case UIEnums_1.UIViewContentMode.scaleToFill:
+                        return "scaleToFill";
+                    case UIEnums_1.UIViewContentMode.scaleAspectFit:
+                        return "aspectFit";
+                    case UIEnums_1.UIViewContentMode.scaleAspectFill:
+                        return "aspectFill";
+                }
+                return "scaleToFill";
+            }();
+        }
+        return data;
+    };
+
+    UIImageView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
+        this.isImageDirty = true;
+    };
+
+    UIImageView.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isImageDirty = false;
+    };
 
     _createClass(UIImageView, [{
         key: "image",
@@ -4489,7 +4687,11 @@ var UIImageView = function (_UIView_1$UIView) {
             return this._image;
         },
         set: function set(value) {
+            if (this._image === value) {
+                return;
+            }
             this._image = value;
+            this.isImageDirty = true;
             this.invalidate();
         }
     }]);
