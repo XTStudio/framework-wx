@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIComponentManager_1 = require("./UIComponentManager");
+const UIViewManager_1 = require("./UIViewManager");
 // xt-framework/uiview.js
 const emptyAnimation = (() => {
     let animation = wx.createAnimation({ duration: 0 });
@@ -131,8 +132,13 @@ class UIViewComponent {
                         return;
                     }
                     if (newVal.viewID) {
-                        this.viewID = newVal.viewID;
-                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                        if (this.viewID !== newVal.viewID) {
+                            UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                            const newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
+                            if (newView) {
+                                newView.markAllFlagsDirty();
+                            }
+                        }
                     }
                 }
             }

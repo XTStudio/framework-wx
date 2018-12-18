@@ -1,4 +1,4 @@
-import { UIRect } from "./UIRect";
+import { UIRect, UIRectZero } from "./UIRect";
 import { UIViewController } from "./UIViewController";
 import { UITabBar } from "./UITabBar";
 import { UIView } from "./UIView";
@@ -44,11 +44,8 @@ export class UITabBarController extends UIViewController {
             const it = this.itemControllers[value]
             if (it.parentViewController === undefined) {
                 this.addChildViewController(it)
-                setTimeout(() => {
-                    this.iView.addSubview(it.iView)
-                    this.iView.bringSubviewToFront(this.tabBar)
-                    this.viewWillLayoutSubviews()
-                }, 16)
+                this.iView.insertSubviewAtIndex(it.iView, 0)
+                this.viewWillLayoutSubviews()
             }
         }
         if (this.itemControllers[oldIndex]) {

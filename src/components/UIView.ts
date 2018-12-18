@@ -1,4 +1,5 @@
 import { UIComponentManager } from "./UIComponentManager";
+import { UIViewManager } from "./UIViewManager";
 
 // xt-framework/uiview.js
 
@@ -135,8 +136,13 @@ export class UIViewComponent {
             observer: function (newVal: any) {
                 if (newVal === undefined || newVal === null) { return }
                 if (newVal.viewID) {
-                    (this as any).viewID = newVal.viewID
-                    UIComponentManager.shared.addComponent(this, newVal.viewID)
+                    if ((this as any).viewID !== newVal.viewID) {
+                        UIComponentManager.shared.addComponent(this, newVal.viewID)
+                        const newView = UIViewManager.shared.fetchView(newVal.viewID)
+                        if (newView) {
+                            newView.markAllFlagsDirty()
+                        }
+                    }
                 }
             }
         }

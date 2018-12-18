@@ -40,7 +40,7 @@
     bindtouchcancel="onTouchCancelled"
     data-viewID="{{viewID}}">
     <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-      <factory view="{{item}}"></factory>
+      <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
     </view>
     <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>
 </scroll-view>

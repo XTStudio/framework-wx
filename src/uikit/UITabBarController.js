@@ -41,11 +41,8 @@ class UITabBarController extends UIViewController_1.UIViewController {
             const it = this.itemControllers[value];
             if (it.parentViewController === undefined) {
                 this.addChildViewController(it);
-                setTimeout(() => {
-                    this.iView.addSubview(it.iView);
-                    this.iView.bringSubviewToFront(this.tabBar);
-                    this.viewWillLayoutSubviews();
-                }, 16);
+                this.iView.insertSubviewAtIndex(it.iView, 0);
+                this.viewWillLayoutSubviews();
             }
         }
         if (this.itemControllers[oldIndex]) {

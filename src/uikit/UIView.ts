@@ -678,12 +678,6 @@ export class UIView extends EventEmitter {
                                 data.style = this.buildStyle()
                             }
                             if (this.isHierarchyDirty) {
-                                this.subviews.forEach(it => {
-                                    if (it.viewID && UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                        it.markAllFlagsDirty()
-                                        it.invalidate()
-                                    }
-                                })
                                 data.subviews = this.subviews
                             }
                             data.animation = emptyAnimation
@@ -700,6 +694,8 @@ export class UIView extends EventEmitter {
     markAllFlagsDirty() {
         this.isStyleDirty = true
         this.isHierarchyDirty = true
+        this.invalidate()
+        this.subviews.forEach(it => it.markAllFlagsDirty())
     }
 
     clearDirtyFlags() {

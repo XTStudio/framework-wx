@@ -595,12 +595,6 @@ class UIView extends EventEmitter_1.EventEmitter {
                                 data.style = this.buildStyle();
                             }
                             if (this.isHierarchyDirty) {
-                                this.subviews.forEach(it => {
-                                    if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                        it.markAllFlagsDirty();
-                                        it.invalidate();
-                                    }
-                                });
                                 data.subviews = this.subviews;
                             }
                             data.animation = emptyAnimation;
@@ -616,6 +610,8 @@ class UIView extends EventEmitter_1.EventEmitter {
     markAllFlagsDirty() {
         this.isStyleDirty = true;
         this.isHierarchyDirty = true;
+        this.invalidate();
+        this.subviews.forEach(it => it.markAllFlagsDirty());
     }
     clearDirtyFlags() {
         this.isStyleDirty = false;

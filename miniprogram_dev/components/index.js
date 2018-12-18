@@ -566,12 +566,6 @@ var UIView = function (_EventEmitter_1$Event) {
                                 data.style = _this3.buildStyle();
                             }
                             if (_this3.isHierarchyDirty) {
-                                _this3.subviews.forEach(function (it) {
-                                    if (it.viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(it.viewID) === undefined) {
-                                        it.markAllFlagsDirty();
-                                        it.invalidate();
-                                    }
-                                });
                                 data.subviews = _this3.subviews;
                             }
                             data.animation = emptyAnimation;
@@ -588,6 +582,10 @@ var UIView = function (_EventEmitter_1$Event) {
     UIView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
         this.isStyleDirty = true;
         this.isHierarchyDirty = true;
+        this.invalidate();
+        this.subviews.forEach(function (it) {
+            return it.markAllFlagsDirty();
+        });
     };
 
     UIView.prototype.clearDirtyFlags = function clearDirtyFlags() {
@@ -4338,11 +4336,8 @@ var UITabBarController = function (_UIViewController_1$U) {
                 var it = this.itemControllers[value];
                 if (it.parentViewController === undefined) {
                     this.addChildViewController(it);
-                    setTimeout(function () {
-                        _this5.iView.addSubview(it.iView);
-                        _this5.iView.bringSubviewToFront(_this5.tabBar);
-                        _this5.viewWillLayoutSubviews();
-                    }, 16);
+                    this.iView.insertSubviewAtIndex(it.iView, 0);
+                    this.viewWillLayoutSubviews();
                 }
             }
             if (this.itemControllers[oldIndex]) {

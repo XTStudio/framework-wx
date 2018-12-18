@@ -1,6 +1,6 @@
 <view style='{{style}}' animation='{{animation}}'>
     <text style='position:absolute; width: 100%; top: 50%; transform: translateY(-50%); {{textStyle}}'>{{text}}</text>
     <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-        <factory view="{{item}}"></factory>
+        <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
     </view>
 </view>

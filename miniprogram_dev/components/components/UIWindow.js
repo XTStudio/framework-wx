@@ -97,6 +97,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIComponentManager_1 = __webpack_require__(53);
+var UIViewManager_1 = __webpack_require__(8);
 // xt-framework/uiview.js
 var emptyAnimation = function () {
     var animation = wx.createAnimation({ duration: 0 });
@@ -226,8 +227,13 @@ var UIViewComponent = function UIViewComponent() {
                     return;
                 }
                 if (newVal.viewID) {
-                    this.viewID = newVal.viewID;
-                    UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                    if (this.viewID !== newVal.viewID) {
+                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
+                        if (newView) {
+                            newView.markAllFlagsDirty();
+                        }
+                    }
                 }
             }
         }
