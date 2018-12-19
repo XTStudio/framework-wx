@@ -27,6 +27,7 @@ Object.assign(module.exports, require('./uikit/UINavigationController'));
 Object.assign(module.exports, require('./uikit/UIPanGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIPinchGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIPoint'));
+Object.assign(module.exports, require('./uikit/UIProgressView'));
 Object.assign(module.exports, require('./uikit/UIRect'));
 Object.assign(module.exports, require('./uikit/UIRotationGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIScrollView'));

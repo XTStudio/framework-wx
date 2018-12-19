@@ -19,6 +19,7 @@ const {
     UIScrollView,
     UISlider,
     UISwitch,
+    UIProgressView,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -54,8 +55,11 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
-            const slider = new UISwitch
-            slider.frame = UIRectMake(44, 100, 200, 44)
+            const slider = new UIProgressView
+            slider.frame = UIRectMake(44, 100, 200, 2)
+            setTimeout(() => {
+                slider.setProgress(0.5, true)
+            }, 2000)
             this.view.addSubview(slider)
         }
         {

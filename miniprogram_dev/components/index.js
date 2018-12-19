@@ -3057,6 +3057,7 @@ Object.assign(module.exports, __webpack_require__(30));
 Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(31));
 Object.assign(module.exports, __webpack_require__(7));
+Object.assign(module.exports, __webpack_require__(55));
 Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(32));
 Object.assign(module.exports, __webpack_require__(33));
@@ -6613,6 +6614,131 @@ var UISwitch = function (_UIView_1$UIView2) {
 }(UIView_1.UIView);
 
 exports.UISwitch = UISwitch;
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIAnimator_1 = __webpack_require__(15);
+
+var UIProgressView = function (_UIView_1$UIView) {
+    _inherits(UIProgressView, _UIView_1$UIView);
+
+    function UIProgressView() {
+        _classCallCheck(this, UIProgressView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this._progress = 0.0;
+        _this._progressTintColor = undefined;
+        _this._trackTintColor = undefined;
+        // Implementation
+        _this.trackView = new UIView_1.UIView();
+        _this.progressView = new UIView_1.UIView();
+        _this.userInteractionEnabled = false;
+        _this.progressTintColor = _this.tintColor;
+        _this.trackTintColor = _this.tintColor.colorWithAlphaComponent(0.35);
+        _this.addSubview(_this.trackView);
+        _this.addSubview(_this.progressView);
+        return _this;
+    }
+    /**
+     * Getter progress
+     * @return {number }
+     */
+
+
+    UIProgressView.prototype.setProgress = function setProgress(value, animated) {
+        var _this2 = this;
+
+        if (animated) {
+            UIAnimator_1.UIAnimator.curve(0.30, function () {
+                _this2.progress = value;
+                _this2.layoutIfNeeded();
+            }, undefined);
+        } else {
+            this.progress = value;
+            this.layoutIfNeeded();
+        }
+    };
+    /**
+     * Getter progressTintColor
+     * @return {UIColor }
+     */
+
+
+    UIProgressView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this.trackView.frame = this.bounds;
+        this.progressView.frame = { x: 0.0, y: 0.0, width: this.bounds.width * this.progress, height: this.bounds.height };
+    };
+
+    _createClass(UIProgressView, [{
+        key: "progress",
+        get: function get() {
+            return this._progress;
+        }
+        /**
+         * Setter progress
+         * @param {number } value
+         */
+        ,
+        set: function set(value) {
+            this._progress = value;
+            this.layoutIfNeeded();
+        }
+    }, {
+        key: "progressTintColor",
+        get: function get() {
+            return this._progressTintColor;
+        }
+        /**
+         * Setter progressTintColor
+         * @param {UIColor } value
+         */
+        ,
+        set: function set(value) {
+            this._progressTintColor = value;
+            this.progressView.backgroundColor = value;
+        }
+        /**
+         * Getter trackTintColor
+         * @return {UIColor }
+         */
+
+    }, {
+        key: "trackTintColor",
+        get: function get() {
+            return this._trackTintColor;
+        }
+        /**
+         * Setter trackTintColor
+         * @param {UIColor } value
+         */
+        ,
+        set: function set(value) {
+            this._trackTintColor = value;
+            this.trackView.backgroundColor = value;
+        }
+    }]);
+
+    return UIProgressView;
+}(UIView_1.UIView);
+
+exports.UIProgressView = UIProgressView;
 
 /***/ })
 /******/ ]);
