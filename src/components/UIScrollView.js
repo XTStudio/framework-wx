@@ -30,7 +30,10 @@ class UIScrollViewComponent extends UIView_1.UIViewComponent {
                     else {
                         const deltaX = e.detail.deltaX;
                         const deltaY = e.detail.deltaY;
-                        view._contentOffset = { x: e.detail.scrollLeft, y: e.detail.scrollTop };
+                        view._contentOffset = {
+                            x: e.detail.scrollLeft - view._contentInset.left,
+                            y: e.detail.scrollTop - view._contentInset.top
+                        };
                         view.didScroll();
                         if (view._touchStarted === true) {
                             if (view.tracking === false && view.dragging === false) {
@@ -45,6 +48,16 @@ class UIScrollViewComponent extends UIView_1.UIViewComponent {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
+                    const query = wx.createSelectorQuery().in(this);
+                    setTimeout(() => {
+                        query.select('#scroll-view').scrollOffset(function (res) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            };
+                            view.didScroll();
+                        }).exec();
+                    }, 32);
                 }
             },
             onTouchStarted: function (e) {

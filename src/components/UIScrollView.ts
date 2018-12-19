@@ -1,4 +1,4 @@
-import { UIViewElement, UIViewComponent } from "./UIView";
+import { UIViewComponent } from "./UIView";
 import { UIViewManager } from "./UIViewManager";
 
 export class UIScrollViewComponent extends UIViewComponent {
@@ -28,7 +28,10 @@ export class UIScrollViewComponent extends UIViewComponent {
                 else {
                     const deltaX = e.detail.deltaX
                     const deltaY = e.detail.deltaY
-                    view._contentOffset = { x: e.detail.scrollLeft, y: e.detail.scrollTop }
+                    view._contentOffset = {
+                        x: e.detail.scrollLeft - view._contentInset.left,
+                        y: e.detail.scrollTop - view._contentInset.top
+                    }
                     view.didScroll()
                     if (view._touchStarted === true) {
                         if (view.tracking === false && view.dragging === false) {
@@ -43,6 +46,16 @@ export class UIScrollViewComponent extends UIViewComponent {
                     }
                     view._lastScrollTimeStamp = e.timeStamp
                 }
+                const query = (wx.createSelectorQuery() as any).in(this)
+                setTimeout(() => {
+                    query.select('#scroll-view').scrollOffset(function (res: any) {
+                        view._contentOffset = {
+                            x: res.scrollLeft - view._contentInset.left,
+                            y: res.scrollTop - view._contentInset.top
+                        }
+                        view.didScroll()
+                    }).exec()
+                }, 32)
             }
         },
         onTouchStarted: function (e: any) {

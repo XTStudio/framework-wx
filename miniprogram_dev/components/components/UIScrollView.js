@@ -185,7 +185,10 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                     if (false) { var deltaY, deltaX; } else {
                         var _deltaX = e.detail.deltaX;
                         var _deltaY = e.detail.deltaY;
-                        view._contentOffset = { x: e.detail.scrollLeft, y: e.detail.scrollTop };
+                        view._contentOffset = {
+                            x: e.detail.scrollLeft - view._contentInset.left,
+                            y: e.detail.scrollTop - view._contentInset.top
+                        };
                         view.didScroll();
                         if (view._touchStarted === true) {
                             if (view.tracking === false && view.dragging === false) {
@@ -200,6 +203,16 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
+                    var query = wx.createSelectorQuery().in(this);
+                    setTimeout(function () {
+                        query.select('#scroll-view').scrollOffset(function (res) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            };
+                            view.didScroll();
+                        }).exec();
+                    }, 32);
                 }
             },
             onTouchStarted: function onTouchStarted(e) {

@@ -3950,7 +3950,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._panGesture = new UIPanGestureRecognizer_1.UIPanGestureRecognizer();
         _this._contentOffset = UIPoint_1.UIPointZero;
         _this._contentSize = UISize_1.UISizeZero;
-        _this.contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this._contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
         _this.directionalLockEnabled = false;
         _this._bounces = true;
         _this._alwaysBounceVertical = false;
@@ -4082,6 +4082,10 @@ var UIScrollView = function (_UIView_1$UIView) {
         var _this2 = this;
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        var totalContentSize = {
+            width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
+            height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
+        };
         if (this.isContentOffsetDirty) {
             if (this.isContentOffsetScrollAnimatedDirty) {
                 data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
@@ -4092,26 +4096,26 @@ var UIScrollView = function (_UIView_1$UIView) {
                 }, 0);
                 return data;
             }
-            data.contentOffsetX = this._contentOffset.x;
-            data.contentOffsetY = this._contentOffset.y;
-            return data;
+            data.contentOffsetX = this._contentOffset.x + this._contentInset.left;
+            data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
         }
         data.inertia = this._pagingEnabled === true ? false : true;
         data.direction = function () {
             if (!_this2._scrollEnabled) {
                 return "none";
-            } else if (_this2._contentSize.width > _this2.bounds.width && _this2._contentSize.height > _this2.bounds.height) {
+            } else if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
                 return "all";
-            } else if (_this2._contentSize.width > _this2.bounds.width) {
+            } else if (totalContentSize.width > _this2.bounds.width) {
                 return "horizontal";
-            } else if (_this2._contentSize.height > _this2.bounds.height) {
+            } else if (totalContentSize.height > _this2.bounds.height) {
                 return "vertical";
             } else {
                 return "none";
             }
         }();
         data.bounces = this._bounces;
-        data.contentSize = this._contentSize;
+        data.contentSize = totalContentSize;
+        data.contentInset = this._contentInset;
         data.scrollsToTop = this._scrollsToTop;
         return data;
     };
@@ -4141,6 +4145,18 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentSize = value;
+            this.invalidate();
+        }
+    }, {
+        key: "contentInset",
+        get: function get() {
+            return this._contentInset;
+        },
+        set: function set(value) {
+            var deltaX = value.left - this._contentInset.left;
+            var deltaY = value.top - this._contentInset.top;
+            this._contentInset = value;
+            this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY };
             this.invalidate();
         }
     }, {
@@ -4384,7 +4400,7 @@ var UITabBarController = function (_UIViewController_1$U) {
     }, {
         key: "navigationControllerFrame",
         get: function get() {
-            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height };
+            return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height - this.barFrame.height };
         }
     }]);
 

@@ -41,7 +41,20 @@ export class UIScrollView extends UIView {
         this.invalidate()
     }
 
-    contentInset: UIEdgeInsets = UIEdgeInsetsZero
+    private _contentInset: UIEdgeInsets = UIEdgeInsetsZero
+
+    public get contentInset(): UIEdgeInsets {
+        return this._contentInset;
+    }
+
+    public set contentInset(value: UIEdgeInsets) {
+        const deltaX = value.left - this._contentInset.left
+        const deltaY = value.top - this._contentInset.top
+        this._contentInset = value;
+        this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY }
+        this.invalidate()
+    }
+
     directionalLockEnabled: boolean = false
 
     private _bounces: boolean = true
@@ -241,6 +254,10 @@ export class UIScrollView extends UIView {
 
     buildExtras() {
         let data = super.buildExtras()
+        const totalContentSize = {
+            width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
+            height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
+        }
         if (this.isContentOffsetDirty) {
             if (this.isContentOffsetScrollAnimatedDirty) {
                 data.scrollWithAnimation = this.isContentOffsetScrollAnimated
@@ -251,22 +268,21 @@ export class UIScrollView extends UIView {
                 }, 0)
                 return data
             }
-            data.contentOffsetX = this._contentOffset.x
-            data.contentOffsetY = this._contentOffset.y
-            return data
+            data.contentOffsetX = this._contentOffset.x + this._contentInset.left
+            data.contentOffsetY = this._contentOffset.y + this._contentInset.top
         }
         data.inertia = this._pagingEnabled === true ? false : true
         data.direction = (() => {
             if (!this._scrollEnabled) {
                 return "none"
             }
-            else if (this._contentSize.width > this.bounds.width && this._contentSize.height > this.bounds.height) {
+            else if (totalContentSize.width > this.bounds.width && totalContentSize.height > this.bounds.height) {
                 return "all"
             }
-            else if (this._contentSize.width > this.bounds.width) {
+            else if (totalContentSize.width > this.bounds.width) {
                 return "horizontal"
             }
-            else if (this._contentSize.height > this.bounds.height) {
+            else if (totalContentSize.height > this.bounds.height) {
                 return "vertical"
             }
             else {
@@ -274,7 +290,8 @@ export class UIScrollView extends UIView {
             }
         })()
         data.bounces = this._bounces
-        data.contentSize = this._contentSize
+        data.contentSize = totalContentSize
+        data.contentInset = this._contentInset
         data.scrollsToTop = this._scrollsToTop
         return data
     }

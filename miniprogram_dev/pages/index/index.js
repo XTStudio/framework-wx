@@ -21,31 +21,46 @@ const {
 
 class FooViewController extends UIViewController {
 
-    redView = new UIView
-    imgView = new UIImageView
+    scrollView = new UIScrollView
 
     viewDidLoad() {
         super.viewDidLoad()
         this.title = "我的首页"
-        this.redView.layer.cornerRadius = 22.0
-        this.redView.backgroundColor = new UIColor(0.0, 1.0, 0.0, 0.5)
-        this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            if (this.navigationController) {
-                this.navigationController.pushViewController(new SecondViewController)
-            }
-        }))
-        this.view.addSubview(this.redView)
-        // this.view.backgroundColor = new UIColor(1.0, 0.0, 0.0, 0.5)
-        this.imgView.layer.cornerRadius = 20.0
-        this.imgView.clipsToBounds = true
-        this.imgView.image = UIImage.fromURL('https://avatars0.githubusercontent.com/u/5013664?s=460&v=4')
-        this.view.addSubview(this.imgView)
+        {
+            const redView = new UIView
+            redView.frame = UIRectMake(0, -44, 22, 22)
+            redView.backgroundColor = UIColor.red
+            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                redView.backgroundColor = UIColor.yellow
+            }))
+            this.scrollView.addSubview(redView)
+        }
+        {
+            const redView = new UIView
+            redView.frame = UIRectMake(0, 0, 44, 44)
+            redView.backgroundColor = UIColor.red
+            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                redView.backgroundColor = UIColor.yellow
+            }))
+            this.scrollView.addSubview(redView)
+        }
+        {
+            const redView = new UIView
+            redView.frame = UIRectMake(0, 1000 - 44, 44, 44)
+            redView.backgroundColor = UIColor.red
+            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                redView.backgroundColor = UIColor.yellow
+            }))
+            this.scrollView.addSubview(redView)
+        }
+        this.scrollView.contentSize = { width: 0, height: 1000 }
+        this.scrollView.contentInset = { top: 44, left: 0, bottom: 44, right: 0 }
+        this.view.addSubview(this.scrollView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.redView.frame = UIRectMake(44, 44, this.view.bounds.width - 88, 44)
-        // this.imgView.frame = UIRectMake(44, 44, 180, 180)
+        this.scrollView.frame = this.view.bounds
     }
 
 }

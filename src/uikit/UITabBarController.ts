@@ -112,7 +112,7 @@ export class UITabBarController extends UIViewController {
     }
 
     private get navigationControllerFrame(): UIRect {
-        return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height }
+        return { x: 0.0, y: 0.0, width: this.iView.bounds.width, height: this.iView.bounds.height - this.barFrame.height }
     }
 
     // private get hidesBottomBarContentFrame(): UIRect {
