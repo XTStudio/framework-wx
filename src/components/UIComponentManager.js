@@ -4,6 +4,12 @@ class UIComponentManager {
     constructor() {
         this.components = {};
     }
+    static get keyWindowComponent() {
+        return getApp().UIComponentManagerKeyWindowComponent;
+    }
+    static set keyWindowComponent(value) {
+        getApp().UIComponentManagerKeyWindowComponent = value;
+    }
     static get shared() {
         if (getApp().UIComponentManagerShared === undefined) {
             getApp().UIComponentManagerShared = new UIComponentManager;

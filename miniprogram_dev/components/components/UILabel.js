@@ -173,6 +173,14 @@ var UIComponentManager = function () {
     };
 
     _createClass(UIComponentManager, null, [{
+        key: "keyWindowComponent",
+        get: function get() {
+            return getApp().UIComponentManagerKeyWindowComponent;
+        },
+        set: function set(value) {
+            getApp().UIComponentManagerKeyWindowComponent = value;
+        }
+    }, {
         key: "shared",
         get: function get() {
             if (getApp().UIComponentManagerShared === undefined) {

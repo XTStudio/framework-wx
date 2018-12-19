@@ -173,6 +173,14 @@ var UIComponentManager = function () {
     };
 
     _createClass(UIComponentManager, null, [{
+        key: "keyWindowComponent",
+        get: function get() {
+            return getApp().UIComponentManagerKeyWindowComponent;
+        },
+        set: function set(value) {
+            getApp().UIComponentManagerKeyWindowComponent = value;
+        }
+    }, {
         key: "shared",
         get: function get() {
             if (getApp().UIComponentManagerShared === undefined) {
@@ -269,6 +277,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(1);
 var UIViewManager_1 = __webpack_require__(0);
 var UIView_1 = __webpack_require__(3);
 
@@ -282,6 +291,9 @@ var UIWindowComponent = function (_UIView_1$UIViewCompo) {
 
         _this.methods = {
             onTouchStarted: function onTouchStarted(e) {
+                // var q = (wx.createSelectorQuery() as any).in(this)
+                // q.select('#_text_measurer').boundingClientRect(function(e: any){ console.log(e) })
+                // q.exec()
                 if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
                     var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
                     if (window) {
@@ -312,6 +324,11 @@ var UIWindowComponent = function (_UIView_1$UIViewCompo) {
                         window.handleTouchCancel(e);
                     }
                 }
+            }
+        };
+        _this.pageLifetimes = {
+            show: function show() {
+                UIComponentManager_1.UIComponentManager.keyWindowComponent = this;
             }
         };
         return _this;

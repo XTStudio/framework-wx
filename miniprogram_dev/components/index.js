@@ -171,6 +171,14 @@ var UIComponentManager = function () {
     };
 
     _createClass(UIComponentManager, null, [{
+        key: "keyWindowComponent",
+        get: function get() {
+            return getApp().UIComponentManagerKeyWindowComponent;
+        },
+        set: function set(value) {
+            getApp().UIComponentManagerKeyWindowComponent = value;
+        }
+    }, {
         key: "shared",
         get: function get() {
             if (getApp().UIComponentManagerShared === undefined) {
@@ -3644,6 +3652,7 @@ Object.assign(module.exports, __webpack_require__(26));
 Object.assign(module.exports, __webpack_require__(41));
 Object.assign(module.exports, __webpack_require__(42));
 Object.assign(module.exports, __webpack_require__(27));
+Object.assign(module.exports, __webpack_require__(64));
 Object.assign(module.exports, __webpack_require__(43));
 Object.assign(module.exports, __webpack_require__(59));
 Object.assign(module.exports, __webpack_require__(62));
@@ -7700,6 +7709,82 @@ var UIConfirm = function () {
 }();
 
 exports.UIConfirm = UIConfirm;
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(1);
+
+var TextMeasurer = function () {
+    function TextMeasurer() {
+        _classCallCheck(this, TextMeasurer);
+    }
+
+    // static measureAttributedText(text: UIAttributedString, inSize: UISize): UIRect {
+    //     if (!(document.body instanceof HTMLBodyElement)) { return UIRectZero }
+    //     if (measureSpan.parentNode === null) {
+    //         measureSpan.style.opacity = "0.0"
+    //         measureSpan.style.position = "absolute"
+    //         measureSpan.style.left = "-10000000px"
+    //         measureSpan.style.top = "-10000000px"
+    //         document.body.appendChild(measureSpan);
+    //     }
+    //     else {
+    //         measureSpan.innerHTML = ''
+    //         measureSpan.setAttribute("style", "")
+    //         measureSpan.style.opacity = "0.0"
+    //         measureSpan.style.position = "absolute"
+    //         measureSpan.style.left = "-10000000px"
+    //         measureSpan.style.top = "-10000000px"
+    //     }
+    //     measureSpan.style.overflow = "hidden"
+    //     measureSpan.style.wordWrap = null;
+    //     measureSpan.style.wordBreak = null;
+    //     measureSpan.style.display = "-webkit-box";
+    //     measureSpan.style.webkitBoxOrient = "vertical"
+    //     measureSpan.style.maxWidth = inSize.width.toString() + "px";
+    //     measureSpan.appendChild(text.toHTMLText())
+    //     return { x: 0.0, y: 0.0, width: Math.min(inSize.width, Math.ceil(measureSpan.offsetWidth + 1)), height: Math.min(inSize.height, Math.ceil(measureSpan.offsetHeight)) }
+    // }
+    TextMeasurer.measureText = function measureText(text, params) {
+        return new Promise(function (resolver, rejector) {
+            var keyWindowComponent = UIComponentManager_1.UIComponentManager.keyWindowComponent;
+            if (keyWindowComponent) {
+                keyWindowComponent.setData({
+                    measuringText: text,
+                    measuringTextStyle: "\n                    font-size: " + (params.font !== undefined ? params.font.pointSize : 14) + "px;\n                    font-family: " + (params.font !== undefined ? params.font.fontName : "") + "; \n                    font-weight: " + (params.font !== undefined ? params.font.fontStyle : "") + "; \n                    font-style: " + (params.font !== undefined ? params.font.fontStyle : "") + "; \n                    " + function () {
+                        if (params.numberOfLines === 1) {
+                            return "\n                            overflow: hidden;\n                            text-overflow: ellipsis;\n                            display: inline-block;\n                            white-space: nowrap;\n                            ";
+                        } else {
+                            return "\n                            overflow: hidden;\n                            text-overflow: ellipsis;\n                            display: -webkit-box;\n                            webkit-box-orient: vertical;\n                            ";
+                        }
+                    }() + ";\n                    width: " + params.inRect.width + "px;\n                    height: " + params.inRect.height + "px;\n                }"
+                }, function () {
+                    var q = wx.createSelectorQuery().in(keyWindowComponent);
+                    q.select('#_text_measurer').boundingClientRect(function (res) {
+                        if (res) {
+                            resolver({ x: 0, y: 0, width: res.width, height: res.height });
+                        } else {
+                            rejector(Error("TextMeasurer error."));
+                        }
+                    });
+                    q.exec();
+                });
+            }
+        });
+    };
+
+    return TextMeasurer;
+}();
+
+exports.TextMeasurer = TextMeasurer;
 
 /***/ })
 /******/ ]);

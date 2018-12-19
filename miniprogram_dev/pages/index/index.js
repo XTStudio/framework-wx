@@ -26,6 +26,7 @@ const {
     UIScreen,
     UIAlert,
     UIConfirm,
+    TextMeasurer,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -49,10 +50,10 @@ class FooViewController extends UIViewController {
             v.frame = UIRectMake(0, 0, UIScreen.main.bounds.width, 166)
             v.backgroundColor = UIColor.yellow
             v.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                new UIConfirm("你确定要破坏地球吗？").show(() => {
-                    v.backgroundColor = UIColor.gray
-                }, () => {
-                    v.backgroundColor = UIColor.green
+                const e = new Date().getTime()
+                TextMeasurer.measureText("Hello, World.我是 Pony!", { font: new UIFont(17), inRect: { x: 0, y: 0, width: Infinity, height: Infinity } }).then((rect) => {
+                    console.log(rect, new Date().getTime() - e);
+                    this.title = (rect.width).toString()
                 })
             }))
             this.view.addSubview(v)

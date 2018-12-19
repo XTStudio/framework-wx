@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const UIComponentManager_1 = require("./UIComponentManager");
 const UIViewManager_1 = require("./UIViewManager");
 const UIView_1 = require("./UIView");
 class UIWindowComponent extends UIView_1.UIViewComponent {
@@ -7,6 +8,9 @@ class UIWindowComponent extends UIView_1.UIViewComponent {
         super(...arguments);
         this.methods = {
             onTouchStarted: function (e) {
+                // var q = (wx.createSelectorQuery() as any).in(this)
+                // q.select('#_text_measurer').boundingClientRect(function(e: any){ console.log(e) })
+                // q.exec()
                 if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
                     const window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
                     if (window) {
@@ -38,6 +42,11 @@ class UIWindowComponent extends UIView_1.UIViewComponent {
                     }
                 }
             },
+        };
+        this.pageLifetimes = {
+            show: function () {
+                UIComponentManager_1.UIComponentManager.keyWindowComponent = this;
+            }
         };
     }
 }

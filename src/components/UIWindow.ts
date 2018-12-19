@@ -6,6 +6,9 @@ export class UIWindowComponent extends UIViewComponent {
 
     methods = {
         onTouchStarted: function (e: any) {
+            // var q = (wx.createSelectorQuery() as any).in(this)
+            // q.select('#_text_measurer').boundingClientRect(function(e: any){ console.log(e) })
+            // q.exec()
             if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
                 const window = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
                 if (window) {
@@ -37,6 +40,12 @@ export class UIWindowComponent extends UIViewComponent {
                 }
             }
         },
+    }
+
+    pageLifetimes = {
+        show: function () {
+            UIComponentManager.keyWindowComponent = this
+        }
     }
 
 }

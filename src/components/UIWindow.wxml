@@ -2,4 +2,6 @@
   <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
     <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
   </view>
+  <view id="_text_measurer" 
+        style='position:absolute;top:-9999px;line-height:1.0;opacity:0;{{measuringTextStyle}}'>{{measuringText}}</view>
 </view>
