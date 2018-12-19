@@ -20,6 +20,8 @@ const {
     UISlider,
     UISwitch,
     UIProgressView,
+    UIButton,
+    UIControlState,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -55,12 +57,21 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
-            const slider = new UIProgressView
-            slider.frame = UIRectMake(44, 100, 200, 2)
-            setTimeout(() => {
-                slider.setProgress(0.5, true)
-            }, 2000)
-            this.view.addSubview(slider)
+            const btn = new UIButton
+            btn.frame = UIRectMake(44, 100, 88, 44)
+            btn.layer.cornerRadius = 22
+            btn.layer.borderWidth = 1
+            btn.layer.borderColor = btn.tintColor
+            btn.setTitle("Test", UIControlState.normal)
+            btn.setTitleFont(new UIFont(14))
+            btn.setImage(new UIImage({ name: "location" }), UIControlState.normal)
+            // btn.enabled = false
+            btn.on("touchUpInside", () => {
+                this.view.backgroundColor = UIColor.gray
+            })
+            btn.imageEdgeInsets = { top: 0, left: 0, bottom: 0, right: 4 }
+            btn.titleEdgeInsets = { top: -20, left: 4, bottom: 0, right: 0 }
+            this.view.addSubview(btn)
         }
         {
             const redView = new UIView

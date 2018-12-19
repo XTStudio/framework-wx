@@ -16,6 +16,7 @@ Object.assign(module.exports, require('./foundation/UUID'))
 Object.assign(module.exports, require('./uikit/UIActionSheet'))
 Object.assign(module.exports, require('./uikit/UIAffineTransform'))
 Object.assign(module.exports, require('./uikit/UIAnimator'));
+Object.assign(module.exports, require('./uikit/UIButton'));
 Object.assign(module.exports, require('./uikit/UIColor'))
 Object.assign(module.exports, require('./uikit/UIDevice'))
 Object.assign(module.exports, require('./uikit/UIEdgeInsets'))

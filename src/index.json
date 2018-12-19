@@ -5,6 +5,7 @@
     "uiscrollview": "./components/UIScrollView",
     "uiwindow": "./components/UIWindow",
     "uilabel": "./components/UILabel",
-    "uiimageview": "./components/UIImageView"
+    "uiimageview": "./components/UIImageView",
+    "uibutton": "./components/UIButton"
   }
 }
