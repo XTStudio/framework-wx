@@ -32,6 +32,7 @@ Object.assign(module.exports, require('./uikit/UIRotationGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIScrollView'));
 Object.assign(module.exports, require('./uikit/UISize'));
 Object.assign(module.exports, require('./uikit/UISlider'));
+Object.assign(module.exports, require('./uikit/UISwitch'));
 Object.assign(module.exports, require('./uikit/UITabBarController'));
 Object.assign(module.exports, require('./uikit/UITapGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UITouch'));

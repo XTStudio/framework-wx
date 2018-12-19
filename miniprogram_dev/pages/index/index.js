@@ -18,6 +18,7 @@ const {
     UIFont,
     UIScrollView,
     UISlider,
+    UISwitch,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -53,7 +54,7 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
-            const slider = new UISlider
+            const slider = new UISwitch
             slider.frame = UIRectMake(44, 100, 200, 44)
             this.view.addSubview(slider)
         }

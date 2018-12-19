@@ -3062,6 +3062,7 @@ Object.assign(module.exports, __webpack_require__(32));
 Object.assign(module.exports, __webpack_require__(33));
 Object.assign(module.exports, __webpack_require__(19));
 Object.assign(module.exports, __webpack_require__(9));
+Object.assign(module.exports, __webpack_require__(54));
 Object.assign(module.exports, __webpack_require__(34));
 Object.assign(module.exports, __webpack_require__(20));
 Object.assign(module.exports, __webpack_require__(4));
@@ -6428,6 +6429,190 @@ var UIComponentManager = function () {
 }();
 
 exports.UIComponentManager = UIComponentManager;
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIColor_1 = __webpack_require__(5);
+var UIAnimator_1 = __webpack_require__(15);
+var UILongPressGestureRecognizer_1 = __webpack_require__(29);
+
+var ThumbView = function (_UIView_1$UIView) {
+    _inherits(ThumbView, _UIView_1$UIView);
+
+    function ThumbView() {
+        _classCallCheck(this, ThumbView);
+
+        return _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+    }
+
+    ThumbView.prototype.pointInside = function pointInside(point) {
+        return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
+    };
+
+    return ThumbView;
+}(UIView_1.UIView);
+
+var UISwitch = function (_UIView_1$UIView2) {
+    _inherits(UISwitch, _UIView_1$UIView2);
+
+    function UISwitch() {
+        _classCallCheck(this, UISwitch);
+
+        var _this2 = _possibleConstructorReturn(this, _UIView_1$UIView2.call(this));
+
+        _this2.onTintColor = _this2.tintColor;
+        _this2.thumbTintColor = UIColor_1.UIColor.white;
+        _this2._isOn = false;
+        // Implementation
+        _this2.tintView = new UIView_1.UIView();
+        _this2.thumbView = new ThumbView();
+        _this2.thumbOutLightView = new UIView_1.UIView();
+        _this2._tracking = false;
+        _this2.touchChanged = false;
+        _this2.tintView.userInteractionEnabled = false;
+        _this2.addSubview(_this2.tintView);
+        _this2.thumbOutLightView.userInteractionEnabled = false;
+        _this2.addSubview(_this2.thumbOutLightView);
+        _this2.thumbView.layer.shadowColor = new UIColor_1.UIColor(0.0, 0.0, 0.0, 1.0);
+        _this2.thumbView.layer.shadowRadius = 2.0;
+        _this2.thumbView.layer.shadowOffset = { width: 0.0, height: 3.0 };
+        _this2.thumbView.layer.shadowOpacity = 0.2;
+        _this2.addSubview(_this2.thumbView);
+        _this2.setupTouches();
+        return _this2;
+    }
+
+    UISwitch.prototype.setOn = function setOn(on, animated) {
+        var _this3 = this;
+
+        if (animated) {
+            UIAnimator_1.UIAnimator.curve(0.20, function () {
+                _this3.isOn = on;
+            }, undefined);
+        } else {
+            this.isOn = on;
+        }
+    };
+
+    UISwitch.prototype.setupTouches = function setupTouches() {
+        var _this4 = this;
+
+        var longPressGesture = new UILongPressGestureRecognizer_1.UILongPressGestureRecognizer();
+        longPressGesture.on("began", function () {
+            _this4.touchChanged = false;
+            _this4.tracking = true;
+        }).on("changed", function (sender) {
+            var location = sender.locationInView(_this4);
+            var isOn = location.x > _this4.bounds.width / 2.0;
+            if (_this4.isOn != isOn) {
+                _this4.touchChanged = true;
+                UIAnimator_1.UIAnimator.curve(0.20, function () {
+                    _this4.isOn = isOn;
+                }, undefined);
+            }
+        }).on("ended", function (sender) {
+            if (!_this4.touchChanged) {
+                var location = sender.locationInView(_this4);
+                if (_this4.pointInside(location)) {
+                    UIAnimator_1.UIAnimator.curve(0.20, function () {
+                        _this4.isOn = !_this4.isOn;
+                    }, function () {
+                        _this4.emit("valueChanged", _this4);
+                    });
+                }
+            } else {
+                _this4.emit("valueChanged", _this4);
+            }
+            _this4.tracking = false;
+        }).on("cancelled", function () {
+            if (_this4.touchChanged) {
+                _this4.emit("valueChanged", _this4);
+            }
+            _this4.tracking = false;
+        });
+        longPressGesture.minimumPressDuration = 0.0;
+        this.thumbView.addGestureRecognizer(longPressGesture);
+    };
+
+    UISwitch.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView2.prototype.layoutSubviews.call(this);
+        this.tintView.frame = { x: (this.bounds.width - 34.0) / 2.0, y: (this.bounds.height - 14.0) / 2.0, width: 34.0, height: 14.0 };
+        this.tintView.layer.cornerRadius = 7.0;
+        if (this.isOn) {
+            this.thumbView.frame = { x: this.tintView.frame.x + this.tintView.frame.width - 20.0, y: (this.bounds.height - 20.0) / 2.0, width: 20.0, height: 20.0 };
+            this.thumbView.layer.cornerRadius = 10.0;
+            if (this.onTintColor) {
+                this.thumbView.backgroundColor = this.onTintColor;
+                this.tintView.backgroundColor = this.onTintColor.colorWithAlphaComponent(0.5);
+                this.thumbOutLightView.frame = { x: this.tintView.frame.x + this.tintView.frame.width - 20.0, y: (this.bounds.height - 20.0) / 2.0, width: 20.0, height: 20.0 };
+                this.thumbOutLightView.layer.cornerRadius = 10.0;
+                this.thumbOutLightView.backgroundColor = this.onTintColor.colorWithAlphaComponent(0.2);
+            }
+        } else {
+            this.thumbView.frame = { x: this.tintView.frame.x, y: (this.bounds.height - 20.0) / 2.0, width: 20.0, height: 20.0 };
+            this.thumbView.layer.cornerRadius = 10.0;
+            this.thumbView.backgroundColor = this.thumbTintColor;
+            this.tintView.backgroundColor = new UIColor_1.UIColor(0x84 / 255.0, 0x84 / 255.0, 0x84 / 255.0, 1.0);
+            this.thumbOutLightView.frame = { x: this.tintView.frame.x, y: (this.bounds.height - 20.0) / 2.0, width: 20.0, height: 20.0 };
+            this.thumbOutLightView.layer.cornerRadius = 10.0;
+            this.thumbOutLightView.backgroundColor = new UIColor_1.UIColor(0x84 / 255.0, 0x84 / 255.0, 0x84 / 255.0, 0.2);
+        }
+    };
+
+    UISwitch.prototype.pointInside = function pointInside(point) {
+        return point.x >= 0.0 && point.y >= -(44.0 - this.frame.height) / 2.0 && point.x <= this.frame.width && point.y <= this.frame.height + (44.0 - this.frame.height) / 2.0;
+    };
+
+    _createClass(UISwitch, [{
+        key: "isOn",
+        get: function get() {
+            return this._isOn;
+        },
+        set: function set(value) {
+            this._isOn = value;
+            this.layoutSubviews();
+        }
+    }, {
+        key: "tracking",
+        get: function get() {
+            return this._tracking;
+        },
+        set: function set(value) {
+            var _this5 = this;
+
+            if (this._tracking == value) {
+                return;
+            }
+            this._tracking = value;
+            UIAnimator_1.UIAnimator.linear(0.15, function () {
+                if (value) {
+                    _this5.thumbOutLightView.transform = { a: 1.6, b: 0.0, c: 0.0, d: 1.6, tx: 0.0, ty: 0.0 };
+                } else {
+                    _this5.thumbOutLightView.transform = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
+                }
+            }, undefined);
+        }
+    }]);
+
+    return UISwitch;
+}(UIView_1.UIView);
+
+exports.UISwitch = UISwitch;
 
 /***/ })
 /******/ ]);
