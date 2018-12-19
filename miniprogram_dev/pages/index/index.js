@@ -24,6 +24,8 @@ const {
     UIControlState,
     UIActivityIndicatorView,
     UIScreen,
+    UIAlert,
+    UIConfirm,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -43,10 +45,16 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
-            const v = new UIActivityIndicatorView
+            const v = new UIView
             v.frame = UIRectMake(0, 0, UIScreen.main.bounds.width, 166)
             v.backgroundColor = UIColor.yellow
-            v.largeStyle = true
+            v.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                new UIConfirm("你确定要破坏地球吗？").show(() => {
+                    v.backgroundColor = UIColor.gray
+                }, () => {
+                    v.backgroundColor = UIColor.green
+                })
+            }))
             this.view.addSubview(v)
         }
         {

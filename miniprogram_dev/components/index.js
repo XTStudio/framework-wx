@@ -3646,10 +3646,12 @@ Object.assign(module.exports, __webpack_require__(42));
 Object.assign(module.exports, __webpack_require__(27));
 Object.assign(module.exports, __webpack_require__(43));
 Object.assign(module.exports, __webpack_require__(59));
+Object.assign(module.exports, __webpack_require__(62));
 Object.assign(module.exports, __webpack_require__(28));
 Object.assign(module.exports, __webpack_require__(10));
 Object.assign(module.exports, __webpack_require__(44));
 Object.assign(module.exports, __webpack_require__(5));
+Object.assign(module.exports, __webpack_require__(63));
 Object.assign(module.exports, __webpack_require__(47));
 Object.assign(module.exports, __webpack_require__(6));
 Object.assign(module.exports, __webpack_require__(8));
@@ -7609,6 +7611,95 @@ var UIScreen = function UIScreen() {
 
 UIScreen.main = new UIScreen();
 exports.UIScreen = UIScreen;
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIAlert = function () {
+    function UIAlert(message) {
+        var buttonText = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "OK";
+
+        _classCallCheck(this, UIAlert);
+
+        this.message = message;
+        this.buttonText = buttonText;
+    }
+
+    UIAlert.prototype.show = function show(callback) {
+        wx.showModal({
+            title: "",
+            content: this.message,
+            showCancel: false,
+            confirmText: this.buttonText,
+            success: function success(res) {
+                if (callback) {
+                    if (res.confirm) {
+                        callback();
+                    } else if (res.cancel) {
+                        callback();
+                    }
+                }
+            }
+        });
+    };
+
+    return UIAlert;
+}();
+
+exports.UIAlert = UIAlert;
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIConfirm = function () {
+    function UIConfirm(message) {
+        _classCallCheck(this, UIConfirm);
+
+        this.message = message;
+        this.confirmTitle = "Yes";
+        this.cancelTitle = "No";
+    }
+
+    UIConfirm.prototype.show = function show(completed, cancelled) {
+        wx.showModal({
+            title: "",
+            content: this.message,
+            cancelText: this.cancelTitle,
+            confirmText: this.confirmTitle,
+            success: function success(res) {
+                if (res.confirm) {
+                    if (completed) {
+                        completed();
+                    }
+                } else if (res.cancel) {
+                    if (cancelled) {
+                        cancelled();
+                    }
+                }
+            }
+        });
+    };
+
+    return UIConfirm;
+}();
+
+exports.UIConfirm = UIConfirm;
 
 /***/ })
 /******/ ]);
