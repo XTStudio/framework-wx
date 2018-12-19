@@ -103,6 +103,9 @@ class UISlider extends UIView_1.UIView {
                 return;
             }
             const location = sender.locationInView(this);
+            if (location.x < 0.0 || location.x > this.bounds.width) {
+                return;
+            }
             const translationX = location.x - previousLocation.x;
             this.previousLocation = location;
             const newValue = this.value + translationX / this.frame.width * (this.maximumValue - this.minimumValue);

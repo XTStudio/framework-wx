@@ -1656,6 +1656,9 @@ var UISlider = function (_UIView_1$UIView2) {
                 return;
             }
             var location = sender.locationInView(_this4);
+            if (location.x < 0.0 || location.x > _this4.bounds.width) {
+                return;
+            }
             var translationX = location.x - previousLocation.x;
             _this4.previousLocation = location;
             var newValue = _this4.value + translationX / _this4.frame.width * (_this4.maximumValue - _this4.minimumValue);
