@@ -729,6 +729,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["transform"] = value;
             }
@@ -1555,7 +1556,198 @@ var UIViewManager = function () {
 exports.UIViewManager = UIViewManager;
 
 /***/ }),
-/* 9 */,
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIAnimator_1 = __webpack_require__(15);
+var UILongPressGestureRecognizer_1 = __webpack_require__(29);
+
+var ThumbView = function (_UIView_1$UIView) {
+    _inherits(ThumbView, _UIView_1$UIView);
+
+    function ThumbView() {
+        _classCallCheck(this, ThumbView);
+
+        return _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+    }
+
+    ThumbView.prototype.pointInside = function pointInside(point) {
+        return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
+    };
+
+    return ThumbView;
+}(UIView_1.UIView);
+
+var UISlider = function (_UIView_1$UIView2) {
+    _inherits(UISlider, _UIView_1$UIView2);
+
+    function UISlider() {
+        _classCallCheck(this, UISlider);
+
+        var _this2 = _possibleConstructorReturn(this, _UIView_1$UIView2.call(this));
+
+        _this2.value = 0.5;
+        _this2.minimumValue = 0.0;
+        _this2.maximumValue = 1.0;
+        _this2._minimumTrackTintColor = undefined;
+        _this2._maximumTrackTintColor = undefined;
+        _this2._thumbTintColor = undefined;
+        // Implementation
+        _this2.minimumTrackView = new UIView_1.UIView();
+        _this2.maximumTrackView = new UIView_1.UIView();
+        _this2.thumbView = new ThumbView();
+        _this2.thumbOutLightView = new UIView_1.UIView();
+        _this2._tracking = false;
+        _this2.previousLocation = undefined;
+        if (_this2.tintColor) {
+            _this2.minimumTrackTintColor = _this2.tintColor;
+            _this2.maximumTrackTintColor = _this2.tintColor.colorWithAlphaComponent(0.3);
+            _this2.thumbTintColor = _this2.tintColor;
+        }
+        _this2.maximumTrackView.userInteractionEnabled = false;
+        _this2.addSubview(_this2.maximumTrackView);
+        _this2.minimumTrackView.userInteractionEnabled = false;
+        _this2.addSubview(_this2.minimumTrackView);
+        _this2.thumbOutLightView.userInteractionEnabled = false;
+        _this2.addSubview(_this2.thumbOutLightView);
+        _this2.addSubview(_this2.thumbView);
+        _this2.setupTouches();
+        return _this2;
+    }
+
+    UISlider.prototype.setValue = function setValue(value, animated) {
+        var _this3 = this;
+
+        if (animated) {
+            this.value = value;
+            UIAnimator_1.UIAnimator.curve(0.5, function () {
+                _this3.layoutSubviews();
+            }, undefined);
+        } else {
+            this.value = value;
+            this.layoutSubviews();
+        }
+    };
+
+    UISlider.prototype.setupTouches = function setupTouches() {
+        var _this4 = this;
+
+        var longPressGesture = new UILongPressGestureRecognizer_1.UILongPressGestureRecognizer();
+        longPressGesture.on("began", function (sender) {
+            _this4.previousLocation = sender.locationInView(_this4);
+            _this4.tracking = true;
+        });
+        longPressGesture.on("changed", function (sender) {
+            var previousLocation = _this4.previousLocation;
+            if (!previousLocation) {
+                return;
+            }
+            var location = sender.locationInView(_this4);
+            var translationX = location.x - previousLocation.x;
+            _this4.previousLocation = location;
+            var newValue = _this4.value + translationX / _this4.frame.width * (_this4.maximumValue - _this4.minimumValue);
+            _this4.value = Math.max(_this4.minimumValue, Math.min(_this4.maximumValue, newValue));
+            _this4.emit("valueChanged", _this4);
+            _this4.layoutSubviews();
+        });
+        longPressGesture.on("ended", function () {
+            _this4.tracking = false;
+        });
+        longPressGesture.on("cancelled", function () {
+            _this4.tracking = false;
+        });
+        longPressGesture.minimumPressDuration = 0.0;
+        this.thumbView.addGestureRecognizer(longPressGesture);
+    };
+
+    UISlider.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView2.prototype.layoutSubviews.call(this);
+        var progress = Math.max(0.0, Math.min(1.0, (this.value - this.minimumValue) / (this.maximumValue - this.minimumValue)));
+        this.maximumTrackView.frame = { x: 0.0, y: (this.bounds.height - 4.0) / 2.0, width: this.bounds.width, height: 4.0 };
+        this.minimumTrackView.frame = { x: 0.0, y: (this.bounds.height - 4.0) / 2.0, width: this.bounds.width * progress, height: 4.0 };
+        this.thumbOutLightView.frame = { x: -7.5 + this.bounds.width * progress, y: (this.bounds.height - 15.0) / 2.0, width: 15.0, height: 15.0 };
+        this.thumbOutLightView.layer.cornerRadius = 7.5;
+        this.thumbView.frame = { x: -7.5 + this.bounds.width * progress, y: (this.bounds.height - 15.0) / 2.0, width: 15.0, height: 15.0 };
+        this.thumbView.layer.cornerRadius = 7.5;
+    };
+
+    UISlider.prototype.pointInside = function pointInside(point) {
+        return point.x >= -22.0 && point.y >= -(44.0 - this.frame.height) / 2.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + (44.0 - this.frame.height) / 2.0;
+    };
+
+    _createClass(UISlider, [{
+        key: "minimumTrackTintColor",
+        get: function get() {
+            return this._minimumTrackTintColor;
+        },
+        set: function set(value) {
+            this._minimumTrackTintColor = value;
+            this.minimumTrackView.backgroundColor = value;
+        }
+    }, {
+        key: "maximumTrackTintColor",
+        get: function get() {
+            return this._maximumTrackTintColor;
+        },
+        set: function set(value) {
+            this._maximumTrackTintColor = value;
+            this.maximumTrackView.backgroundColor = value;
+        }
+    }, {
+        key: "thumbTintColor",
+        get: function get() {
+            return this._thumbTintColor;
+        },
+        set: function set(value) {
+            this._thumbTintColor = value;
+            if (value) {
+                this.thumbView.backgroundColor = value;
+                this.thumbOutLightView.backgroundColor = value.colorWithAlphaComponent(0.2);
+            }
+        }
+    }, {
+        key: "tracking",
+        get: function get() {
+            return this._tracking;
+        },
+        set: function set(value) {
+            var _this5 = this;
+
+            if (this._tracking === value) {
+                return;
+            }
+            this._tracking = value;
+            UIAnimator_1.UIAnimator.linear(0.15, function () {
+                if (value) {
+                    _this5.thumbView.transform = { a: 1.4, b: 0.0, c: 0.0, d: 1.4, tx: 0.0, ty: 0.0 };
+                    _this5.thumbOutLightView.transform = { a: 2.4, b: 0.0, c: 0.0, d: 2.4, tx: 0.0, ty: 0.0 };
+                } else {
+                    _this5.thumbView.transform = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
+                    _this5.thumbOutLightView.transform = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
+                }
+            }, undefined);
+        }
+    }]);
+
+    return UISlider;
+}(UIView_1.UIView);
+
+exports.UISlider = UISlider;
+
+/***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2864,8 +3056,9 @@ Object.assign(module.exports, __webpack_require__(31));
 Object.assign(module.exports, __webpack_require__(7));
 Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(32));
-Object.assign(module.exports, __webpack_require__(19));
 Object.assign(module.exports, __webpack_require__(33));
+Object.assign(module.exports, __webpack_require__(19));
+Object.assign(module.exports, __webpack_require__(9));
 Object.assign(module.exports, __webpack_require__(34));
 Object.assign(module.exports, __webpack_require__(20));
 Object.assign(module.exports, __webpack_require__(4));
@@ -5928,6 +6121,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIRect_1 = __webpack_require__(17);
+var UISize_1 = __webpack_require__(19);
 var MagicObject_1 = __webpack_require__(11);
 
 var CALayer = function () {
@@ -6004,6 +6198,9 @@ var CALayer = function () {
             return this._frame;
         },
         set: function set(value) {
+            if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
+                return;
+            }
             this._frame = value;
         }
     }, {
@@ -6016,6 +6213,9 @@ var CALayer = function () {
             }
         },
         set: function set(value) {
+            if (this.hidden === value) {
+                return;
+            }
             this._hidden = value;
             if (this._view.get()) {
                 this._view.get().hidden = value;
@@ -6027,6 +6227,9 @@ var CALayer = function () {
             return this._cornerRadius;
         },
         set: function set(value) {
+            if (this._cornerRadius === value) {
+                return;
+            }
             this._cornerRadius = value;
             if (this._view.get()) {
                 this._view.get().invalidate();
@@ -6038,6 +6241,9 @@ var CALayer = function () {
             return this._borderWidth;
         },
         set: function set(value) {
+            if (this._borderWidth === value) {
+                return;
+            }
             this._borderWidth = value;
             this.resetBorder();
         }
@@ -6047,6 +6253,14 @@ var CALayer = function () {
             return this._borderColor;
         },
         set: function set(value) {
+            if (this._borderColor === value) {
+                return;
+            }
+            if (this._borderColor !== undefined && value !== undefined) {
+                if (this._borderColor.toStyle() === value.toStyle()) {
+                    return;
+                }
+            }
             this._borderColor = value;
             this.resetBorder();
         }
@@ -6060,6 +6274,14 @@ var CALayer = function () {
             }
         },
         set: function set(value) {
+            if (this.backgroundColor === value) {
+                return;
+            }
+            if (this.backgroundColor !== undefined && value !== undefined) {
+                if (this.backgroundColor.toStyle() === value.toStyle()) {
+                    return;
+                }
+            }
             this._backgroundColor = value;
             if (this._view.get()) {
                 this._view.get().backgroundColor = value;
@@ -6075,6 +6297,9 @@ var CALayer = function () {
             }
         },
         set: function set(value) {
+            if (this.opacity === value) {
+                return;
+            }
             this._opacity = value;
             if (this._view.get()) {
                 this._view.get().alpha = value;
@@ -6086,6 +6311,9 @@ var CALayer = function () {
             return this._masksToBounds;
         },
         set: function set(value) {
+            if (this.masksToBounds === value) {
+                return;
+            }
             this._masksToBounds = value;
             if (this._view.get()) {
                 this._view.get().clipsToBounds = value;
@@ -6097,6 +6325,14 @@ var CALayer = function () {
             return this._shadowColor;
         },
         set: function set(value) {
+            if (this.shadowColor === value) {
+                return;
+            }
+            if (this.shadowColor !== undefined && value !== undefined) {
+                if (this.shadowColor.toStyle() === value.toStyle()) {
+                    return;
+                }
+            }
             this._shadowColor = value;
             this.resetShadow();
         }
@@ -6106,6 +6342,9 @@ var CALayer = function () {
             return this._shadowOpacity;
         },
         set: function set(value) {
+            if (this.shadowOpacity === value) {
+                return;
+            }
             this._shadowOpacity = value;
             this.resetShadow();
         }
@@ -6115,6 +6354,9 @@ var CALayer = function () {
             return this._shadowOffset;
         },
         set: function set(value) {
+            if (UISize_1.UISizeEqualToSize(this.shadowOffset, value)) {
+                return;
+            }
             this._shadowOffset = value;
             this.resetShadow();
         }
@@ -6124,6 +6366,9 @@ var CALayer = function () {
             return this._shadowRadius;
         },
         set: function set(value) {
+            if (this.shadowRadius === value) {
+                return;
+            }
             this._shadowRadius = value;
             this.resetShadow();
         }

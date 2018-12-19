@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = require("../uikit/UIRect");
+const UISize_1 = require("../uikit/UISize");
 const MagicObject_1 = require("../uikit/helpers/MagicObject");
 class CALayer {
     constructor() {
@@ -33,6 +34,9 @@ class CALayer {
         return this._frame;
     }
     set frame(value) {
+        if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
+            return;
+        }
         this._frame = value;
     }
     get hidden() {
@@ -44,6 +48,9 @@ class CALayer {
         }
     }
     set hidden(value) {
+        if (this.hidden === value) {
+            return;
+        }
         this._hidden = value;
         if (this._view.get()) {
             this._view.get().hidden = value;
@@ -55,6 +62,9 @@ class CALayer {
         return this._cornerRadius;
     }
     set cornerRadius(value) {
+        if (this._cornerRadius === value) {
+            return;
+        }
         this._cornerRadius = value;
         if (this._view.get()) {
             this._view.get().invalidate();
@@ -66,6 +76,9 @@ class CALayer {
         return this._borderWidth;
     }
     set borderWidth(value) {
+        if (this._borderWidth === value) {
+            return;
+        }
         this._borderWidth = value;
         this.resetBorder();
     }
@@ -73,6 +86,14 @@ class CALayer {
         return this._borderColor;
     }
     set borderColor(value) {
+        if (this._borderColor === value) {
+            return;
+        }
+        if (this._borderColor !== undefined && value !== undefined) {
+            if (this._borderColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
         this._borderColor = value;
         this.resetBorder();
     }
@@ -114,6 +135,14 @@ class CALayer {
         }
     }
     set backgroundColor(value) {
+        if (this.backgroundColor === value) {
+            return;
+        }
+        if (this.backgroundColor !== undefined && value !== undefined) {
+            if (this.backgroundColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
         this._backgroundColor = value;
         if (this._view.get()) {
             this._view.get().backgroundColor = value;
@@ -130,6 +159,9 @@ class CALayer {
         }
     }
     set opacity(value) {
+        if (this.opacity === value) {
+            return;
+        }
         this._opacity = value;
         if (this._view.get()) {
             this._view.get().alpha = value;
@@ -141,6 +173,9 @@ class CALayer {
         return this._masksToBounds;
     }
     set masksToBounds(value) {
+        if (this.masksToBounds === value) {
+            return;
+        }
         this._masksToBounds = value;
         if (this._view.get()) {
             this._view.get().clipsToBounds = value;
@@ -152,6 +187,14 @@ class CALayer {
         return this._shadowColor;
     }
     set shadowColor(value) {
+        if (this.shadowColor === value) {
+            return;
+        }
+        if (this.shadowColor !== undefined && value !== undefined) {
+            if (this.shadowColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
         this._shadowColor = value;
         this.resetShadow();
     }
@@ -159,6 +202,9 @@ class CALayer {
         return this._shadowOpacity;
     }
     set shadowOpacity(value) {
+        if (this.shadowOpacity === value) {
+            return;
+        }
         this._shadowOpacity = value;
         this.resetShadow();
     }
@@ -166,6 +212,9 @@ class CALayer {
         return this._shadowOffset;
     }
     set shadowOffset(value) {
+        if (UISize_1.UISizeEqualToSize(this.shadowOffset, value)) {
+            return;
+        }
         this._shadowOffset = value;
         this.resetShadow();
     }
@@ -173,6 +222,9 @@ class CALayer {
         return this._shadowRadius;
     }
     set shadowRadius(value) {
+        if (this.shadowRadius === value) {
+            return;
+        }
         this._shadowRadius = value;
         this.resetShadow();
     }

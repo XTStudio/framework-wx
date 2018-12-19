@@ -17,6 +17,7 @@ const {
     UILabel,
     UIFont,
     UIScrollView,
+    UISlider,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -52,6 +53,11 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
+            const slider = new UISlider
+            slider.frame = UIRectMake(44, 100, 200, 44)
+            this.view.addSubview(slider)
+        }
+        {
             const redView = new UIView
             redView.frame = UIRectMake(0, 1000 - 44, 44, 44)
             redView.backgroundColor = UIColor.red
@@ -62,7 +68,7 @@ class FooViewController extends UIViewController {
         }
         this.scrollView.contentSize = { width: 0, height: 1000 }
         this.scrollView.contentInset = { top: 44, left: 0, bottom: 44, right: 0 }
-        this.view.addSubview(this.scrollView)
+        // this.view.addSubview(this.scrollView)
     }
 
     viewWillLayoutSubviews() {

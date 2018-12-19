@@ -1,6 +1,6 @@
-import { UIRect, UIRectZero } from "../uikit/UIRect";
+import { UIRect, UIRectZero, UIRectEqualToRect } from "../uikit/UIRect";
 import { UIColor } from "../uikit/UIColor";
-import { UISize } from "../uikit/UISize";
+import { UISize, UISizeEqualToSize } from "../uikit/UISize";
 import { UILabel } from "../uikit/UILabel";
 import { MagicObject } from "../uikit/helpers/MagicObject";
 
@@ -26,6 +26,7 @@ export class CALayer {
     }
 
     public set frame(value: UIRect) {
+        if (UIRectEqualToRect(this._frame, value)) { return }
         this._frame = value;
     }
 
@@ -41,6 +42,7 @@ export class CALayer {
     }
 
     public set hidden(value: boolean) {
+        if (this.hidden === value) { return }
         this._hidden = value;
         if (this._view.get()) {
             this._view.get().hidden = value
@@ -57,6 +59,7 @@ export class CALayer {
     }
 
     public set cornerRadius(value: number) {
+        if (this._cornerRadius === value) { return }
         this._cornerRadius = value;
         if (this._view.get()) {
             this._view.get().invalidate()
@@ -73,6 +76,7 @@ export class CALayer {
     }
 
     public set borderWidth(value: number) {
+        if (this._borderWidth === value) { return }
         this._borderWidth = value;
         this.resetBorder()
     }
@@ -84,6 +88,10 @@ export class CALayer {
     }
 
     public set borderColor(value: UIColor | undefined) {
+        if (this._borderColor === value) { return }
+        if (this._borderColor !== undefined && value !== undefined) {
+            if (this._borderColor.toStyle() === value.toStyle()) { return }
+        }
         this._borderColor = value;
         this.resetBorder()
     }
@@ -141,6 +149,10 @@ export class CALayer {
     }
 
     public set backgroundColor(value: UIColor | undefined) {
+        if (this.backgroundColor === value) { return }
+        if (this.backgroundColor !== undefined && value !== undefined) {
+            if (this.backgroundColor.toStyle() === value.toStyle()) { return }
+        }
         this._backgroundColor = value;
         if (this._view.get()) {
             this._view.get().backgroundColor = value
@@ -162,6 +174,7 @@ export class CALayer {
     }
 
     public set opacity(value: number) {
+        if (this.opacity === value) { return }
         this._opacity = value;
         if (this._view.get()) {
             this._view.get().alpha = value
@@ -178,6 +191,7 @@ export class CALayer {
     }
 
     public set masksToBounds(value: boolean) {
+        if (this.masksToBounds === value) { return }
         this._masksToBounds = value;
         if (this._view.get()) {
             this._view.get().clipsToBounds = value
@@ -194,6 +208,10 @@ export class CALayer {
     }
 
     public set shadowColor(value: UIColor | undefined) {
+        if (this.shadowColor === value) { return }
+        if (this.shadowColor !== undefined && value !== undefined) {
+            if (this.shadowColor.toStyle() === value.toStyle()) { return }
+        }
         this._shadowColor = value;
         this.resetShadow()
     }
@@ -205,6 +223,7 @@ export class CALayer {
     }
 
     public set shadowOpacity(value: number) {
+        if (this.shadowOpacity === value) { return }
         this._shadowOpacity = value;
         this.resetShadow()
     }
@@ -216,6 +235,7 @@ export class CALayer {
     }
 
     public set shadowOffset(value: UISize) {
+        if (UISizeEqualToSize(this.shadowOffset, value)) { return }
         this._shadowOffset = value;
         this.resetShadow()
     }
@@ -227,6 +247,7 @@ export class CALayer {
     }
 
     public set shadowRadius(value: number) {
+        if (this.shadowRadius === value) { return }
         this._shadowRadius = value;
         this.resetShadow()
     }

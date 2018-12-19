@@ -109,6 +109,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["transform"] = value;
         }
