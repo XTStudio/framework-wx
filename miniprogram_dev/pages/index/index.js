@@ -23,6 +23,7 @@ const {
     UIButton,
     UIControlState,
     UIActivityIndicatorView,
+    UIScreen,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -43,7 +44,8 @@ class FooViewController extends UIViewController {
         }
         {
             const v = new UIActivityIndicatorView
-            v.frame = UIRectMake(0, 0, 166, 166)
+            v.frame = UIRectMake(0, 0, UIScreen.main.bounds.width, 166)
+            v.backgroundColor = UIColor.yellow
             v.largeStyle = true
             this.view.addSubview(v)
         }

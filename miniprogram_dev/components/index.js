@@ -3666,9 +3666,11 @@ Object.assign(module.exports, __webpack_require__(14));
 Object.assign(module.exports, __webpack_require__(52));
 Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(53));
+Object.assign(module.exports, __webpack_require__(61));
 Object.assign(module.exports, __webpack_require__(54));
 Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(55));
+Object.assign(module.exports, __webpack_require__(60));
 Object.assign(module.exports, __webpack_require__(56));
 Object.assign(module.exports, __webpack_require__(57));
 Object.assign(module.exports, __webpack_require__(20));
@@ -7271,6 +7273,342 @@ var UIActivityIndicatorView = function (_UIView_1$UIView) {
 }(UIView_1.UIView);
 
 exports.UIActivityIndicatorView = UIActivityIndicatorView;
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIEnums_1 = __webpack_require__(8);
+var UIView_1 = __webpack_require__(4);
+
+var UIStackView = function (_UIView_1$UIView) {
+    _inherits(UIStackView, _UIView_1$UIView);
+
+    function UIStackView() {
+        var arrangedSubviews = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
+
+        _classCallCheck(this, UIStackView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.arrangedSubviews = [];
+        _this._axis = UIEnums_1.UILayoutConstraintAxis.horizontal;
+        _this._distribution = UIEnums_1.UIStackViewDistribution.fill;
+        _this._alignment = UIEnums_1.UIStackViewAlignment.fill;
+        _this._spacing = 0.0;
+        // Implementation
+        _this.allLayoutWidths = new Map();
+        _this.allLayoutHeights = new Map();
+        _this.arrangedSubviews = arrangedSubviews || [];
+        _this.arrangedSubviews.forEach(function (it) {
+            _this.addSubview(it);
+        });
+        setTimeout(function () {
+            _this._layoutArrangeSubviews();
+        }, 0);
+        return _this;
+    }
+
+    UIStackView.prototype.addArrangedSubview = function addArrangedSubview(view) {
+        this.arrangedSubviews.push(view);
+        this.addSubview(view);
+        this._layoutArrangeSubviews();
+    };
+
+    UIStackView.prototype.removeArrangedSubview = function removeArrangedSubview(view) {
+        var idx = this.arrangedSubviews.indexOf(view);
+        if (idx >= 0) {
+            this.arrangedSubviews.splice(idx, 1);
+            view.removeFromSuperview();
+            this._layoutArrangeSubviews();
+        }
+    };
+
+    UIStackView.prototype.insertArrangedSubview = function insertArrangedSubview(view, atIndex) {
+        this.arrangedSubviews.splice(atIndex, 0, view);
+        this.addSubview(view);
+        this._layoutArrangeSubviews();
+    };
+
+    UIStackView.prototype.layoutArrangedSubview = function layoutArrangedSubview(subview, size) {
+        this.allLayoutWidths.delete(subview);
+        this.allLayoutHeights.delete(subview);
+        if (size) {
+            if (size.width !== undefined) {
+                this.allLayoutWidths.set(subview, size.width);
+            }
+            if (size.height !== undefined) {
+                this.allLayoutHeights.set(subview, size.height);
+            }
+        }
+        this._layoutArrangeSubviews();
+    };
+
+    UIStackView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this._layoutArrangeSubviews();
+    };
+
+    UIStackView.prototype._layoutArrangeSubviews = function _layoutArrangeSubviews() {
+        var _this2 = this;
+
+        if (this.arrangedSubviews.length == 0) {
+            return;
+        }
+        var x = [];
+        var y = [];
+        var width = [];
+        var height = [];
+        var axisLocation = void 0;
+        var axisLength = void 0;
+        var alignLocation = void 0;
+        var alignLength = void 0;
+        var axisValues = void 0;
+        var alignValues = void 0;
+        var boundsAxisLength = void 0;
+        var boundsAlignLength = void 0;
+        if (this.axis == UIEnums_1.UILayoutConstraintAxis.horizontal) {
+            axisLocation = x;
+            axisLength = width;
+            alignLocation = y;
+            alignLength = height;
+            axisValues = this.allLayoutWidths;
+            alignValues = this.allLayoutHeights;
+            boundsAxisLength = this.bounds.width;
+            boundsAlignLength = this.bounds.height;
+        } else {
+            axisLocation = y;
+            axisLength = height;
+            alignLocation = x;
+            alignLength = width;
+            axisValues = this.allLayoutHeights;
+            alignValues = this.allLayoutWidths;
+            boundsAxisLength = this.bounds.height;
+            boundsAlignLength = this.bounds.width;
+        }
+        switch (this.distribution) {
+            case UIEnums_1.UIStackViewDistribution.fill:
+                {
+                    var axisValuesSum = 0;
+                    axisValues.forEach(function (it) {
+                        axisValuesSum += it;
+                    });
+                    var leftSpace = boundsAxisLength - axisValuesSum;
+                    var location = 0.0;
+                    this.arrangedSubviews.forEach(function (view, index) {
+                        var space = 0.0;
+                        var target = axisValues.get(view);
+                        if (target !== undefined) {
+                            space = target;
+                        } else {
+                            space = leftSpace;
+                            leftSpace = 0.0;
+                        }
+                        axisLocation.push(location);
+                        axisLength.push(space);
+                        location += space;
+                    });
+                    break;
+                }
+            case UIEnums_1.UIStackViewDistribution.fillEqually:
+                {
+                    this.arrangedSubviews.forEach(function (_, index) {
+                        axisLocation.push(boundsAxisLength / _this2.arrangedSubviews.length * index);
+                        axisLength.push(boundsAxisLength / _this2.arrangedSubviews.length);
+                    });
+                    break;
+                }
+            case UIEnums_1.UIStackViewDistribution.fillProportionally:
+                {
+                    if (this.arrangedSubviews.length == 1) {
+                        axisLocation.push(0.0);
+                        axisLength.push(this.bounds.width);
+                    } else {
+                        var everyWidth = (boundsAxisLength - (this.arrangedSubviews.length - 1) * this.spacing) / this.arrangedSubviews.length;
+                        this.arrangedSubviews.forEach(function (_, index) {
+                            axisLocation.push((everyWidth + _this2.spacing) * index);
+                            axisLength.push(everyWidth);
+                        });
+                    }
+                    break;
+                }
+            case UIEnums_1.UIStackViewDistribution.equalSpacing:
+                {
+                    if (this.arrangedSubviews.length == 1) {
+                        axisLocation.push(0.0);
+                        axisLength.push(boundsAxisLength);
+                    } else {
+                        var _axisValuesSum = 0;
+                        axisValues.forEach(function (it) {
+                            _axisValuesSum += it;
+                        });
+                        var spacing = (boundsAxisLength - _axisValuesSum) / (this.arrangedSubviews.length - 1);
+                        var location = 0.0;
+                        this.arrangedSubviews.forEach(function (view) {
+                            axisLocation.push(location);
+                            var space = axisValues.get(view) || 0.0;
+                            axisLength.push(space);
+                            location += space + spacing;
+                        });
+                    }
+                    break;
+                }
+            case UIEnums_1.UIStackViewDistribution.equalCentering:
+                {
+                    if (this.arrangedSubviews.length > 2) {
+                        var firstViewCenterX = (axisValues.get(this.arrangedSubviews[0]) || 0.0) / 2.0;
+                        var lastViewCenterX = boundsAxisLength - (axisValues.get(this.arrangedSubviews[this.arrangedSubviews.length - 1]) || 0.0) / 2.0;
+                        var everyCenterSpace = (lastViewCenterX - firstViewCenterX) / (this.arrangedSubviews.length - 1);
+                        var location = 0.0;
+                        this.arrangedSubviews.forEach(function (it, index) {
+                            var space = axisValues.get(it) || 0.0;
+                            axisLength.push(space);
+                            if (index > 0) {
+                                location -= space / 2.0;
+                            }
+                            axisLocation.push(location);
+                            location += space / 2.0 + everyCenterSpace;
+                        });
+                    } else if (this.arrangedSubviews.length == 2) {
+                        var leftSpace = boundsAxisLength;
+                        var location = 0.0;
+                        axisLocation.push(location);
+                        var firstSpace = axisValues.get(this.arrangedSubviews[0]) || 0.0;
+                        axisLength.push(firstSpace);
+                        leftSpace -= firstSpace;
+                        location += firstSpace;
+                        var secondSpace = axisValues.get(this.arrangedSubviews[1]) !== undefined ? axisValues.get(this.arrangedSubviews[1]) : leftSpace;
+                        axisLocation.push(boundsAxisLength - (secondSpace || 0.0));
+                        axisLength.push(secondSpace || 0.0);
+                    } else if (this.arrangedSubviews.length == 1) {
+                        axisLocation.push(0.0);
+                        axisLength.push(boundsAxisLength);
+                    }
+                    break;
+                }
+        }
+        switch (this.alignment) {
+            case UIEnums_1.UIStackViewAlignment.fill:
+                {
+                    this.arrangedSubviews.forEach(function (_) {
+                        alignLocation.push(0.0);
+                        alignLength.push(boundsAlignLength);
+                    });
+                    break;
+                }
+            case UIEnums_1.UIStackViewAlignment.leading:
+                {
+                    this.arrangedSubviews.forEach(function (it) {
+                        alignLocation.push(0.0);
+                        alignLength.push(alignValues.get(it) || 0.0);
+                    });
+                    break;
+                }
+            case UIEnums_1.UIStackViewAlignment.center:
+                {
+                    this.arrangedSubviews.forEach(function (it) {
+                        var space = alignValues.get(it) || 0.0;
+                        alignLocation.push((boundsAlignLength - space) / 2.0);
+                        alignLength.push(space);
+                    });
+                    break;
+                }
+            case UIEnums_1.UIStackViewAlignment.trailing:
+                {
+                    this.arrangedSubviews.forEach(function (it) {
+                        var space = alignValues.get(it) || 0.0;
+                        alignLocation.push(boundsAlignLength - space);
+                        alignLength.push(space);
+                    });
+                    break;
+                }
+        }
+        if (this.axis == UIEnums_1.UILayoutConstraintAxis.horizontal) {
+            this.arrangedSubviews.forEach(function (view, index) {
+                view.frame = { x: axisLocation[index], y: alignLocation[index], width: axisLength[index], height: alignLength[index] };
+            });
+        } else {
+            this.arrangedSubviews.forEach(function (view, index) {
+                view.frame = { x: alignLocation[index], y: axisLocation[index], width: alignLength[index], height: axisLength[index] };
+            });
+        }
+    };
+
+    _createClass(UIStackView, [{
+        key: "axis",
+        get: function get() {
+            return this._axis;
+        },
+        set: function set(value) {
+            this._axis = value;
+            this._layoutArrangeSubviews();
+        }
+    }, {
+        key: "distribution",
+        get: function get() {
+            return this._distribution;
+        },
+        set: function set(value) {
+            this._distribution = value;
+            this._layoutArrangeSubviews();
+        }
+    }, {
+        key: "alignment",
+        get: function get() {
+            return this._alignment;
+        },
+        set: function set(value) {
+            this._alignment = value;
+            this._layoutArrangeSubviews();
+        }
+    }, {
+        key: "spacing",
+        get: function get() {
+            return this._spacing;
+        },
+        set: function set(value) {
+            this._spacing = value;
+            this._layoutArrangeSubviews();
+        }
+    }]);
+
+    return UIStackView;
+}(UIView_1.UIView);
+
+exports.UIStackView = UIStackView;
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIScreen = function UIScreen() {
+    _classCallCheck(this, UIScreen);
+
+    this.bounds = { x: 0, y: 0, width: parseInt(wx.getSystemInfoSync().screenWidth), height: parseInt(wx.getSystemInfoSync().screenHeight) };
+    this.scale = parseInt(wx.getSystemInfoSync().pixelRatio);
+};
+
+UIScreen.main = new UIScreen();
+exports.UIScreen = UIScreen;
 
 /***/ })
 /******/ ]);
