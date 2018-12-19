@@ -253,9 +253,6 @@ class UIScrollView extends UIView_1.UIView {
         if (!this._scrollEnabled) {
             data.direction = "none";
         }
-        // data.bounces = this._bounces
-        // data.scrollsToTop = this._scrollsToTop
-        console.log(data);
         return data;
     }
     markAllFlagsDirty() {

@@ -621,6 +621,12 @@ var UIView = function (_EventEmitter_1$Event) {
             if (this._layer._cornerRadius > 0) {
                 styles += "border-radius: " + this._layer._cornerRadius + "px;";
             }
+            if (this._layer.shadowOpacity > 0 && this._layer.shadowColor && this._layer.shadowColor.a > 0) {
+                styles += "\n                box-shadow: " + (this._layer.shadowOffset.width.toString() + "px " + this._layer.shadowOffset.height.toString() + "px " + this._layer.shadowRadius.toString() + "px " + this._layer.shadowColor.colorWithAlphaComponent(this._layer.shadowOpacity).toStyle()) + ";\n                ";
+            }
+            if (this._layer.borderWidth > 0 && this._layer.borderColor) {
+                styles += "\n                border-width: " + this._layer.borderWidth.toString() + "px;\n                border-color: " + this._layer.borderColor.toStyle() + ";\n                border-style: solid;\n                box-sizing: border-box;\n                ";
+            }
         }
         if (this._extraStyles) {
             styles += this._extraStyles;
@@ -4127,9 +4133,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         if (!this._scrollEnabled) {
             data.direction = "none";
         }
-        // data.bounces = this._bounces
-        // data.scrollsToTop = this._scrollsToTop
-        console.log(data);
         return data;
     };
 
@@ -5951,15 +5954,6 @@ var CALayer = function () {
     CALayer.prototype.resetBorder = function resetBorder() {
         if (this._view.get()) {
             this._view.get().invalidate();
-            // if (this.borderWidth > 0 && this.borderColor) {
-            //     this._view.domElement.style.borderWidth = this.borderWidth.toString() + "px"
-            //     this._view.domElement.style.borderColor = this.borderColor.toStyle()
-            //     this._view.domElement.style.borderStyle = this.borderWidth > 0 ? "solid" : "unset"
-            //     this._view.domElement.style.boxSizing = this.borderWidth > 0 ? "border-box" : "unset"
-            // }
-            // else {
-            //     this._view.domElement.style.borderStyle = "unset"
-            // }
         } else {}
     };
 
@@ -5990,18 +5984,6 @@ var CALayer = function () {
     CALayer.prototype.resetShadow = function resetShadow() {
         if (this._view.get()) {
             this._view.get().invalidate();
-            // if (this.shadowOpacity > 0 && this.shadowColor && this.shadowColor.a > 0) {
-            //     if (this._view instanceof UILabel) {
-            //         this._view.domElement.style.textShadow = this.shadowOffset.width.toString() + "px " + this.shadowOffset.height.toString() + "px " + this.shadowRadius.toString() + "px " + this.shadowColor.colorWithAlphaComponent(this.shadowOpacity).toStyle()
-            //     }
-            //     else {
-            //         this._view.domElement.style.boxShadow = this.shadowOffset.width.toString() + "px " + this.shadowOffset.height.toString() + "px " + this.shadowRadius.toString() + "px " + this.shadowColor.colorWithAlphaComponent(this.shadowOpacity).toStyle()
-            //     }
-            // }
-            // else {
-            //     this._view.domElement.style.textShadow = null
-            //     this._view.domElement.style.boxShadow = null
-            // }
         }
     };
 

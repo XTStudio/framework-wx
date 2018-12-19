@@ -737,6 +737,19 @@ export class UIView extends EventEmitter {
             if (this._layer._cornerRadius > 0) {
                 styles += `border-radius: ${this._layer._cornerRadius}px;`
             }
+            if (this._layer.shadowOpacity > 0 && this._layer.shadowColor && this._layer.shadowColor.a > 0) {
+                styles += `
+                box-shadow: ${this._layer.shadowOffset.width.toString() + "px " + this._layer.shadowOffset.height.toString() + "px " + this._layer.shadowRadius.toString() + "px " + this._layer.shadowColor.colorWithAlphaComponent(this._layer.shadowOpacity).toStyle()};
+                `
+            }
+            if (this._layer.borderWidth > 0 && this._layer.borderColor) {
+                styles += `
+                border-width: ${this._layer.borderWidth.toString()}px;
+                border-color: ${this._layer.borderColor.toStyle()};
+                border-style: solid;
+                box-sizing: border-box;
+                `
+            }
         }
         if (this._extraStyles) {
             styles += this._extraStyles
