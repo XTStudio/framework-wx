@@ -4,3 +4,4 @@
 <uilabel wx:if="{{clazz == 'UILabel'}}" props="{{view}}"></uilabel>
 <uiimageview wx:if="{{clazz == 'UIImageView'}}" props="{{view}}"></uiimageview>
 <uibutton wx:if="{{clazz == 'UIButton'}}" props="{{view}}"></uibutton>
+<uiactivityindicatorview wx:if="{{clazz == 'UIActivityIndicatorView'}}" props="{{view}}"></uiactivityindicatorview>

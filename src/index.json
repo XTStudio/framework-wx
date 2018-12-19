@@ -6,6 +6,7 @@
     "uiwindow": "./components/UIWindow",
     "uilabel": "./components/UILabel",
     "uiimageview": "./components/UIImageView",
-    "uibutton": "./components/UIButton"
+    "uibutton": "./components/UIButton",
+    "uiactivityindicatorview": "./components/UIActivityIndicatorView"
   }
 }

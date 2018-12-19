@@ -82,11 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 36);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -139,7 +140,8 @@ var UIViewManager = function () {
 exports.UIViewManager = UIViewManager;
 
 /***/ }),
-/* 1 */
+
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -186,7 +188,8 @@ var UIComponentManager = function () {
 exports.UIComponentManager = UIComponentManager;
 
 /***/ }),
-/* 2 */
+
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -202,7 +205,8 @@ exports.randomUUID = function () {
 };
 
 /***/ }),
-/* 3 */
+
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -250,5 +254,38 @@ var UIViewComponent = function UIViewComponent() {
 exports.UIViewComponent = UIViewComponent;
 Component(new UIViewComponent());
 
+/***/ }),
+
+/***/ 36:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(3);
+
+var UIActivityIndicatorViewComponent = function (_UIView_1$UIViewCompo) {
+  _inherits(UIActivityIndicatorViewComponent, _UIView_1$UIViewCompo);
+
+  function UIActivityIndicatorViewComponent() {
+    _classCallCheck(this, UIActivityIndicatorViewComponent);
+
+    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+  }
+
+  return UIActivityIndicatorViewComponent;
+}(UIView_1.UIViewComponent);
+
+exports.UIActivityIndicatorViewComponent = UIActivityIndicatorViewComponent;
+Component(new UIActivityIndicatorViewComponent());
+
 /***/ })
-/******/ ]);
+
+/******/ });

@@ -206,6 +206,56 @@ exports.randomUUID = function () {
 
 /***/ }),
 
+/***/ 3:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(1);
+var UIViewManager_1 = __webpack_require__(0);
+// xt-framework/uiview.js
+
+var UIViewComponent = function UIViewComponent() {
+    _classCallCheck(this, UIViewComponent);
+
+    this.properties = {
+        props: {
+            type: Object,
+            value: {},
+            observer: function observer(newVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                if (newVal.viewID) {
+                    if (this.viewID !== newVal.viewID) {
+                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
+                        if (newView) {
+                            newView.markAllFlagsDirty();
+                        }
+                    }
+                }
+            }
+        }
+    };
+    this.lifetimes = {
+        detached: function detached() {
+            if (this.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
+            }
+        }
+    };
+};
+
+exports.UIViewComponent = UIViewComponent;
+Component(new UIViewComponent());
+
+/***/ }),
+
 /***/ 31:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -219,7 +269,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(4);
+var UIView_1 = __webpack_require__(3);
 var UIViewManager_1 = __webpack_require__(0);
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
@@ -301,56 +351,6 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
 
 exports.UIScrollViewComponent = UIScrollViewComponent;
 Component(new UIScrollViewComponent());
-
-/***/ }),
-
-/***/ 4:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(1);
-var UIViewManager_1 = __webpack_require__(0);
-// xt-framework/uiview.js
-
-var UIViewComponent = function UIViewComponent() {
-    _classCallCheck(this, UIViewComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal) {
-                if (newVal === undefined || newVal === null) {
-                    return;
-                }
-                if (newVal.viewID) {
-                    if (this.viewID !== newVal.viewID) {
-                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
-                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
-                        if (newView) {
-                            newView.markAllFlagsDirty();
-                        }
-                    }
-                }
-            }
-        }
-    };
-    this.lifetimes = {
-        detached: function detached() {
-            if (this.viewID) {
-                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
-            }
-        }
-    };
-};
-
-exports.UIViewComponent = UIViewComponent;
-Component(new UIViewComponent());
 
 /***/ })
 

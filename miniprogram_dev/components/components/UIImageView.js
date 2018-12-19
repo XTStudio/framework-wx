@@ -206,39 +206,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 34:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(4);
-
-var UIImageViewComponent = function (_UIView_1$UIViewCompo) {
-  _inherits(UIImageViewComponent, _UIView_1$UIViewCompo);
-
-  function UIImageViewComponent() {
-    _classCallCheck(this, UIImageViewComponent);
-
-    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
-  }
-
-  return UIImageViewComponent;
-}(UIView_1.UIViewComponent);
-
-exports.UIImageViewComponent = UIImageViewComponent;
-Component(new UIImageViewComponent());
-
-/***/ }),
-
-/***/ 4:
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -285,6 +253,38 @@ var UIViewComponent = function UIViewComponent() {
 
 exports.UIViewComponent = UIViewComponent;
 Component(new UIViewComponent());
+
+/***/ }),
+
+/***/ 34:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(3);
+
+var UIImageViewComponent = function (_UIView_1$UIViewCompo) {
+  _inherits(UIImageViewComponent, _UIView_1$UIViewCompo);
+
+  function UIImageViewComponent() {
+    _classCallCheck(this, UIImageViewComponent);
+
+    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+  }
+
+  return UIImageViewComponent;
+}(UIView_1.UIViewComponent);
+
+exports.UIImageViewComponent = UIImageViewComponent;
+Component(new UIImageViewComponent());
 
 /***/ })
 

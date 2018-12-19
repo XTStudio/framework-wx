@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 36);
+/******/ 	return __webpack_require__(__webpack_require__.s = 37);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -202,7 +202,8 @@ exports.randomUUID = function () {
 };
 
 /***/ }),
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -218,8 +219,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIRect_1 = __webpack_require__(18);
-var UIAffineTransform_1 = __webpack_require__(25);
-var Matrix_1 = __webpack_require__(26);
+var UIAffineTransform_1 = __webpack_require__(28);
+var Matrix_1 = __webpack_require__(29);
 var UIColor_1 = __webpack_require__(5);
 var UITouch_1 = __webpack_require__(11);
 var UIEdgeInsets_1 = __webpack_require__(6);
@@ -228,7 +229,7 @@ var UIAnimator_1 = __webpack_require__(10);
 var UIViewManager_1 = __webpack_require__(0);
 var EventEmitter_1 = __webpack_require__(15);
 var UIEnums_1 = __webpack_require__(8);
-var CALayer_1 = __webpack_require__(45);
+var CALayer_1 = __webpack_require__(46);
 var UIComponentManager_1 = __webpack_require__(1);
 exports.dirtyItems = [];
 
@@ -1298,7 +1299,6 @@ var emptyAnimation = function () {
 }();
 
 /***/ }),
-/* 4 */,
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2008,7 +2008,7 @@ exports.UIPointEqualToPoint = function (point1, point2) {
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var EventEmitterIMP = __webpack_require__(44);
+var EventEmitterIMP = __webpack_require__(45);
 exports.EventEmitter = EventEmitterIMP.EventEmitter;
 
 /***/ }),
@@ -2043,7 +2043,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIGestureRecognizer_1 = __webpack_require__(9);
 var UITouch_1 = __webpack_require__(11);
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 
 var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UILongPressGestureRecognizer, _UIGestureRecognizer_);
@@ -2198,6 +2198,30 @@ exports.UIRectIsEmpty = function (rect) {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIFont = function UIFont(pointSize, fontStyle, fontName) {
+    _classCallCheck(this, UIFont);
+
+    this.pointSize = pointSize;
+    this.fontStyle = fontStyle;
+    this.fontName = fontName;
+    if (fontName === undefined) {
+        this.fontName = "-apple-system";
+    }
+};
+
+exports.UIFont = UIFont;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
@@ -2205,7 +2229,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UITouch_1 = __webpack_require__(11);
 var UIGestureRecognizer_1 = __webpack_require__(9);
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 
 var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
@@ -2275,7 +2299,251 @@ var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 /***/ }),
-/* 20 */
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+var UIColor_1 = __webpack_require__(5);
+var UIEnums_1 = __webpack_require__(8);
+
+var UILabel = function (_UIView_1$UIView) {
+    _inherits(UILabel, _UIView_1$UIView);
+
+    function UILabel() {
+        _classCallCheck(this, UILabel);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this.clazz = "UILabel";
+        _this._text = undefined;
+        _this._font = undefined;
+        _this._textColor = undefined;
+        _this._textAlignment = UIEnums_1.UITextAlignment.left;
+        _this._numberOfLines = 1;
+        // invalidate
+        _this.isTextDirty = true;
+        _this.isTextStyleDirty = true;
+        return _this;
+    }
+
+    UILabel.prototype.invalidateText = function invalidateText() {
+        this.isTextDirty = true;
+        this.invalidate();
+    };
+
+    UILabel.prototype.invalidateTextStyle = function invalidateTextStyle() {
+        this.isTextStyleDirty = true;
+        this.invalidate();
+    };
+
+    UILabel.prototype.buildExtras = function buildExtras() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        if (this.isTextDirty) {
+            data.text = this._text;
+        }
+        if (this.isTextStyleDirty) {
+            data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
+                switch (_this2._textAlignment) {
+                    case UIEnums_1.UITextAlignment.left:
+                        return "left";
+                    case UIEnums_1.UITextAlignment.center:
+                        return "center";
+                    case UIEnums_1.UITextAlignment.right:
+                        return "right";
+                }
+                return "left";
+            }() + ";\n            " + function () {
+                if (_this2._numberOfLines === 1) {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
+                } else {
+                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
+                }
+            }() + "\n        }";
+        }
+        return data;
+    };
+
+    UILabel.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
+        this.isTextDirty = true;
+        this.isTextStyleDirty = true;
+    };
+
+    UILabel.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isTextDirty = false;
+        this.isTextStyleDirty = false;
+    };
+
+    _createClass(UILabel, [{
+        key: "text",
+        get: function get() {
+            return this._text;
+        },
+        set: function set(value) {
+            if (this._text === value) {
+                return;
+            }
+            this._text = value;
+            this.invalidateText();
+        }
+    }, {
+        key: "font",
+        get: function get() {
+            return this._font;
+        },
+        set: function set(value) {
+            if (this._font === value) {
+                return;
+            }
+            this._font = value;
+            this.invalidateTextStyle();
+        }
+    }, {
+        key: "textColor",
+        get: function get() {
+            return this._textColor;
+        },
+        set: function set(value) {
+            if (this._textColor === value) {
+                return;
+            }
+            this._textColor = value;
+            this.invalidateTextStyle();
+        }
+    }, {
+        key: "textAlignment",
+        get: function get() {
+            return this._textAlignment;
+        },
+        set: function set(value) {
+            if (this._textAlignment === value) {
+                return;
+            }
+            this._textAlignment = value;
+            this.invalidateTextStyle();
+        }
+    }, {
+        key: "numberOfLines",
+        get: function get() {
+            return this._numberOfLines;
+        },
+        set: function set(value) {
+            if (this._numberOfLines === value) {
+                return;
+            }
+            this._numberOfLines = value;
+            this.invalidateTextStyle();
+        }
+    }]);
+
+    return UILabel;
+}(UIView_1.UIView);
+
+exports.UILabel = UILabel;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+var UIEnums_1 = __webpack_require__(8);
+
+var UIImageView = function (_UIView_1$UIView) {
+    _inherits(UIImageView, _UIView_1$UIView);
+
+    function UIImageView() {
+        _classCallCheck(this, UIImageView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this.clazz = "UIImageView";
+        _this._image = undefined;
+        _this.isImageDirty = false;
+        return _this;
+    }
+
+    UIImageView.prototype.buildExtras = function buildExtras() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        if (this.isImageDirty) {
+            data.imageSource = this._image !== undefined ? this._image.imageSource : null;
+        }
+        if (this.isStyleDirty) {
+            data.scaleMode = function () {
+                switch (_this2._contentMode) {
+                    case UIEnums_1.UIViewContentMode.scaleToFill:
+                        return "scaleToFill";
+                    case UIEnums_1.UIViewContentMode.scaleAspectFit:
+                        return "aspectFit";
+                    case UIEnums_1.UIViewContentMode.scaleAspectFill:
+                        return "aspectFill";
+                }
+                return "scaleToFill";
+            }();
+        }
+        return data;
+    };
+
+    UIImageView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
+        this.isImageDirty = true;
+    };
+
+    UIImageView.prototype.clearDirtyFlags = function clearDirtyFlags() {
+        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isImageDirty = false;
+    };
+
+    _createClass(UIImageView, [{
+        key: "image",
+        get: function get() {
+            return this._image;
+        },
+        set: function set(value) {
+            if (this._image === value) {
+                return;
+            }
+            this._image = value;
+            this.isImageDirty = true;
+            this.invalidate();
+        }
+    }]);
+
+    return UIImageView;
+}(UIView_1.UIView);
+
+exports.UIImageView = UIImageView;
+
+/***/ }),
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2291,10 +2559,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventEmitter_1 = __webpack_require__(15);
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var UIColor_1 = __webpack_require__(5);
-var UITabBarItem_1 = __webpack_require__(49);
+var UITabBarItem_1 = __webpack_require__(50);
 
 var UIViewController = function (_EventEmitter_1$Event) {
     _inherits(UIViewController, _EventEmitter_1$Event);
@@ -2506,7 +2774,7 @@ var UIViewController = function (_EventEmitter_1$Event) {
 exports.UIViewController = UIViewController;
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2561,7 +2829,7 @@ Bundle.js = new Bundle("js");
 exports.Bundle = Bundle;
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2647,7 +2915,7 @@ var MutableURLRequest = function (_URLRequest) {
 exports.MutableURLRequest = MutableURLRequest;
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2671,7 +2939,7 @@ var URLResponse = function URLResponse() {
 exports.URLResponse = URLResponse;
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2704,14 +2972,14 @@ var UUID = function () {
 exports.UUID = UUID;
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Matrix_1 = __webpack_require__(26);
+var Matrix_1 = __webpack_require__(29);
 exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
     return { a: a, b: b, c: c, d: d, tx: tx, ty: ty };
@@ -2771,7 +3039,7 @@ exports.UIAffineTransformIsIdentity = function (transform) {
 };
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3199,274 +3467,6 @@ var Matrix = function () {
 exports.Matrix = Matrix;
 
 /***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var UIFont = function UIFont(pointSize, fontStyle, fontName) {
-    _classCallCheck(this, UIFont);
-
-    this.pointSize = pointSize;
-    this.fontStyle = fontStyle;
-    this.fontName = fontName;
-    if (fontName === undefined) {
-        this.fontName = "-apple-system";
-    }
-};
-
-exports.UIFont = UIFont;
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
-var UIEnums_1 = __webpack_require__(8);
-
-var UIImageView = function (_UIView_1$UIView) {
-    _inherits(UIImageView, _UIView_1$UIView);
-
-    function UIImageView() {
-        _classCallCheck(this, UIImageView);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
-
-        _this.clazz = "UIImageView";
-        _this._image = undefined;
-        _this.isImageDirty = false;
-        return _this;
-    }
-
-    UIImageView.prototype.buildExtras = function buildExtras() {
-        var _this2 = this;
-
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this.isImageDirty) {
-            data.imageSource = this._image !== undefined ? this._image.imageSource : null;
-        }
-        if (this.isStyleDirty) {
-            data.scaleMode = function () {
-                switch (_this2._contentMode) {
-                    case UIEnums_1.UIViewContentMode.scaleToFill:
-                        return "scaleToFill";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFit:
-                        return "aspectFit";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFill:
-                        return "aspectFill";
-                }
-                return "scaleToFill";
-            }();
-        }
-        return data;
-    };
-
-    UIImageView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isImageDirty = true;
-    };
-
-    UIImageView.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isImageDirty = false;
-    };
-
-    _createClass(UIImageView, [{
-        key: "image",
-        get: function get() {
-            return this._image;
-        },
-        set: function set(value) {
-            if (this._image === value) {
-                return;
-            }
-            this._image = value;
-            this.isImageDirty = true;
-            this.invalidate();
-        }
-    }]);
-
-    return UIImageView;
-}(UIView_1.UIView);
-
-exports.UIImageView = UIImageView;
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
-var UIColor_1 = __webpack_require__(5);
-var UIEnums_1 = __webpack_require__(8);
-
-var UILabel = function (_UIView_1$UIView) {
-    _inherits(UILabel, _UIView_1$UIView);
-
-    function UILabel() {
-        _classCallCheck(this, UILabel);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
-
-        _this.clazz = "UILabel";
-        _this._text = undefined;
-        _this._font = undefined;
-        _this._textColor = undefined;
-        _this._textAlignment = UIEnums_1.UITextAlignment.left;
-        _this._numberOfLines = 1;
-        // invalidate
-        _this.isTextDirty = true;
-        _this.isTextStyleDirty = true;
-        return _this;
-    }
-
-    UILabel.prototype.invalidateText = function invalidateText() {
-        this.isTextDirty = true;
-        this.invalidate();
-    };
-
-    UILabel.prototype.invalidateTextStyle = function invalidateTextStyle() {
-        this.isTextStyleDirty = true;
-        this.invalidate();
-    };
-
-    UILabel.prototype.buildExtras = function buildExtras() {
-        var _this2 = this;
-
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this.isTextDirty) {
-            data.text = this._text;
-        }
-        if (this.isTextStyleDirty) {
-            data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
-                switch (_this2._textAlignment) {
-                    case UIEnums_1.UITextAlignment.left:
-                        return "left";
-                    case UIEnums_1.UITextAlignment.center:
-                        return "center";
-                    case UIEnums_1.UITextAlignment.right:
-                        return "right";
-                }
-                return "left";
-            }() + ";\n            " + function () {
-                if (_this2._numberOfLines === 1) {
-                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
-                } else {
-                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
-                }
-            }() + "\n        }";
-        }
-        return data;
-    };
-
-    UILabel.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isTextDirty = true;
-        this.isTextStyleDirty = true;
-    };
-
-    UILabel.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isTextDirty = false;
-        this.isTextStyleDirty = false;
-    };
-
-    _createClass(UILabel, [{
-        key: "text",
-        get: function get() {
-            return this._text;
-        },
-        set: function set(value) {
-            if (this._text === value) {
-                return;
-            }
-            this._text = value;
-            this.invalidateText();
-        }
-    }, {
-        key: "font",
-        get: function get() {
-            return this._font;
-        },
-        set: function set(value) {
-            if (this._font === value) {
-                return;
-            }
-            this._font = value;
-            this.invalidateTextStyle();
-        }
-    }, {
-        key: "textColor",
-        get: function get() {
-            return this._textColor;
-        },
-        set: function set(value) {
-            if (this._textColor === value) {
-                return;
-            }
-            this._textColor = value;
-            this.invalidateTextStyle();
-        }
-    }, {
-        key: "textAlignment",
-        get: function get() {
-            return this._textAlignment;
-        },
-        set: function set(value) {
-            if (this._textAlignment === value) {
-                return;
-            }
-            this._textAlignment = value;
-            this.invalidateTextStyle();
-        }
-    }, {
-        key: "numberOfLines",
-        get: function get() {
-            return this._numberOfLines;
-        },
-        set: function set(value) {
-            if (this._numberOfLines === value) {
-                return;
-            }
-            this._numberOfLines = value;
-            this.invalidateTextStyle();
-        }
-    }]);
-
-    return UILabel;
-}(UIView_1.UIView);
-
-exports.UILabel = UILabel;
-
-/***/ }),
 /* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3481,7 +3481,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIGestureRecognizer_1 = __webpack_require__(9);
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UITouch_1 = __webpack_require__(11);
 
 var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
@@ -3624,7 +3624,8 @@ exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
 /* 33 */,
 /* 34 */,
 /* 35 */,
-/* 36 */
+/* 36 */,
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3632,47 +3633,48 @@ exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-Object.assign(module.exports, __webpack_require__(21));
+Object.assign(module.exports, __webpack_require__(24));
 Object.assign(module.exports, __webpack_require__(13));
-Object.assign(module.exports, __webpack_require__(37));
 Object.assign(module.exports, __webpack_require__(38));
 Object.assign(module.exports, __webpack_require__(39));
-Object.assign(module.exports, __webpack_require__(12));
-Object.assign(module.exports, __webpack_require__(22));
-Object.assign(module.exports, __webpack_require__(23));
 Object.assign(module.exports, __webpack_require__(40));
-Object.assign(module.exports, __webpack_require__(41));
-Object.assign(module.exports, __webpack_require__(24));
-Object.assign(module.exports, __webpack_require__(42));
+Object.assign(module.exports, __webpack_require__(12));
 Object.assign(module.exports, __webpack_require__(25));
-Object.assign(module.exports, __webpack_require__(10));
+Object.assign(module.exports, __webpack_require__(26));
+Object.assign(module.exports, __webpack_require__(41));
+Object.assign(module.exports, __webpack_require__(42));
+Object.assign(module.exports, __webpack_require__(27));
 Object.assign(module.exports, __webpack_require__(43));
+Object.assign(module.exports, __webpack_require__(59));
+Object.assign(module.exports, __webpack_require__(28));
+Object.assign(module.exports, __webpack_require__(10));
+Object.assign(module.exports, __webpack_require__(44));
 Object.assign(module.exports, __webpack_require__(5));
-Object.assign(module.exports, __webpack_require__(46));
+Object.assign(module.exports, __webpack_require__(47));
 Object.assign(module.exports, __webpack_require__(6));
 Object.assign(module.exports, __webpack_require__(8));
-Object.assign(module.exports, __webpack_require__(27));
+Object.assign(module.exports, __webpack_require__(19));
 Object.assign(module.exports, __webpack_require__(9));
-Object.assign(module.exports, __webpack_require__(47));
-Object.assign(module.exports, __webpack_require__(28));
-Object.assign(module.exports, __webpack_require__(29));
-Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(48));
+Object.assign(module.exports, __webpack_require__(22));
+Object.assign(module.exports, __webpack_require__(21));
+Object.assign(module.exports, __webpack_require__(17));
+Object.assign(module.exports, __webpack_require__(49));
 Object.assign(module.exports, __webpack_require__(30));
-Object.assign(module.exports, __webpack_require__(50));
-Object.assign(module.exports, __webpack_require__(14));
 Object.assign(module.exports, __webpack_require__(51));
-Object.assign(module.exports, __webpack_require__(18));
+Object.assign(module.exports, __webpack_require__(14));
 Object.assign(module.exports, __webpack_require__(52));
+Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(53));
-Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(54));
+Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(55));
 Object.assign(module.exports, __webpack_require__(56));
-Object.assign(module.exports, __webpack_require__(19));
-Object.assign(module.exports, __webpack_require__(11));
-Object.assign(module.exports, __webpack_require__(3));
+Object.assign(module.exports, __webpack_require__(57));
 Object.assign(module.exports, __webpack_require__(20));
+Object.assign(module.exports, __webpack_require__(11));
+Object.assign(module.exports, __webpack_require__(4));
+Object.assign(module.exports, __webpack_require__(23));
 Component({
     properties: {
         view: {
@@ -3699,7 +3701,7 @@ Component({
 });
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3740,7 +3742,7 @@ DispatchQueue.global = new DispatchQueue();
 exports.DispatchQueue = DispatchQueue;
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3750,7 +3752,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Data_1 = __webpack_require__(13);
-var Bundle_1 = __webpack_require__(21);
+var Bundle_1 = __webpack_require__(24);
 var fs = wx.getFileSystemManager();
 
 var FileManager = function () {
@@ -3937,7 +3939,7 @@ FileManager.jsBundleDirectory = "xt://";
 exports.FileManager = FileManager;
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3993,7 +3995,7 @@ var Timer = function () {
 exports.Timer = Timer;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4002,10 +4004,10 @@ exports.Timer = Timer;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var URLRequest_1 = __webpack_require__(22);
+var URLRequest_1 = __webpack_require__(25);
 var URL_1 = __webpack_require__(12);
 var Data_1 = __webpack_require__(13);
-var URLResponse_1 = __webpack_require__(23);
+var URLResponse_1 = __webpack_require__(26);
 
 var URLSession = function () {
     function URLSession() {
@@ -4109,7 +4111,7 @@ var URLSessionTask = function () {
 exports.URLSessionTask = URLSessionTask;
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4168,7 +4170,7 @@ UserDefaults.standard = new UserDefaults();
 exports.UserDefaults = UserDefaults;
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4248,7 +4250,7 @@ var UIActionSheet = function () {
 exports.UIActionSheet = UIActionSheet;
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4263,15 +4265,15 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
-var UIFont_1 = __webpack_require__(27);
+var UIView_1 = __webpack_require__(4);
+var UIFont_1 = __webpack_require__(19);
 var UIEnums_1 = __webpack_require__(8);
 var UIColor_1 = __webpack_require__(5);
 var UIEdgeInsets_1 = __webpack_require__(6);
-var UITapGestureRecognizer_1 = __webpack_require__(19);
+var UITapGestureRecognizer_1 = __webpack_require__(20);
 var UILongPressGestureRecognizer_1 = __webpack_require__(17);
-var UILabel_1 = __webpack_require__(29);
-var UIImageView_1 = __webpack_require__(28);
+var UILabel_1 = __webpack_require__(21);
+var UIImageView_1 = __webpack_require__(22);
 
 var UIButton = function (_UIView_1$UIView) {
     _inherits(UIButton, _UIView_1$UIView);
@@ -4700,7 +4702,7 @@ var UIButton = function (_UIView_1$UIView) {
 exports.UIButton = UIButton;
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5201,7 +5203,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(undefined || {});
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5472,7 +5474,7 @@ var CALayer = function () {
 exports.CALayer = CALayer;
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5481,7 +5483,7 @@ exports.CALayer = CALayer;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(24);
+var UUID_1 = __webpack_require__(27);
 
 var UIDevice = function UIDevice() {
     _classCallCheck(this, UIDevice);
@@ -5508,7 +5510,7 @@ UIDevice.current = new UIDevice();
 exports.UIDevice = UIDevice;
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5641,7 +5643,7 @@ var UIImage = function (_EventEmitter_1$Event) {
 exports.UIImage = UIImage;
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5654,7 +5656,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(20);
+var UIViewController_1 = __webpack_require__(23);
 
 var UINavigationController = function (_UIViewController_1$U) {
     _inherits(UINavigationController, _UIViewController_1$U);
@@ -5804,7 +5806,7 @@ var UINavigationController = function (_UIViewController_1$U) {
 exports.UINavigationController = UINavigationController;
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5890,7 +5892,7 @@ var UITabBarItem = function () {
 exports.UITabBarItem = UITabBarItem;
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5928,7 +5930,7 @@ var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIPinchGestureRecognizer = UIPinchGestureRecognizer;
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5943,7 +5945,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIAnimator_1 = __webpack_require__(10);
 
 var UIProgressView = function (_UIView_1$UIView) {
@@ -6053,7 +6055,7 @@ var UIProgressView = function (_UIView_1$UIView) {
 exports.UIProgressView = UIProgressView;
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6087,7 +6089,7 @@ var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIRotationGestureRecognizer = UIRotationGestureRecognizer;
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6102,7 +6104,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIPoint_1 = __webpack_require__(14);
 var UISize_1 = __webpack_require__(16);
 var UIEdgeInsets_1 = __webpack_require__(6);
@@ -6410,7 +6412,7 @@ var UIScrollView = function (_UIView_1$UIView) {
 exports.UIScrollView = UIScrollView;
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6425,7 +6427,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIAnimator_1 = __webpack_require__(10);
 var UILongPressGestureRecognizer_1 = __webpack_require__(17);
 
@@ -6605,7 +6607,7 @@ var UISlider = function (_UIView_1$UIView2) {
 exports.UISlider = UISlider;
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6620,7 +6622,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIColor_1 = __webpack_require__(5);
 var UIAnimator_1 = __webpack_require__(10);
 var UILongPressGestureRecognizer_1 = __webpack_require__(17);
@@ -6789,7 +6791,7 @@ var UISwitch = function (_UIView_1$UIView2) {
 exports.UISwitch = UISwitch;
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6804,8 +6806,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(20);
-var UITabBar_1 = __webpack_require__(57);
+var UIViewController_1 = __webpack_require__(23);
+var UITabBar_1 = __webpack_require__(58);
 
 var UITabBarController = function (_UIViewController_1$U) {
     _inherits(UITabBarController, _UIViewController_1$U);
@@ -6978,7 +6980,7 @@ var UITabBarController = function (_UIViewController_1$U) {
 exports.UITabBarController = UITabBarController;
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6993,13 +6995,13 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(3);
+var UIView_1 = __webpack_require__(4);
 var UIColor_1 = __webpack_require__(5);
-var UIImageView_1 = __webpack_require__(28);
-var UILabel_1 = __webpack_require__(29);
-var UIFont_1 = __webpack_require__(27);
+var UIImageView_1 = __webpack_require__(22);
+var UILabel_1 = __webpack_require__(21);
+var UIFont_1 = __webpack_require__(19);
 var UIEnums_1 = __webpack_require__(8);
-var UITapGestureRecognizer_1 = __webpack_require__(19);
+var UITapGestureRecognizer_1 = __webpack_require__(20);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var MagicObject_1 = __webpack_require__(7);
 
@@ -7193,6 +7195,82 @@ var UITabBarButton = function (_UIView_1$UIView2) {
 }(UIView_1.UIView);
 
 exports.UITabBarButton = UITabBarButton;
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+
+var UIActivityIndicatorView = function (_UIView_1$UIView) {
+    _inherits(UIActivityIndicatorView, _UIView_1$UIView);
+
+    function UIActivityIndicatorView() {
+        _classCallCheck(this, UIActivityIndicatorView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.clazz = "UIActivityIndicatorView";
+        _this.color = undefined;
+        _this._largeStyle = false;
+        _this.animating = false;
+        {
+            var size = _this.largeStyle ? 88 : 36;
+            _this.frame = { x: _this.frame.x, y: _this.frame.y, width: size, height: size };
+        }
+        return _this;
+    }
+
+    UIActivityIndicatorView.prototype.startAnimating = function startAnimating() {
+        this.animating = true;
+        this.invalidate();
+    };
+
+    UIActivityIndicatorView.prototype.stopAnimating = function stopAnimating() {
+        this.animating = false;
+        this.invalidate();
+    };
+
+    UIActivityIndicatorView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this.invalidate();
+    };
+
+    UIActivityIndicatorView.prototype.buildExtras = function buildExtras() {
+        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        data.sizeScale = this.largeStyle ? 3.0 : 1.5;
+        data.lineHeight = this.bounds.height;
+        data.animating = this.animating;
+        return data;
+    };
+
+    _createClass(UIActivityIndicatorView, [{
+        key: "largeStyle",
+        get: function get() {
+            return this._largeStyle;
+        },
+        set: function set(value) {
+            this._largeStyle = value;
+            this.invalidate();
+        }
+    }]);
+
+    return UIActivityIndicatorView;
+}(UIView_1.UIView);
+
+exports.UIActivityIndicatorView = UIActivityIndicatorView;
 
 /***/ })
 /******/ ]);

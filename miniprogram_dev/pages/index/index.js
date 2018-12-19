@@ -22,6 +22,7 @@ const {
     UIProgressView,
     UIButton,
     UIControlState,
+    UIActivityIndicatorView,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -41,37 +42,10 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         {
-            const redView = new UIView
-            redView.frame = UIRectMake(0, 0, 44, 44)
-            redView.layer.cornerRadius = 22
-            redView.layer.shadowRadius = 8
-            redView.layer.shadowColor = UIColor.black
-            redView.layer.shadowOpacity = 0.5
-            redView.layer.shadowOffset = { width: 3, height: 3 }
-            redView.layer.borderWidth = 10
-            redView.layer.borderColor = UIColor.blue
-            redView.backgroundColor = UIColor.red
-            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                redView.backgroundColor = UIColor.yellow
-            }))
-            this.scrollView.addSubview(redView)
-        }
-        {
-            const btn = new UIButton
-            btn.frame = UIRectMake(44, 100, 88, 44)
-            btn.layer.cornerRadius = 22
-            btn.layer.borderWidth = 1
-            btn.layer.borderColor = btn.tintColor
-            btn.setTitle("Test", UIControlState.normal)
-            btn.setTitleFont(new UIFont(14))
-            btn.setImage(new UIImage({ name: "location" }), UIControlState.normal)
-            // btn.enabled = false
-            btn.on("touchUpInside", () => {
-                this.view.backgroundColor = UIColor.gray
-            })
-            btn.imageEdgeInsets = { top: 0, left: 0, bottom: 0, right: 4 }
-            btn.titleEdgeInsets = { top: -20, left: 4, bottom: 0, right: 0 }
-            this.view.addSubview(btn)
+            const v = new UIActivityIndicatorView
+            v.frame = UIRectMake(0, 0, 166, 166)
+            v.largeStyle = true
+            this.view.addSubview(v)
         }
         {
             const redView = new UIView

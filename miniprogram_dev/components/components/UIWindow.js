@@ -206,6 +206,56 @@ exports.randomUUID = function () {
 
 /***/ }),
 
+/***/ 3:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(1);
+var UIViewManager_1 = __webpack_require__(0);
+// xt-framework/uiview.js
+
+var UIViewComponent = function UIViewComponent() {
+    _classCallCheck(this, UIViewComponent);
+
+    this.properties = {
+        props: {
+            type: Object,
+            value: {},
+            observer: function observer(newVal) {
+                if (newVal === undefined || newVal === null) {
+                    return;
+                }
+                if (newVal.viewID) {
+                    if (this.viewID !== newVal.viewID) {
+                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
+                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
+                        if (newView) {
+                            newView.markAllFlagsDirty();
+                        }
+                    }
+                }
+            }
+        }
+    };
+    this.lifetimes = {
+        detached: function detached() {
+            if (this.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
+            }
+        }
+    };
+};
+
+exports.UIViewComponent = UIViewComponent;
+Component(new UIViewComponent());
+
+/***/ }),
+
 /***/ 32:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -220,7 +270,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIViewManager_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(4);
+var UIView_1 = __webpack_require__(3);
 
 var UIWindowComponent = function (_UIView_1$UIViewCompo) {
     _inherits(UIWindowComponent, _UIView_1$UIViewCompo);
@@ -272,56 +322,6 @@ var UIWindowComponent = function (_UIView_1$UIViewCompo) {
 
 exports.UIWindowComponent = UIWindowComponent;
 Component(new UIWindowComponent());
-
-/***/ }),
-
-/***/ 4:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(1);
-var UIViewManager_1 = __webpack_require__(0);
-// xt-framework/uiview.js
-
-var UIViewComponent = function UIViewComponent() {
-    _classCallCheck(this, UIViewComponent);
-
-    this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal) {
-                if (newVal === undefined || newVal === null) {
-                    return;
-                }
-                if (newVal.viewID) {
-                    if (this.viewID !== newVal.viewID) {
-                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
-                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
-                        if (newView) {
-                            newView.markAllFlagsDirty();
-                        }
-                    }
-                }
-            }
-        }
-    };
-    this.lifetimes = {
-        detached: function detached() {
-            if (this.viewID) {
-                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
-            }
-        }
-    };
-};
-
-exports.UIViewComponent = UIViewComponent;
-Component(new UIViewComponent());
 
 /***/ })
 

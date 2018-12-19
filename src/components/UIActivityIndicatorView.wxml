@@ -1,0 +1,6 @@
+<view style='{{style}}' animation='{{animation}}'>
+  <button wx:if="{{animating}}" plain="true" style="line-height: {{lineHeight}}px;border-width: 0px; transform: scale({{sizeScale}}, {{sizeScale}}); pointer-events: none" loading="true"></button>
+  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  </view>
+</view>

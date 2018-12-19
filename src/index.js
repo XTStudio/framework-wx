@@ -11,6 +11,7 @@ Object.assign(module.exports, require('./foundation/URLSession'));
 Object.assign(module.exports, require('./foundation/UserDefaults'));
 Object.assign(module.exports, require('./foundation/UUID'));
 Object.assign(module.exports, require('./uikit/UIActionSheet'));
+Object.assign(module.exports, require('./uikit/UIActivityIndicatorView'));
 Object.assign(module.exports, require('./uikit/UIAffineTransform'));
 Object.assign(module.exports, require('./uikit/UIAnimator'));
 Object.assign(module.exports, require('./uikit/UIButton'));
