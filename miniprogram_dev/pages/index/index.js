@@ -54,7 +54,7 @@ class FooViewController extends UIViewController {
             this.scrollView.addSubview(redView)
         }
         this.scrollView.contentSize = { width: 0, height: 1000 }
-        this.scrollView.contentInset = { top: 44, left: 0, bottom: 44, right: 0 }
+        this.scrollView.contentInset = { top: 44, left: 0, bottom: 44, right: 0 }        
         this.view.addSubview(this.scrollView)
     }
 

@@ -3973,6 +3973,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._scrollsToTop = false;
         _this._endDraggingVelocity = UIPoint_1.UIPointZero;
         // Build Data
+        _this.isContentBoundsDirty = false;
         _this.isContentOffsetDirty = false;
         _this.isContentOffsetScrollAnimatedDirty = false;
         _this.isContentOffsetScrollAnimated = false;
@@ -4078,6 +4079,12 @@ var UIScrollView = function (_UIView_1$UIView) {
         this.emit("didScrollToTop", this);
     };
 
+    UIScrollView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this.isContentBoundsDirty = true;
+        this.invalidate();
+    };
+
     UIScrollView.prototype.buildExtras = function buildExtras() {
         var _this2 = this;
 
@@ -4089,7 +4096,9 @@ var UIScrollView = function (_UIView_1$UIView) {
         if (this.isContentOffsetDirty) {
             if (this.isContentOffsetScrollAnimatedDirty) {
                 data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
+                var isContentBoundsDirty = this.isContentBoundsDirty;
                 setTimeout(function () {
+                    _this2.isContentBoundsDirty = isContentBoundsDirty;
                     _this2.isContentOffsetDirty = true;
                     _this2.isContentOffsetScrollAnimatedDirty = false;
                     _this2.invalidate();
@@ -4100,28 +4109,39 @@ var UIScrollView = function (_UIView_1$UIView) {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
         }
         data.inertia = this._pagingEnabled === true ? false : true;
-        data.direction = function () {
-            if (!_this2._scrollEnabled) {
-                return "none";
-            } else if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
-                return "all";
-            } else if (totalContentSize.width > _this2.bounds.width) {
-                return "horizontal";
-            } else if (totalContentSize.height > _this2.bounds.height) {
-                return "vertical";
-            } else {
-                return "none";
-            }
-        }();
-        data.bounces = this._bounces;
-        data.contentSize = totalContentSize;
-        data.contentInset = this._contentInset;
-        data.scrollsToTop = this._scrollsToTop;
+        if (this.isContentBoundsDirty) {
+            data.direction = function () {
+                if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
+                    return "all";
+                } else if (totalContentSize.width > _this2.bounds.width) {
+                    return "horizontal";
+                } else if (totalContentSize.height > _this2.bounds.height) {
+                    return "vertical";
+                } else {
+                    return "none";
+                }
+            }();
+            data.contentSize = totalContentSize;
+            data.contentInset = this._contentInset;
+        }
+        if (!this._scrollEnabled) {
+            data.direction = "none";
+        }
+        // data.bounces = this._bounces
+        // data.scrollsToTop = this._scrollsToTop
+        console.log(data);
         return data;
+    };
+
+    UIScrollView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
+        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
+        this.isContentBoundsDirty = true;
+        this.isContentOffsetDirty = true;
     };
 
     UIScrollView.prototype.clearDirtyFlags = function clearDirtyFlags() {
         _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
+        this.isContentBoundsDirty = false;
         this.isContentOffsetDirty = false;
         this.isContentOffsetScrollAnimated = false;
     };
@@ -4145,6 +4165,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentSize = value;
+            this.isContentBoundsDirty = true;
             this.invalidate();
         }
     }, {
@@ -4157,6 +4178,7 @@ var UIScrollView = function (_UIView_1$UIView) {
             var deltaY = value.top - this._contentInset.top;
             this._contentInset = value;
             this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY };
+            this.isContentBoundsDirty = true;
             this.invalidate();
         }
     }, {
