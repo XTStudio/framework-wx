@@ -2,6 +2,7 @@ import { UIView } from "./UIView";
 import { UIFont } from "./UIFont";
 import { UIColor } from "./UIColor";
 import { UITextAlignment } from "./UIEnums";
+import { UIAttributedString } from "./UIAttributedString";
 
 export class UILabel extends UIView {
 
@@ -16,6 +17,18 @@ export class UILabel extends UIView {
     public set text(value: string | undefined) {
         if (this._text === value) { return }
         this._text = value;
+        this.invalidateText()
+    }
+
+    private _attributedText: UIAttributedString | undefined = undefined
+
+    public get attributedText(): UIAttributedString | undefined {
+        return this._attributedText
+    }
+
+    public set attributedText(value: UIAttributedString | undefined) {
+        if (this._attributedText === value) { return }
+        this._attributedText = value
         this.invalidateText()
     }
 
@@ -85,7 +98,12 @@ export class UILabel extends UIView {
     buildExtras() {
         let data = super.buildExtras()
         if (this.isTextDirty) {
-            data.text = this._text
+            if (this._attributedText) {
+                data.richText = this._attributedText.toHTMLText()
+            }
+            else {
+                data.text = this._text !== undefined ? this._text : ""
+            }
         }
         if (this.isTextStyleDirty) {
             data.textStyle = `

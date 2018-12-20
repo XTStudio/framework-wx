@@ -8,6 +8,7 @@ class UILabel extends UIView_1.UIView {
         super(...arguments);
         this.clazz = "UILabel";
         this._text = undefined;
+        this._attributedText = undefined;
         this._font = undefined;
         this._textColor = undefined;
         this._textAlignment = UIEnums_1.UITextAlignment.left;
@@ -24,6 +25,16 @@ class UILabel extends UIView_1.UIView {
             return;
         }
         this._text = value;
+        this.invalidateText();
+    }
+    get attributedText() {
+        return this._attributedText;
+    }
+    set attributedText(value) {
+        if (this._attributedText === value) {
+            return;
+        }
+        this._attributedText = value;
         this.invalidateText();
     }
     get font() {
@@ -77,7 +88,12 @@ class UILabel extends UIView_1.UIView {
     buildExtras() {
         let data = super.buildExtras();
         if (this.isTextDirty) {
-            data.text = this._text;
+            if (this._attributedText) {
+                data.richText = this._attributedText.toHTMLText();
+            }
+            else {
+                data.text = this._text !== undefined ? this._text : "";
+            }
         }
         if (this.isTextStyleDirty) {
             data.textStyle = `

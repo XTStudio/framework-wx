@@ -26,7 +26,9 @@ const {
     UIScreen,
     UIAlert,
     UIConfirm,
-    TextMeasurer,
+    UIAttributedString,
+    UIAttributedStringKey,
+    UIMutableAttributedString,
 } = require("../../components/index")
 
 class FooViewController extends UIViewController {
@@ -36,40 +38,22 @@ class FooViewController extends UIViewController {
     viewDidLoad() {
         super.viewDidLoad()
         this.title = "我的首页"
-        {
-            const redView = new UIView
-            redView.frame = UIRectMake(0, -44, 22, 22)
-            redView.backgroundColor = UIColor.red
-            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                redView.backgroundColor = UIColor.yellow
-            }))
-            this.scrollView.addSubview(redView)
-        }
-        {
-            const v = new UIView
-            v.frame = UIRectMake(0, 0, UIScreen.main.bounds.width, 166)
-            v.backgroundColor = UIColor.yellow
-            v.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                const e = new Date().getTime()
-                TextMeasurer.measureText("Hello, World.我是 Pony!", { font: new UIFont(17), inRect: { x: 0, y: 0, width: Infinity, height: Infinity } }).then((rect) => {
-                    console.log(rect, new Date().getTime() - e);
-                    this.title = (rect.width).toString()
-                })
-            }))
-            this.view.addSubview(v)
-        }
-        {
-            const redView = new UIView
-            redView.frame = UIRectMake(0, 1000 - 44, 44, 44)
-            redView.backgroundColor = UIColor.red
-            redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                redView.backgroundColor = UIColor.yellow
-            }))
-            this.scrollView.addSubview(redView)
-        }
-        this.scrollView.contentSize = { width: 0, height: 1000 }
-        this.scrollView.contentInset = { top: 44, left: 0, bottom: 44, right: 0 }
-        // this.view.addSubview(this.scrollView)
+        const label = new UILabel
+        label.frame = UIRectMake(0, 0, 300, 300)
+        const mutableText = new UIMutableAttributedString("Hello, World!", {
+            [UIAttributedStringKey.foregroundColor]: UIColor.blue,
+            [UIAttributedStringKey.font]: new UIFont(17),
+            [UIAttributedStringKey.kern]: 10,
+        })
+        mutableText.setAttributes({
+            [UIAttributedStringKey.foregroundColor]: UIColor.red,
+            [UIAttributedStringKey.font]: new UIFont(36),
+        }, { location: 0, length: 5 })
+        mutableText.measureAsync({ width: Infinity, height: Infinity }).then((res) => {
+            console.log(res);
+        })
+        label.attributedText = mutableText
+        this.view.addSubview(label)
     }
 
     viewWillLayoutSubviews() {

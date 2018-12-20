@@ -1,8 +1,8 @@
 import { UIFont } from "../UIFont";
 import { UIRect, UIRectZero } from "../UIRect";
-// import { UIAttributedString } from "../UIAttributedString";
 import { UISize } from "../UISize";
 import { UIComponentManager } from "../../components/UIComponentManager";
+import { UIAttributedString } from "../UIAttributedString";
 
 export interface TextMeasureParams {
 
@@ -15,32 +15,50 @@ export interface TextMeasureParams {
 
 export class TextMeasurer {
 
-    // static measureAttributedText(text: UIAttributedString, inSize: UISize): UIRect {
-    //     if (!(document.body instanceof HTMLBodyElement)) { return UIRectZero }
-    //     if (measureSpan.parentNode === null) {
-    //         measureSpan.style.opacity = "0.0"
-    //         measureSpan.style.position = "absolute"
-    //         measureSpan.style.left = "-10000000px"
-    //         measureSpan.style.top = "-10000000px"
-    //         document.body.appendChild(measureSpan);
-    //     }
-    //     else {
-    //         measureSpan.innerHTML = ''
-    //         measureSpan.setAttribute("style", "")
-    //         measureSpan.style.opacity = "0.0"
-    //         measureSpan.style.position = "absolute"
-    //         measureSpan.style.left = "-10000000px"
-    //         measureSpan.style.top = "-10000000px"
-    //     }
-    //     measureSpan.style.overflow = "hidden"
-    //     measureSpan.style.wordWrap = null;
-    //     measureSpan.style.wordBreak = null;
-    //     measureSpan.style.display = "-webkit-box";
-    //     measureSpan.style.webkitBoxOrient = "vertical"
-    //     measureSpan.style.maxWidth = inSize.width.toString() + "px";
-    //     measureSpan.appendChild(text.toHTMLText())
-    //     return { x: 0.0, y: 0.0, width: Math.min(inSize.width, Math.ceil(measureSpan.offsetWidth + 1)), height: Math.min(inSize.height, Math.ceil(measureSpan.offsetHeight)) }
-    // }
+    static measureAttributedText(text: UIAttributedString, inSize: UISize): Promise<UIRect> {
+        return new Promise<UIRect>((resolver, rejector) => {
+            let measureBlock = () => {
+                const keyWindowComponent = UIComponentManager.keyWindowComponent
+                if (keyWindowComponent) {
+                    keyWindowComponent.setData({
+                        measuringText: '',
+                        measuringTextStyle: `
+                        width: ${inSize.width}px;
+                        height: ${inSize.height}px;
+                    }`,
+                        measuringRichText: text.toHTMLText(),
+                    }, () => {
+                        const q = (wx.createSelectorQuery() as any).in(keyWindowComponent)
+                        q.select('#_text_measurer').boundingClientRect(function (res: any) {
+                            if (res) {
+                                resolver({ x: 0, y: 0, width: res.width, height: res.height })
+                            }
+                            else {
+                                rejector(Error("TextMeasurer error."))
+                            }
+                        })
+                        q.exec()
+                    })
+                    return true
+                }
+                return false
+            }
+            if (!measureBlock()) {
+                let intervalHandler: any = undefined
+                let retryCount = 0
+                intervalHandler = setInterval(() => {
+                    retryCount++
+                    if (!measureBlock() && retryCount >= 10) {
+                        clearInterval(intervalHandler)
+                        rejector && rejector(Error("UIWindow not ready."))
+                    }
+                    else {
+                        clearInterval(intervalHandler)
+                    }
+                }, 100)
+            }
+        })
+    }
 
     static measureText(text: string, params: TextMeasureParams): Promise<UIRect> {
         return new Promise<UIRect>((resolver, rejector) => {

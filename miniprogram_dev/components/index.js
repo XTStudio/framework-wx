@@ -2336,6 +2336,7 @@ var UILabel = function (_UIView_1$UIView) {
 
         _this.clazz = "UILabel";
         _this._text = undefined;
+        _this._attributedText = undefined;
         _this._font = undefined;
         _this._textColor = undefined;
         _this._textAlignment = UIEnums_1.UITextAlignment.left;
@@ -2361,7 +2362,11 @@ var UILabel = function (_UIView_1$UIView) {
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
         if (this.isTextDirty) {
-            data.text = this._text;
+            if (this._attributedText) {
+                data.richText = this._attributedText.toHTMLText();
+            } else {
+                data.text = this._text !== undefined ? this._text : "";
+            }
         }
         if (this.isTextStyleDirty) {
             data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
@@ -2407,6 +2412,18 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._text = value;
+            this.invalidateText();
+        }
+    }, {
+        key: "attributedText",
+        get: function get() {
+            return this._attributedText;
+        },
+        set: function set(value) {
+            if (this._attributedText === value) {
+                return;
+            }
+            this._attributedText = value;
             this.invalidateText();
         }
     }, {
@@ -3652,12 +3669,12 @@ Object.assign(module.exports, __webpack_require__(26));
 Object.assign(module.exports, __webpack_require__(41));
 Object.assign(module.exports, __webpack_require__(42));
 Object.assign(module.exports, __webpack_require__(27));
-Object.assign(module.exports, __webpack_require__(64));
 Object.assign(module.exports, __webpack_require__(43));
 Object.assign(module.exports, __webpack_require__(59));
 Object.assign(module.exports, __webpack_require__(62));
 Object.assign(module.exports, __webpack_require__(28));
 Object.assign(module.exports, __webpack_require__(10));
+Object.assign(module.exports, __webpack_require__(65));
 Object.assign(module.exports, __webpack_require__(44));
 Object.assign(module.exports, __webpack_require__(5));
 Object.assign(module.exports, __webpack_require__(63));
@@ -7727,32 +7744,46 @@ var TextMeasurer = function () {
         _classCallCheck(this, TextMeasurer);
     }
 
-    // static measureAttributedText(text: UIAttributedString, inSize: UISize): UIRect {
-    //     if (!(document.body instanceof HTMLBodyElement)) { return UIRectZero }
-    //     if (measureSpan.parentNode === null) {
-    //         measureSpan.style.opacity = "0.0"
-    //         measureSpan.style.position = "absolute"
-    //         measureSpan.style.left = "-10000000px"
-    //         measureSpan.style.top = "-10000000px"
-    //         document.body.appendChild(measureSpan);
-    //     }
-    //     else {
-    //         measureSpan.innerHTML = ''
-    //         measureSpan.setAttribute("style", "")
-    //         measureSpan.style.opacity = "0.0"
-    //         measureSpan.style.position = "absolute"
-    //         measureSpan.style.left = "-10000000px"
-    //         measureSpan.style.top = "-10000000px"
-    //     }
-    //     measureSpan.style.overflow = "hidden"
-    //     measureSpan.style.wordWrap = null;
-    //     measureSpan.style.wordBreak = null;
-    //     measureSpan.style.display = "-webkit-box";
-    //     measureSpan.style.webkitBoxOrient = "vertical"
-    //     measureSpan.style.maxWidth = inSize.width.toString() + "px";
-    //     measureSpan.appendChild(text.toHTMLText())
-    //     return { x: 0.0, y: 0.0, width: Math.min(inSize.width, Math.ceil(measureSpan.offsetWidth + 1)), height: Math.min(inSize.height, Math.ceil(measureSpan.offsetHeight)) }
-    // }
+    TextMeasurer.measureAttributedText = function measureAttributedText(text, inSize) {
+        return new Promise(function (resolver, rejector) {
+            var measureBlock = function measureBlock() {
+                var keyWindowComponent = UIComponentManager_1.UIComponentManager.keyWindowComponent;
+                if (keyWindowComponent) {
+                    keyWindowComponent.setData({
+                        measuringText: '',
+                        measuringTextStyle: "\n                        width: " + inSize.width + "px;\n                        height: " + inSize.height + "px;\n                    }",
+                        measuringRichText: text.toHTMLText()
+                    }, function () {
+                        var q = wx.createSelectorQuery().in(keyWindowComponent);
+                        q.select('#_text_measurer').boundingClientRect(function (res) {
+                            if (res) {
+                                resolver({ x: 0, y: 0, width: res.width, height: res.height });
+                            } else {
+                                rejector(Error("TextMeasurer error."));
+                            }
+                        });
+                        q.exec();
+                    });
+                    return true;
+                }
+                return false;
+            };
+            if (!measureBlock()) {
+                var intervalHandler = undefined;
+                var retryCount = 0;
+                intervalHandler = setInterval(function () {
+                    retryCount++;
+                    if (!measureBlock() && retryCount >= 10) {
+                        clearInterval(intervalHandler);
+                        rejector && rejector(Error("UIWindow not ready."));
+                    } else {
+                        clearInterval(intervalHandler);
+                    }
+                }, 100);
+            }
+        });
+    };
+
     TextMeasurer.measureText = function measureText(text, params) {
         return new Promise(function (resolver, rejector) {
             var keyWindowComponent = UIComponentManager_1.UIComponentManager.keyWindowComponent;
@@ -7785,6 +7816,313 @@ var TextMeasurer = function () {
 }();
 
 exports.TextMeasurer = TextMeasurer;
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIRect_1 = __webpack_require__(18);
+var UIColor_1 = __webpack_require__(5);
+var UIFont_1 = __webpack_require__(19);
+var UIEnums_1 = __webpack_require__(8);
+var TextMeasurer_1 = __webpack_require__(64);
+
+var UIAttributedStringKey = function UIAttributedStringKey() {
+    _classCallCheck(this, UIAttributedStringKey);
+};
+
+UIAttributedStringKey.foregroundColor = "foregroundColor"; // value: UIColor
+UIAttributedStringKey.font = "font"; // value: UIFont
+UIAttributedStringKey.backgroundColor = "backgroundColor"; // value: UIColor
+UIAttributedStringKey.kern = "kern"; // value: number
+UIAttributedStringKey.strikethroughStyle = "strikethroughStyle"; // value: number
+UIAttributedStringKey.underlineStyle = "underlineStyle"; // value: number
+UIAttributedStringKey.strokeColor = "strokeColor"; // value: UIColor
+UIAttributedStringKey.strokeWidth = "strokeWidth"; // value: number
+UIAttributedStringKey.underlineColor = "underlineColor"; // value: UIColor
+UIAttributedStringKey.strikethroughColor = "strikethroughColor"; // value: UIColor
+UIAttributedStringKey.paragraphStyle = "paragraphStyle"; // value: UIParagraphStyle
+exports.UIAttributedStringKey = UIAttributedStringKey;
+
+var UIParagraphStyle = function UIParagraphStyle() {
+    _classCallCheck(this, UIParagraphStyle);
+
+    this.lineSpacing = 0.0;
+    this.alignment = UIEnums_1.UITextAlignment.left;
+    this.lineBreakMode = UIEnums_1.UILineBreakMode.truncatingTail;
+    this.minimumLineHeight = 0.0;
+    this.maximumLineHeight = 0.0;
+    this.lineHeightMultiple = 0.0;
+};
+
+exports.UIParagraphStyle = UIParagraphStyle;
+
+var Character = function Character(letter, attributes) {
+    _classCallCheck(this, Character);
+
+    this.letter = letter;
+    this.attributes = attributes;
+};
+
+var SpanElement = function () {
+    function SpanElement() {
+        _classCallCheck(this, SpanElement);
+
+        this.innerText = "";
+        this.style = "";
+        this.children = [];
+    }
+
+    SpanElement.prototype.appendChild = function appendChild(child) {
+        this.children.push(child);
+    };
+
+    SpanElement.prototype.toHTMLString = function toHTMLString() {
+        return "<span style=\"" + this.style + "\">" + this.innerText + this.children.map(function (it) {
+            return it.toHTMLString();
+        }).join("") + "</span>";
+    };
+
+    return SpanElement;
+}();
+
+var UIAttributedString = function () {
+    function UIAttributedString(str, attributes) {
+        _classCallCheck(this, UIAttributedString);
+
+        this.str = str;
+        this.attributes = attributes;
+        this.charSequences = [];
+        this.charSequences = Array.from(str).map(function (it) {
+            return new Character(it, Object.assign({}, attributes));
+        });
+    }
+
+    UIAttributedString.prototype.measure = function measure(inSize) {
+        return UIRect_1.UIRectZero;
+    };
+
+    UIAttributedString.prototype.measureAsync = function measureAsync(inSize) {
+        return TextMeasurer_1.TextMeasurer.measureAttributedText(this, inSize);
+    };
+
+    UIAttributedString.prototype.mutable = function mutable() {
+        var mutableString = new UIMutableAttributedString("", this.attributes);
+        mutableString.charSequences = this.charSequences.map(function (it) {
+            return new Character(it.letter, Object.assign({}, it.attributes));
+        });
+        return mutableString;
+    };
+
+    UIAttributedString.prototype.toHTMLText = function toHTMLText() {
+        var _this = this;
+
+        var spanElement = new SpanElement();
+        var currentElement = new SpanElement();
+        var currentAttributes = "";
+        this.charSequences.forEach(function (it) {
+            var attributes = JSON.stringify(it.attributes);
+            if (currentAttributes !== attributes) {
+                if (currentElement.innerText.length > 0) {
+                    spanElement.appendChild(currentElement);
+                }
+                currentElement = new SpanElement();
+                currentAttributes = attributes;
+                _this.setSpanStyle(currentElement, it.attributes, spanElement);
+            }
+            currentElement.innerText += it.letter;
+        });
+        if (currentElement.innerText.length > 0) {
+            spanElement.appendChild(currentElement);
+        }
+        return spanElement.toHTMLString();
+    };
+
+    UIAttributedString.prototype.setSpanStyle = function setSpanStyle(spanElement, attributes, rootElement) {
+        {
+            var value = attributes[UIAttributedStringKey.foregroundColor];
+            if (value instanceof UIColor_1.UIColor) {
+                spanElement.style += "color: " + value.toStyle() + ";";
+            }
+        }
+        {
+            var _value = attributes[UIAttributedStringKey.font];
+            if (_value instanceof UIFont_1.UIFont) {
+                spanElement.style += "\n                font-size: " + _value.pointSize.toString() + "px;\n                font-family: " + (typeof _value.fontName === "string" ? _value.fontName : "unset") + ";\n                font-weight: " + (typeof _value.fontStyle === "string" ? _value.fontStyle : "unset") + ";\n                font-style: " + (typeof _value.fontStyle === "string" ? _value.fontStyle : "unset") + ";\n                ";
+            }
+        }
+        {
+            var _value2 = attributes[UIAttributedStringKey.backgroundColor];
+            if (_value2 instanceof UIColor_1.UIColor) {
+                spanElement.style += "background-color: " + _value2.toStyle() + ";";
+            }
+        }
+        {
+            var _value3 = attributes[UIAttributedStringKey.kern];
+            if (typeof _value3 === "number") {
+                spanElement.style += "letter-spacing: " + _value3 + "px;";
+            }
+        }
+        {
+            var _value4 = attributes[UIAttributedStringKey.strikethroughStyle];
+            if (_value4 === 1) {
+                spanElement.style += "text-decoration-line: line-through;";
+                var colorValue = attributes[UIAttributedStringKey.strikethroughColor];
+                if (colorValue instanceof UIColor_1.UIColor) {
+                    spanElement.style += "text-decoration-color: " + colorValue.toStyle() + ";";
+                }
+            }
+        }
+        {
+            var _value5 = attributes[UIAttributedStringKey.underlineStyle];
+            if (_value5 === 1) {
+                spanElement.style += "text-decoration-line: underline;";
+                var _colorValue = attributes[UIAttributedStringKey.underlineColor];
+                if (_colorValue instanceof UIColor_1.UIColor) {
+                    spanElement.style += "text-decoration-color: " + _colorValue.toStyle() + ";";
+                }
+            }
+        }
+        {
+            var _value6 = attributes[UIAttributedStringKey.strokeWidth];
+            if (typeof _value6 === "number" && _value6 !== 0) {
+                spanElement.style += "-webkit-text-stroke-width: " + _value6 + "px;";
+                var _colorValue2 = attributes[UIAttributedStringKey.strokeColor];
+                if (_colorValue2 instanceof UIColor_1.UIColor) {
+                    spanElement.style += "-webkit-text-stroke-color: " + _colorValue2.toStyle() + ";";
+                }
+            }
+        }
+        {
+            var _value7 = attributes[UIAttributedStringKey.paragraphStyle];
+            if (_value7 instanceof UIParagraphStyle) {
+                switch (_value7.alignment) {
+                    case UIEnums_1.UITextAlignment.left:
+                        rootElement.style += "text-align: left;";
+                        break;
+                    case UIEnums_1.UITextAlignment.center:
+                        rootElement.style += "text-align: center;";
+                        break;
+                    case UIEnums_1.UITextAlignment.right:
+                        rootElement.style += "text-align: right;";
+                        break;
+                }
+                var lineHeight = _value7.minimumLineHeight || _value7.maximumLineHeight || 0;
+                if (lineHeight > 0) {
+                    rootElement.style += "line-height: " + lineHeight + "px;";
+                }
+            }
+        }
+    };
+
+    return UIAttributedString;
+}();
+
+exports.UIAttributedString = UIAttributedString;
+
+var UIMutableAttributedString = function (_UIAttributedString) {
+    _inherits(UIMutableAttributedString, _UIAttributedString);
+
+    function UIMutableAttributedString(str, attributes) {
+        _classCallCheck(this, UIMutableAttributedString);
+
+        var _this2 = _possibleConstructorReturn(this, _UIAttributedString.call(this, str, attributes));
+
+        _this2.str = str;
+        _this2.attributes = attributes;
+        return _this2;
+    }
+
+    UIMutableAttributedString.prototype.replaceCharacters = function replaceCharacters(inRange, withString) {
+        var _this3 = this;
+
+        var replacingChars = Array.from(withString).map(function (it, index) {
+            if (index < inRange.length) {
+                return new Character(it, _this3.charSequences[inRange.location + index].attributes);
+            } else {
+                return new Character(it, _this3.charSequences[inRange.location + inRange.length - 1].attributes);
+            }
+        });
+        var spliceArguments = replacingChars.slice();
+        spliceArguments.unshift(inRange.length);
+        spliceArguments.unshift(inRange.location);
+        this.charSequences.splice.apply(this.charSequences, spliceArguments);
+    };
+
+    UIMutableAttributedString.prototype.setAttributes = function setAttributes(attributes, range) {
+        for (var index = range.location; index < range.location + range.length; index++) {
+            this.charSequences[index].attributes = Object.assign({}, attributes);
+        }
+    };
+
+    UIMutableAttributedString.prototype.addAttribute = function addAttribute(attrName, value, range) {
+        for (var index = range.location; index < range.location + range.length; index++) {
+            this.charSequences[index].attributes[attrName] = value;
+        }
+    };
+
+    UIMutableAttributedString.prototype.addAttributes = function addAttributes(attributes, range) {
+        for (var index = range.location; index < range.location + range.length; index++) {
+            for (var attrName in attributes) {
+                this.charSequences[index].attributes[attrName] = attributes[attrName];
+            }
+        }
+    };
+
+    UIMutableAttributedString.prototype.removeAttribute = function removeAttribute(attrName, range) {
+        for (var index = range.location; index < range.location + range.length; index++) {
+            delete this.charSequences[index].attributes[attrName];
+        }
+    };
+
+    UIMutableAttributedString.prototype.replaceCharactersWithAttributedString = function replaceCharactersWithAttributedString(inRange, withAttributedString) {
+        var spliceArguments = withAttributedString.charSequences.slice();
+        spliceArguments.unshift(inRange.length);
+        spliceArguments.unshift(inRange.location);
+        this.charSequences.splice.apply(this.charSequences, spliceArguments);
+    };
+
+    UIMutableAttributedString.prototype.insertAttributedString = function insertAttributedString(attributedString, atIndex) {
+        var spliceArguments = attributedString.charSequences.slice();
+        spliceArguments.unshift(0);
+        spliceArguments.unshift(atIndex);
+        this.charSequences.splice.apply(this.charSequences, spliceArguments);
+    };
+
+    UIMutableAttributedString.prototype.appendAttributedString = function appendAttributedString(attributedString) {
+        var _this4 = this;
+
+        attributedString.charSequences.forEach(function (it) {
+            _this4.charSequences.push(it);
+        });
+    };
+
+    UIMutableAttributedString.prototype.deleteCharacters = function deleteCharacters(inRange) {
+        this.charSequences.splice(inRange.location, inRange.length);
+    };
+
+    UIMutableAttributedString.prototype.immutable = function immutable() {
+        var immutableString = new UIAttributedString("", this.attributes);
+        immutableString.charSequences = this.charSequences.map(function (it) {
+            return new Character(it.letter, Object.assign({}, it.attributes));
+        });
+        return immutableString;
+    };
+
+    return UIMutableAttributedString;
+}(UIAttributedString);
+
+exports.UIMutableAttributedString = UIMutableAttributedString;
 
 /***/ })
 /******/ ]);
