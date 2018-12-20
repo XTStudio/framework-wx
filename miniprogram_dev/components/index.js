@@ -232,7 +232,6 @@ var Matrix_1 = __webpack_require__(29);
 var UIColor_1 = __webpack_require__(5);
 var UITouch_1 = __webpack_require__(11);
 var UIEdgeInsets_1 = __webpack_require__(6);
-var MagicObject_1 = __webpack_require__(7);
 var UIAnimator_1 = __webpack_require__(10);
 var UIViewManager_1 = __webpack_require__(0);
 var EventEmitter_1 = __webpack_require__(15);
@@ -260,8 +259,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
         _this.tag = 0;
-        _this._viewDelegate = new MagicObject_1.MagicObject();
-        _this._superview = new MagicObject_1.MagicObject();
+        _this.superview = undefined;
         _this.subviews = [];
         _this._clipsToBounds = false;
         _this._hidden = false;
@@ -272,7 +270,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this._extraStyles = undefined;
         // GestureRecognizers
         _this._userInteractionEnabled = true;
-        _this._gestureRecognizers = new MagicObject_1.MagicObject([]);
+        _this.gestureRecognizers = [];
         // Component Data Builder
         _this.isStyleDirty = true;
         _this.isHierarchyDirty = true;
@@ -690,7 +688,12 @@ var UIView = function (_EventEmitter_1$Event) {
                                 data.style = _this3.buildStyle();
                             }
                             if (_this3.isHierarchyDirty) {
-                                data.subviews = _this3.subviews;
+                                data.subviews = _this3.subviews.map(function (it) {
+                                    return {
+                                        clazz: it.clazz,
+                                        viewID: it.viewID
+                                    };
+                                });
                             }
                             data.animation = emptyAnimation;
                             Object.assign(data, _this3.buildExtras());
@@ -861,22 +864,6 @@ var UIView = function (_EventEmitter_1$Event) {
             this.invalidateStyle();
         }
     }, {
-        key: "viewDelegate",
-        get: function get() {
-            return this._viewDelegate.get();
-        },
-        set: function set(value) {
-            this._viewDelegate.set(value);
-        }
-    }, {
-        key: "superview",
-        get: function get() {
-            return this._superview.get();
-        },
-        set: function set(value) {
-            this._superview.set(value);
-        }
-    }, {
         key: "window",
         get: function get() {
             if (this instanceof UIWindow) {
@@ -1008,11 +995,6 @@ var UIView = function (_EventEmitter_1$Event) {
             }
             this._userInteractionEnabled = value;
         }
-    }, {
-        key: "gestureRecognizers",
-        get: function get() {
-            return this._gestureRecognizers.get();
-        }
     }], [{
         key: "recognizedGesture",
         get: function get() {
@@ -1050,7 +1032,7 @@ var UIWindow = function (_UIView) {
         _this4.clazz = "UIWindow";
         // touches
         _this4.currentTouchesID = [];
-        _this4._touches = new MagicObject_1.MagicObject({});
+        _this4.touches = {};
         _this4.upCount = new Map();
         _this4.upTimestamp = new Map();
         return _this4;
@@ -1068,7 +1050,10 @@ var UIWindow = function (_UIView) {
         }
         this.dataOwner = dataOwner;
         this.dataField = dataField;
-        this.dataOwner.setData((_dataOwner$setData = {}, _dataOwner$setData[this.dataField] = this, _dataOwner$setData));
+        this.dataOwner.setData((_dataOwner$setData = {}, _dataOwner$setData[this.dataField] = {
+            clazz: this.clazz,
+            viewID: this.viewID
+        }, _dataOwner$setData));
         this.invalidateStyle();
         this.invalidateHierarchy();
     };
@@ -1284,14 +1269,6 @@ var UIWindow = function (_UIView) {
                 width: parseInt(systemInfo.windowWidth),
                 height: parseInt(systemInfo.windowHeight)
             };
-        }
-    }, {
-        key: "touches",
-        set: function set(value) {
-            this._touches.set(value);
-        },
-        get: function get() {
-            return this._touches.get();
         }
     }]);
 
@@ -3711,14 +3688,14 @@ Component({
         view: {
             type: Object,
             value: undefined,
-            observer: function observer(newVal, oldVal) {
-                if (newVal === undefined || newVal === null) {
+            observer: function observer(view) {
+                if (view === undefined || view === null) {
                     return;
                 }
-                if (typeof this.data.clazz !== "string" || _typeof(this.data.view) !== newVal) {
+                if (typeof this.data.clazz !== "string" || _typeof(this.data.view) !== view) {
                     this.setData({
-                        view: newVal,
-                        clazz: newVal.clazz
+                        viewID: view.viewID,
+                        clazz: view.clazz
                     });
                 }
             }
@@ -8426,8 +8403,8 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         var _this6 = this;
 
         var boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        var contentOffset = this.contentOffset.y;
-        var visibleBounds = { x: 0.0, y: contentOffset - boundsSize.height, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
+        var contentOffsetY = this.contentOffset.y - boundsSize.height;
+        var visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -8461,12 +8438,12 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                     var mid = Math.ceil((right + left) / 2.0);
                     var indexPath = new UIIndexPath_1.UIIndexPath(mid, section);
                     var rowRect = this._rectForRowAtIndexPath(indexPath);
-                    if (rowRect.y <= this.contentOffset.y && rowRect.y + rowRect.height >= this.contentOffset.y) {
+                    if (rowRect.y <= contentOffsetY && rowRect.y + rowRect.height >= contentOffsetY) {
                         startIndex = mid;
                         break;
-                    } else if (rowRect.y + rowRect.height < this.contentOffset.y) {
+                    } else if (rowRect.y + rowRect.height < contentOffsetY) {
                         left = mid;
-                    } else if (rowRect.y > this.contentOffset.y) {
+                    } else if (rowRect.y > contentOffsetY) {
                         right = mid;
                     }
                 }
@@ -8492,7 +8469,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                         }
                         cell.hidden = false;
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
-                    } else if (renderCount > 30) {
+                    } else if (renderCount > 100) {
                         break;
                     }
                 }

@@ -6,7 +6,6 @@ const Matrix_1 = require("./helpers/Matrix");
 const UIColor_1 = require("./UIColor");
 const UITouch_1 = require("./UITouch");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
-const MagicObject_1 = require("./helpers/MagicObject");
 const UIAnimator_1 = require("./UIAnimator");
 const UIViewManager_1 = require("../components/UIViewManager");
 const EventEmitter_1 = require("../kimi/EventEmitter");
@@ -28,8 +27,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this._transform = UIAffineTransform_1.UIAffineTransformIdentity;
         // hierarchy
         this.tag = 0;
-        this._viewDelegate = new MagicObject_1.MagicObject();
-        this._superview = new MagicObject_1.MagicObject();
+        this.superview = undefined;
         this.subviews = [];
         this._clipsToBounds = false;
         this._hidden = false;
@@ -40,7 +38,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this._extraStyles = undefined;
         // GestureRecognizers
         this._userInteractionEnabled = true;
-        this._gestureRecognizers = new MagicObject_1.MagicObject([]);
+        this.gestureRecognizers = [];
         // Component Data Builder
         this.isStyleDirty = true;
         this.isHierarchyDirty = true;
@@ -115,18 +113,6 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
         this._transform = value;
         this.invalidateStyle();
-    }
-    get viewDelegate() {
-        return this._viewDelegate.get();
-    }
-    set viewDelegate(value) {
-        this._viewDelegate.set(value);
-    }
-    get superview() {
-        return this._superview.get();
-    }
-    set superview(value) {
-        this._superview.set(value);
     }
     get window() {
         if (this instanceof UIWindow) {
@@ -481,9 +467,6 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
         this._userInteractionEnabled = value;
     }
-    get gestureRecognizers() {
-        return this._gestureRecognizers.get();
-    }
     addGestureRecognizer(gestureRecognizer) {
         this.gestureRecognizers.push(gestureRecognizer);
     }
@@ -596,7 +579,12 @@ class UIView extends EventEmitter_1.EventEmitter {
                                 data.style = this.buildStyle();
                             }
                             if (this.isHierarchyDirty) {
-                                data.subviews = this.subviews;
+                                data.subviews = this.subviews.map(it => {
+                                    return {
+                                        clazz: it.clazz,
+                                        viewID: it.viewID,
+                                    };
+                                });
                             }
                             data.animation = emptyAnimation;
                             Object.assign(data, this.buildExtras());
@@ -720,7 +708,7 @@ class UIWindow extends UIView {
         this.clazz = "UIWindow";
         // touches
         this.currentTouchesID = [];
-        this._touches = new MagicObject_1.MagicObject({});
+        this.touches = {};
         this.upCount = new Map();
         this.upTimestamp = new Map();
     }
@@ -733,7 +721,10 @@ class UIWindow extends UIView {
         this.dataOwner = dataOwner;
         this.dataField = dataField;
         this.dataOwner.setData({
-            [this.dataField]: this
+            [this.dataField]: {
+                clazz: this.clazz,
+                viewID: this.viewID,
+            }
         });
         this.invalidateStyle();
         this.invalidateHierarchy();
@@ -763,12 +754,6 @@ class UIWindow extends UIView {
             width: parseInt(systemInfo.windowWidth),
             height: parseInt(systemInfo.windowHeight),
         };
-    }
-    set touches(value) {
-        this._touches.set(value);
-    }
-    get touches() {
-        return this._touches.get();
     }
     handleTouchStart(e) {
         const changedTouches = this.standardlizeTouches(e);

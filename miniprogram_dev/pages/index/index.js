@@ -46,6 +46,30 @@ class FooCell extends UITableViewCell {
 
 }
 
+class BarViewController extends UIViewController {
+
+    scrollView = new UIScrollView
+    redView = new UIView
+
+    viewDidLoad() {
+        super.viewDidLoad()
+        this.redView.backgroundColor = UIColor.red
+        this.redView.frame = UIRectMake(0, 0, 44, 44)
+        this.scrollView.addSubview(this.redView)
+        this.scrollView.on("didScroll", () => {
+            this.redView.frame = UIRectMake(0, this.scrollView.contentOffset.y + 44, 44, 44)
+        })
+        this.scrollView.contentSize = {width: 0, height: 9000}
+        this.view.addSubview(this.scrollView)
+    }
+
+    viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        this.scrollView.frame = this.view.bounds
+    }
+
+}
+
 class FooViewController extends UIViewController {
 
     tableView = new UITableView

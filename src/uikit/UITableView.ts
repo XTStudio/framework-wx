@@ -320,8 +320,8 @@ export class UITableView extends UIScrollView {
 
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height }
-        const contentOffset = this.contentOffset.y
-        const visibleBounds = { x: 0.0, y: contentOffset - boundsSize.height, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 }
+        const contentOffsetY = this.contentOffset.y - boundsSize.height
+        const visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 }
         var tableHeight = 0.0
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height }
@@ -355,14 +355,14 @@ export class UITableView extends UIScrollView {
                     const mid = Math.ceil((right + left) / 2.0)
                     const indexPath = new UIIndexPath(mid, section)
                     const rowRect = this._rectForRowAtIndexPath(indexPath)
-                    if (rowRect.y <= this.contentOffset.y && rowRect.y + rowRect.height >= this.contentOffset.y) {
+                    if (rowRect.y <= contentOffsetY && rowRect.y + rowRect.height >= contentOffsetY) {
                         startIndex = mid
                         break
                     }
-                    else if (rowRect.y + rowRect.height < this.contentOffset.y) {
+                    else if (rowRect.y + rowRect.height < contentOffsetY) {
                         left = mid
                     }
-                    else if (rowRect.y > this.contentOffset.y) {
+                    else if (rowRect.y > contentOffsetY) {
                         right = mid
                     }
                 }
@@ -389,7 +389,7 @@ export class UITableView extends UIScrollView {
                         cell.hidden = false
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset)
                     }
-                    else if (renderCount > 30) {
+                    else if (renderCount > 100) {
                         break
                     }
                 }

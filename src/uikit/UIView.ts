@@ -7,7 +7,6 @@ import { UIGestureRecognizer } from "./UIGestureRecognizer";
 import { UITouch, UITouchPhase, VelocityTracker, } from "./UITouch";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UISize } from "./UISize";
-import { MagicObject } from "./helpers/MagicObject";
 import { UIAnimator } from "./UIAnimator";
 import { UIViewManager } from "../components/UIViewManager";
 import { EventEmitter } from "../kimi/EventEmitter";
@@ -115,25 +114,9 @@ export class UIView extends EventEmitter {
 
     public tag: number = 0
 
-    private _viewDelegate: MagicObject = new MagicObject()
+    private viewDelegate: any
 
-    get viewDelegate(): any {
-        return this._viewDelegate.get()
-    }
-
-    set viewDelegate(value: any) {
-        this._viewDelegate.set(value)
-    }
-
-    private _superview = new MagicObject()
-
-    public get superview(): UIView | undefined {
-        return this._superview.get()
-    }
-
-    public set superview(value: UIView | undefined) {
-        this._superview.set(value)
-    }
+    superview: UIView | undefined = undefined
 
     public subviews: UIView[] = []
 
@@ -533,11 +516,7 @@ export class UIView extends EventEmitter {
         this._userInteractionEnabled = value;
     }
 
-    private _gestureRecognizers: MagicObject = new MagicObject([])
-
-    public get gestureRecognizers(): UIGestureRecognizer[] {
-        return this._gestureRecognizers.get()
-    }
+    gestureRecognizers: UIGestureRecognizer[] = []
 
     public addGestureRecognizer(gestureRecognizer: UIGestureRecognizer): void {
         this.gestureRecognizers.push(gestureRecognizer)
@@ -679,7 +658,12 @@ export class UIView extends EventEmitter {
                                 data.style = this.buildStyle()
                             }
                             if (this.isHierarchyDirty) {
-                                data.subviews = this.subviews
+                                data.subviews = this.subviews.map(it => {
+                                    return {
+                                        clazz: it.clazz,
+                                        viewID: it.viewID,
+                                    }
+                                })
                             }
                             data.animation = emptyAnimation
                             Object.assign(data, this.buildExtras())
@@ -818,7 +802,10 @@ export class UIWindow extends UIView {
         this.dataOwner = dataOwner
         this.dataField = dataField
         this.dataOwner.setData({
-            [this.dataField]: this
+            [this.dataField]: {
+                clazz: this.clazz,
+                viewID: this.viewID,
+            }
         })
         this.invalidateStyle()
         this.invalidateHierarchy()
@@ -858,13 +845,7 @@ export class UIWindow extends UIView {
     // touches
 
     private currentTouchesID: number[] = []
-    private _touches: MagicObject = new MagicObject({})
-    set touches(value: { [key: number]: UITouch }) {
-        this._touches.set(value)
-    }
-    get touches(): { [key: number]: UITouch } {
-        return this._touches.get()
-    }
+    public touches: { [key: number]: UITouch } = {}
     private upCount: Map<UIPoint, number> = new Map()
     private upTimestamp: Map<UIPoint, number> = new Map()
 

@@ -56,12 +56,12 @@ Component({
         view: {
             type: Object,
             value: undefined,
-            observer: function (newVal: any, oldVal: any) {
-                if (newVal === undefined || newVal === null) { return }
-                if (typeof (this as any).data.clazz !== "string" || typeof (this as any).data.view !== newVal) {
+            observer: function (view: any) {
+                if (view === undefined || view === null) { return }
+                if (typeof (this as any).data.clazz !== "string" || typeof (this as any).data.view !== view) {
                     (this as any).setData({
-                        view: newVal,
-                        clazz: newVal.clazz,
+                        viewID: view.viewID,
+                        clazz: view.clazz,
                     })
                 }
             }

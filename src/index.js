@@ -52,14 +52,14 @@ Component({
         view: {
             type: Object,
             value: undefined,
-            observer: function (newVal, oldVal) {
-                if (newVal === undefined || newVal === null) {
+            observer: function (view) {
+                if (view === undefined || view === null) {
                     return;
                 }
-                if (typeof this.data.clazz !== "string" || typeof this.data.view !== newVal) {
+                if (typeof this.data.clazz !== "string" || typeof this.data.view !== view) {
                     this.setData({
-                        view: newVal,
-                        clazz: newVal.clazz,
+                        viewID: view.viewID,
+                        clazz: view.clazz,
                     });
                 }
             }

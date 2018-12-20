@@ -227,23 +227,7 @@ var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
 
     this.properties = {
-        // props: {
-        //     type: Object,
-        //     value: {},
-        //     observer: function (newVal: any) {
-        //         if (newVal === undefined || newVal === null) { return }
-        //         if (newVal.viewID) {
-        //             if ((this as any).viewID !== newVal.viewID) {
-        //                 UIComponentManager.shared.addComponent(this, newVal.viewID)
-        //                 const newView = UIViewManager.shared.fetchView(newVal.viewID)
-        //                 if (newView) {
-        //                     newView.markAllFlagsDirty()
-        //                 }
-        //             }
-        //         }
-        //     }
-        // },
-        viewid: {
+        viewID: {
             type: String,
             value: undefined,
             observer: function observer(viewID) {
