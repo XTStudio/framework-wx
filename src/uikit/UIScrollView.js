@@ -49,8 +49,10 @@ class UIScrollView extends UIView_1.UIView {
         this.isContentOffsetDirty = true;
         this.isContentOffsetScrollAnimatedDirty = true;
         this.isContentOffsetScrollAnimated = false;
+        this.contentOffsetDidChanged();
         this.invalidate();
     }
+    contentOffsetDidChanged() { }
     get contentSize() {
         return this._contentSize;
     }
@@ -139,6 +141,7 @@ class UIScrollView extends UIView_1.UIView {
     // Delegates
     didScroll() {
         this.emit("didScroll", this);
+        this.contentOffsetDidChanged();
     }
     willBeginDragging() {
         UIView_1.UIView.recognizedGesture = this._panGesture;

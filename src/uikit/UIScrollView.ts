@@ -27,8 +27,11 @@ export class UIScrollView extends UIView {
         this.isContentOffsetDirty = true
         this.isContentOffsetScrollAnimatedDirty = true
         this.isContentOffsetScrollAnimated = false
+        this.contentOffsetDidChanged()
         this.invalidate()
     }
+
+    contentOffsetDidChanged() { }
 
     private _contentSize: UISize = UISizeZero
 
@@ -176,6 +179,7 @@ export class UIScrollView extends UIView {
 
     didScroll() {
         this.emit("didScroll", this)
+        this.contentOffsetDidChanged()
     }
 
     willBeginDragging() {

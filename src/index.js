@@ -43,6 +43,7 @@ Object.assign(module.exports, require('./uikit/UIStackView'));
 Object.assign(module.exports, require('./uikit/UISwitch'));
 Object.assign(module.exports, require('./uikit/UITabBarController'));
 Object.assign(module.exports, require('./uikit/UITapGestureRecognizer'));
+Object.assign(module.exports, require('./uikit/UITableView'));
 Object.assign(module.exports, require('./uikit/UITouch'));
 Object.assign(module.exports, require('./uikit/UIView'));
 Object.assign(module.exports, require('./uikit/UIViewController'));

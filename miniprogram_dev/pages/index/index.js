@@ -29,36 +29,45 @@ const {
     UIAttributedString,
     UIAttributedStringKey,
     UIMutableAttributedString,
+    UITableView,
+    UITableViewCell,
 } = require("../../components/index")
+
+class FooCell extends UITableViewCell {
+
+    textLabel = new UILabel
+
+    constructor(context) {
+        super(context)
+        this.textLabel.font = new UIFont(24)
+        this.textLabel.frame = UIRectMake(0, 0, 200, 44)
+        this.contentView.addSubview(this.textLabel)
+    }
+
+}
 
 class FooViewController extends UIViewController {
 
-    scrollView = new UIScrollView
+    tableView = new UITableView
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.title = "我的首页"
-        const label = new UILabel
-        label.frame = UIRectMake(0, 0, 300, 300)
-        const mutableText = new UIMutableAttributedString("Hello, World!", {
-            [UIAttributedStringKey.foregroundColor]: UIColor.blue,
-            [UIAttributedStringKey.font]: new UIFont(17),
-            [UIAttributedStringKey.kern]: 10,
+        this.title = "UITableView"
+        this.tableView.register((context) => new FooCell(context), "Cell")
+        this.tableView.on("numberOfRows", () => 5000)
+        this.tableView.on("heightForRow", () => 200)
+        this.tableView.on("cellForRow", (indexPath) => {
+            const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
+            cell.textLabel.text = indexPath.row.toString()
+            return cell
         })
-        mutableText.setAttributes({
-            [UIAttributedStringKey.foregroundColor]: UIColor.red,
-            [UIAttributedStringKey.font]: new UIFont(36),
-        }, { location: 0, length: 5 })
-        mutableText.measureAsync({ width: Infinity, height: Infinity }).then((res) => {
-            console.log(res);
-        })
-        label.attributedText = mutableText
-        this.view.addSubview(label)
+        this.tableView.reloadData()
+        this.view.addSubview(this.tableView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.scrollView.frame = this.view.bounds
+        this.tableView.frame = this.view.bounds
     }
 
 }

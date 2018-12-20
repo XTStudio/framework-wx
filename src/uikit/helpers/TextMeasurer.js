@@ -51,6 +51,7 @@ class TextMeasurer {
             const keyWindowComponent = UIComponentManager_1.UIComponentManager.keyWindowComponent;
             if (keyWindowComponent) {
                 keyWindowComponent.setData({
+                    measuringRichText: "",
                     measuringText: text,
                     measuringTextStyle: `
                     font-size: ${params.font !== undefined ? params.font.pointSize : 14}px;

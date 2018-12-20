@@ -3702,6 +3702,7 @@ Object.assign(module.exports, __webpack_require__(60));
 Object.assign(module.exports, __webpack_require__(56));
 Object.assign(module.exports, __webpack_require__(57));
 Object.assign(module.exports, __webpack_require__(20));
+Object.assign(module.exports, __webpack_require__(66));
 Object.assign(module.exports, __webpack_require__(11));
 Object.assign(module.exports, __webpack_require__(4));
 Object.assign(module.exports, __webpack_require__(23));
@@ -6183,6 +6184,8 @@ var UIScrollView = function (_UIView_1$UIView) {
         return _this;
     }
 
+    UIScrollView.prototype.contentOffsetDidChanged = function contentOffsetDidChanged() {};
+
     UIScrollView.prototype.setContentOffset = function setContentOffset(contentOffset) {
         var animated = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
@@ -6212,6 +6215,7 @@ var UIScrollView = function (_UIView_1$UIView) {
     // Delegates
     UIScrollView.prototype.didScroll = function didScroll() {
         this.emit("didScroll", this);
+        this.contentOffsetDidChanged();
     };
 
     UIScrollView.prototype.willBeginDragging = function willBeginDragging() {
@@ -6355,6 +6359,7 @@ var UIScrollView = function (_UIView_1$UIView) {
             this.isContentOffsetDirty = true;
             this.isContentOffsetScrollAnimatedDirty = true;
             this.isContentOffsetScrollAnimated = false;
+            this.contentOffsetDidChanged();
             this.invalidate();
         }
     }, {
@@ -7789,6 +7794,7 @@ var TextMeasurer = function () {
             var keyWindowComponent = UIComponentManager_1.UIComponentManager.keyWindowComponent;
             if (keyWindowComponent) {
                 keyWindowComponent.setData({
+                    measuringRichText: "",
                     measuringText: text,
                     measuringTextStyle: "\n                    font-size: " + (params.font !== undefined ? params.font.pointSize : 14) + "px;\n                    font-family: " + (params.font !== undefined ? params.font.fontName : "") + "; \n                    font-weight: " + (params.font !== undefined ? params.font.fontStyle : "") + "; \n                    font-style: " + (params.font !== undefined ? params.font.fontStyle : "") + "; \n                    " + function () {
                         if (params.numberOfLines === 1) {
@@ -8123,6 +8129,856 @@ var UIMutableAttributedString = function (_UIAttributedString) {
 }(UIAttributedString);
 
 exports.UIMutableAttributedString = UIMutableAttributedString;
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+var UIScrollView_1 = __webpack_require__(54);
+var UIColor_1 = __webpack_require__(5);
+var UIIndexPath_1 = __webpack_require__(67);
+var UIRect_1 = __webpack_require__(18);
+var UIAnimator_1 = __webpack_require__(10);
+var UITouch_1 = __webpack_require__(11);
+// @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
+
+var UITableView = function (_UIScrollView_1$UIScr) {
+    _inherits(UITableView, _UIScrollView_1$UIScr);
+
+    function UITableView() {
+        _classCallCheck(this, UITableView);
+
+        var _this = _possibleConstructorReturn(this, _UIScrollView_1$UIScr.call(this));
+
+        _this.rowHeight = 44.0;
+        _this._tableHeaderView = undefined;
+        _this._tableFooterView = undefined;
+        _this.separatorColor = new UIColor_1.UIColor(0xbc / 255.0, 0xba / 255.0, 0xc1 / 255.0, 0.75);
+        _this.separatorInset = { top: 0, left: 15, bottom: 0, right: 0 };
+        _this.allowsSelection = true;
+        _this.allowsMultipleSelection = false;
+        _this._registeredCells = {};
+        _this._reusableCells = [];
+        _this._cachedCells = {};
+        _this._selectedRows = [];
+        _this._highlightedRow = undefined;
+        _this._needsReload = false;
+        _this._sections = [];
+        _this.firstTouchPoint = undefined;
+        _this.firstTouchCell = undefined;
+        _this.alwaysBounceVertical = true;
+        return _this;
+    }
+
+    UITableView.prototype.register = function register(initializer, reuseIdentifier) {
+        this._registeredCells[reuseIdentifier] = initializer;
+    };
+
+    UITableView.prototype.dequeueReusableCell = function dequeueReusableCell(reuseIdentifier, indexPath) {
+        for (var index = 0; index < this._reusableCells.length; index++) {
+            if (this._reusableCells[index].reuseIdentifier == reuseIdentifier) {
+                var _cell = this._reusableCells[index];
+                this._reusableCells.splice(index, 1);
+                return _cell;
+            }
+        }
+        var cell = this._registeredCells[reuseIdentifier] ? this._registeredCells[reuseIdentifier]() : new UITableViewCell();
+        cell.reuseIdentifier = reuseIdentifier;
+        return cell;
+    };
+
+    UITableView.prototype.reloadData = function reloadData() {
+        var _this2 = this;
+
+        Object.keys(this._cachedCells).forEach(function (it) {
+            _this2._cachedCells[it].removeFromSuperview();
+        });
+        this._reusableCells.forEach(function (it) {
+            return it.removeFromSuperview();
+        });
+        this._reusableCells = [];
+        this._cachedCells = {};
+        this._updateSectionsCache();
+        this._setContentSize();
+        this._needsReload = false;
+        this._layoutTableView();
+        this._layoutSectionHeaders();
+        this._layoutSectionFooters();
+    };
+
+    UITableView.prototype.selectRow = function selectRow(indexPath, animated) {
+        var _this3 = this;
+
+        if (!this.allowsMultipleSelection) {
+            this._selectedRows.forEach(function (indexPathKey) {
+                var values = Object.keys(_this3._cachedCells).map(function (it) {
+                    return _this3._cachedCells[it];
+                });
+                for (var index = 0; index < values.length; index++) {
+                    var element = values[index];
+                    if (element.currentIndexPath && element.currentIndexPath.mapKey() === indexPathKey) {
+                        element.selected = false;
+                        element.emit("selected", element, false, false);
+                        break;
+                    }
+                }
+            });
+            this._selectedRows = [];
+        }
+        this._selectedRows.push(indexPath.mapKey());
+        var values = Object.keys(this._cachedCells).map(function (it) {
+            return _this3._cachedCells[it];
+        });
+
+        var _loop = function _loop(index) {
+            var element = values[index];
+            if (element.currentIndexPath && element.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                if (animated) {
+                    UIAnimator_1.UIAnimator.linear(0.30, function () {
+                        element.selected = true;
+                    }, undefined);
+                } else {
+                    element.selected = true;
+                }
+                element.emit("selected", element, true, animated);
+                return "break";
+            }
+        };
+
+        for (var index = 0; index < values.length; index++) {
+            var _ret = _loop(index);
+
+            if (_ret === "break") break;
+        }
+    };
+
+    UITableView.prototype.deselectRow = function deselectRow(indexPath, animated) {
+        var _this4 = this;
+
+        var idx = this._selectedRows.indexOf(indexPath.mapKey());
+        if (idx >= 0) {
+            this._selectedRows.splice(idx, 1);
+        }
+        var values = Object.keys(this._cachedCells).map(function (it) {
+            return _this4._cachedCells[it];
+        });
+
+        var _loop2 = function _loop2(index) {
+            var element = values[index];
+            if (element.currentIndexPath && element.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                if (animated) {
+                    UIAnimator_1.UIAnimator.linear(0.30, function () {
+                        element.selected = false;
+                    }, undefined);
+                } else {
+                    element.selected = false;
+                }
+                element.emit("selected", element, false, false);
+                return "break";
+            }
+        };
+
+        for (var index = 0; index < values.length; index++) {
+            var _ret2 = _loop2(index);
+
+            if (_ret2 === "break") break;
+        }
+    };
+    // DataSource & Delegate
+
+
+    UITableView.prototype.numberOfSections = function numberOfSections() {
+        var value = this.val("numberOfSections");
+        return typeof value === "number" ? value : 1;
+    };
+
+    UITableView.prototype.numberOfRows = function numberOfRows(inSection) {
+        var value = this.val("numberOfRows", inSection);
+        return typeof value === "number" ? value : 0;
+    };
+
+    UITableView.prototype.heightForRow = function heightForRow(indexPath) {
+        var value = this.val("heightForRow", indexPath);
+        return typeof value === "number" ? value : this.rowHeight;
+    };
+
+    UITableView.prototype.cellForRow = function cellForRow(indexPath) {
+        var value = this.val("cellForRow", indexPath);
+        return value || new UITableViewCell();
+    };
+
+    UITableView.prototype.viewForHeader = function viewForHeader(inSection) {
+        return this.val("viewForHeader", inSection);
+    };
+
+    UITableView.prototype.heightForHeader = function heightForHeader(inSection) {
+        var value = this.val("heightForHeader", inSection);
+        return typeof value === "number" ? value : 0.0;
+    };
+
+    UITableView.prototype.viewForFooter = function viewForFooter(inSection) {
+        return this.val("viewForFooter", inSection);
+    };
+
+    UITableView.prototype.heightForFooter = function heightForFooter(inSection) {
+        var value = this.val("heightForFooter", inSection);
+        return typeof value === "number" ? value : 0.0;
+    };
+
+    UITableView.prototype.didSelectRow = function didSelectRow(indexPath) {};
+
+    UITableView.prototype.didDeselectRow = function didDeselectRow(indexPath) {};
+
+    UITableView.prototype.contentOffsetDidChanged = function contentOffsetDidChanged() {
+        this._layoutTableView();
+        this._layoutSectionHeaders();
+        this._layoutSectionFooters();
+    };
+
+    UITableView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIScrollView_1$UIScr.prototype.layoutSubviews.call(this);
+        this._layoutTableView();
+        this._layoutSectionHeaders();
+        this._layoutSectionFooters();
+    };
+
+    UITableView.prototype._updateSectionsCache = function _updateSectionsCache() {
+        var _this5 = this;
+
+        this._sections.forEach(function (it) {
+            it.headerView && it.headerView.removeFromSuperview();
+            it.footerView && it.footerView.removeFromSuperview();
+        });
+        this._sections = [];
+        var numberOfSections = this.numberOfSections();
+
+        var _loop3 = function _loop3(section) {
+            var numberOfRowsInSection = _this5.numberOfRows(section);
+            var sectionRecord = new UITableViewSection();
+            var rowHeights = Array(numberOfRowsInSection).fill(0).map(function (_, row) {
+                return _this5.heightForRow(new UIIndexPath_1.UIIndexPath(row, section));
+            });
+            var totalRowsHeight = rowHeights.length > 0 ? rowHeights.reduce(function (a, b) {
+                return a + b;
+            }) : 0.0;
+            var headerView = _this5.viewForHeader(section);
+            if (headerView) {
+                _this5.addSubview(headerView);
+                sectionRecord.headerView = headerView;
+                sectionRecord.headerHeight = _this5.heightForHeader(section);
+            } else {
+                sectionRecord.headerHeight = 0.0;
+            }
+            var footerView = _this5.viewForFooter(section);
+            if (footerView) {
+                _this5.addSubview(footerView);
+                sectionRecord.footerView = footerView;
+                sectionRecord.footerHeight = _this5.heightForFooter(section);
+            } else {
+                sectionRecord.footerHeight = 0.0;
+            }
+            sectionRecord.rowsHeight = totalRowsHeight;
+            sectionRecord.setNumberOfRows(numberOfRowsInSection, rowHeights);
+            _this5._sections.push(sectionRecord);
+        };
+
+        for (var section = 0; section < numberOfSections; section++) {
+            _loop3(section);
+        }
+    };
+
+    UITableView.prototype._updateSectionsCacheIfNeeded = function _updateSectionsCacheIfNeeded() {
+        if (this._sections.length == 0) {
+            this._updateSectionsCache();
+        }
+    };
+
+    UITableView.prototype._setContentSize = function _setContentSize() {
+        this._updateSectionsCacheIfNeeded();
+        var headerHeight = this.tableHeaderView ? this.tableHeaderView.frame.height : 0.0;
+        var sectionsHeight = this._sections.length > 0 ? this._sections.map(function (it) {
+            return it.sectionHeight();
+        }).reduce(function (a, b) {
+            return a + b;
+        }) : 0.0;
+        var footerHeight = this.tableFooterView ? this.tableFooterView.frame.height : 0.0;
+        this.contentSize = {
+            width: 0.0,
+            height: headerHeight + sectionsHeight + footerHeight
+        };
+    };
+
+    UITableView.prototype._layoutTableView = function _layoutTableView() {
+        var _this6 = this;
+
+        var boundsSize = { width: this.bounds.width, height: this.bounds.height };
+        var contentOffset = this.contentOffset.y;
+        var visibleBounds = { x: 0.0, y: contentOffset, width: boundsSize.width, height: boundsSize.height };
+        var tableHeight = 0.0;
+        if (this.tableHeaderView) {
+            this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
+            tableHeight += this.tableHeaderView.frame.height;
+        }
+        var availableCells = this._cachedCells;
+        var numberOfSections = this._sections.length;
+        this._cachedCells = {};
+        for (var section = 0; section < numberOfSections; section++) {
+            var sectionRect = this._rectForSection(section);
+            tableHeight += sectionRect.height;
+            if (UIRect_1.UIRectIntersectsRect(sectionRect, visibleBounds)) {
+                var headerRect = this._rectForHeaderInSection(section);
+                var footerRect = this._rectForFooterInSection(section);
+                var _sectionRecord = this._sections[section];
+                var numberOfRows = _sectionRecord.numberOfRows;
+                if (_sectionRecord.headerView) {
+                    _sectionRecord.headerView.frame = headerRect;
+                }
+                if (_sectionRecord.footerView) {
+                    _sectionRecord.footerView.frame = footerRect;
+                }
+                var startIndex;
+                var left = 0;
+                var right = Math.max(0, _sectionRecord.numberOfRows - 1);
+                while (true) {
+                    if (Math.abs(right - left) <= 1) {
+                        startIndex = left;
+                        break;
+                    }
+                    var mid = Math.ceil((right + left) / 2.0);
+                    var indexPath = new UIIndexPath_1.UIIndexPath(mid, section);
+                    var rowRect = this._rectForRowAtIndexPath(indexPath);
+                    if (rowRect.y <= this.contentOffset.y && rowRect.y + rowRect.height >= this.contentOffset.y) {
+                        startIndex = mid;
+                        break;
+                    } else if (rowRect.y + rowRect.height < this.contentOffset.y) {
+                        left = mid;
+                    } else if (rowRect.y > this.contentOffset.y) {
+                        right = mid;
+                    }
+                }
+                var renderCount = 0;
+                for (var row = startIndex; row < numberOfRows; row++) {
+                    renderCount++;
+                    var _indexPath = new UIIndexPath_1.UIIndexPath(row, section);
+                    var _rowRect = this._rectForRowAtIndexPath(_indexPath);
+                    if (UIRect_1.UIRectIntersectsRect(_rowRect, visibleBounds) && _rowRect.height > 0) {
+                        var cell = availableCells[_indexPath.mapKey()] || this.cellForRow(_indexPath);
+                        cell.currentIndexPath = _indexPath;
+                        cell.currentSectionRecord = _sectionRecord;
+                        this._cachedCells[_indexPath.mapKey()] = cell;
+                        delete availableCells[_indexPath.mapKey()];
+                        cell.highlighted = this._highlightedRow == _indexPath.mapKey();
+                        cell.emit("highlighted", cell, cell.highlighted, false);
+                        cell.selected = this._selectedRows.indexOf(_indexPath.mapKey()) >= 0;
+                        cell.emit("selected", cell, cell.selected, false);
+                        cell.frame = _rowRect;
+                        cell.backgroundColor = this.backgroundColor;
+                        if (cell.superview == undefined) {
+                            this.addSubview(cell);
+                        }
+                        cell.hidden = false;
+                        cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
+                    } else if (renderCount > 10) {
+                        break;
+                    }
+                }
+            }
+        }
+        Object.keys(availableCells).forEach(function (key) {
+            var cell = availableCells[key];
+            if (cell.reuseIdentifier) {
+                _this6._reusableCells.push(cell);
+            } else {
+                cell.hidden = true;
+            }
+        });
+        var allCachedCells = Object.keys(this._cachedCells).map(function (it) {
+            return _this6._cachedCells[it];
+        });
+        this._reusableCells.forEach(function (cell) {
+            if (UIRect_1.UIRectIntersectsRect(cell.frame, visibleBounds) && allCachedCells.indexOf(cell) < 0) {
+                cell.hidden = true;
+            }
+        });
+        if (this.tableFooterView) {
+            this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height };
+        }
+    };
+
+    UITableView.prototype._layoutSectionHeaders = function _layoutSectionHeaders() {
+        var _this7 = this;
+
+        this._sections.forEach(function (sectionRecord, idx) {
+            var rect = _this7._rectForSection(idx);
+            var topY = rect.y;
+            var bottomY = rect.y + rect.height;
+            var boxY = bottomY - sectionRecord.footerHeight;
+            if (_this7.contentOffset.y >= topY && _this7.contentOffset.y <= boxY) {
+                if (sectionRecord.headerView) {
+                    if (_this7.contentOffset.y >= boxY - sectionRecord.headerView.frame.height) {
+                        sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, _this7.contentOffset.y - (_this7.contentOffset.y - (boxY - sectionRecord.headerView.frame.height)), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
+                    } else {
+                        sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, Math.floor(_this7.contentOffset.y), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
+                    }
+                }
+            } else {
+                if (sectionRecord.headerView) {
+                    sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, topY, sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
+                }
+            }
+        });
+    };
+
+    UITableView.prototype._layoutSectionFooters = function _layoutSectionFooters() {
+        var _this8 = this;
+
+        this._sections.forEach(function (sectionRecord, idx) {
+            var rect = _this8._rectForSection(idx);
+            var topY = rect.y;
+            var bottomY = rect.y + rect.height;
+            var boxY = topY + sectionRecord.headerHeight;
+            if (_this8.contentOffset.y + _this8.bounds.height >= boxY && _this8.contentOffset.y + _this8.bounds.height <= bottomY) {
+                if (sectionRecord.footerView) {
+                    if (sectionRecord.footerView.frame.height > _this8.contentOffset.y + _this8.bounds.height - boxY) {
+                        sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, _this8.contentOffset.y + _this8.bounds.height - sectionRecord.footerView.frame.height - (_this8.contentOffset.y + _this8.bounds.height - boxY - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
+                    } else {
+                        sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, Math.ceil(_this8.contentOffset.y + _this8.bounds.height - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
+                    }
+                }
+            } else {
+                if (sectionRecord.footerView) {
+                    sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, bottomY - sectionRecord.footerView.frame.height, sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
+                }
+            }
+        });
+    };
+
+    UITableView.prototype._rectForSection = function _rectForSection(section) {
+        this._updateSectionsCacheIfNeeded();
+        return this._UIRectFromVerticalOffset(this._offsetForSection(section), this._sections[section].sectionHeight());
+    };
+
+    UITableView.prototype._rectForHeaderInSection = function _rectForHeaderInSection(section) {
+        this._updateSectionsCacheIfNeeded();
+        return this._UIRectFromVerticalOffset(this._offsetForSection(section), this._sections[section].headerHeight);
+    };
+
+    UITableView.prototype._rectForFooterInSection = function _rectForFooterInSection(section) {
+        this._updateSectionsCacheIfNeeded();
+        var sectionRecord = this._sections[section];
+        var offset = this._offsetForSection(section);
+        offset += sectionRecord.headerHeight;
+        offset += sectionRecord.rowsHeight;
+        return this._UIRectFromVerticalOffset(offset, this._sections[section].footerHeight);
+    };
+
+    UITableView.prototype._rectForRowAtIndexPath = function _rectForRowAtIndexPath(indexPath) {
+        this._updateSectionsCacheIfNeeded();
+        if (indexPath.section < this._sections.length) {
+            var _sectionRecord2 = this._sections[indexPath.section];
+            if (indexPath.row < _sectionRecord2.numberOfRows) {
+                var offset = this._offsetForSection(indexPath.section);
+                offset += _sectionRecord2.headerHeight;
+                for (var currentRow = 0; currentRow < indexPath.row; currentRow++) {
+                    offset += _sectionRecord2.rowHeights[currentRow];
+                }
+                return this._UIRectFromVerticalOffset(offset, _sectionRecord2.rowHeights[indexPath.row]);
+            }
+        }
+        return UIRect_1.UIRectZero;
+    };
+
+    UITableView.prototype._offsetForSection = function _offsetForSection(section) {
+        var offset = this.tableHeaderView ? this.tableHeaderView.frame.height : 0.0;
+        for (var it = 0; it < section; it++) {
+            offset += this._sections[it].sectionHeight();
+        }
+        return offset;
+    };
+
+    UITableView.prototype._cellForRow = function _cellForRow(indexPath) {
+        return this._cachedCells[indexPath.mapKey()];
+    };
+
+    UITableView.prototype._UIRectFromVerticalOffset = function _UIRectFromVerticalOffset(offset, height) {
+        return { x: 0.0, y: offset, width: this.bounds.width, height: height };
+    };
+    // Touches
+
+
+    UITableView.prototype.touchesBegan = function touchesBegan(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesBegan.call(this, touches);
+        var firstTouch = touches[0];
+        if (firstTouch === undefined) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.began, firstTouch);
+    };
+
+    UITableView.prototype.touchesMoved = function touchesMoved(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesMoved.call(this, touches);
+        var firstTouch = touches[0];
+        if (firstTouch === undefined) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.moved, firstTouch);
+    };
+
+    UITableView.prototype.touchesEnded = function touchesEnded(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesEnded.call(this, touches);
+        var firstTouch = touches[0];
+        if (firstTouch === undefined) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.ended, firstTouch);
+    };
+
+    UITableView.prototype.touchesCancelled = function touchesCancelled(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesCancelled.call(this, touches);
+        var firstTouch = touches[0];
+        if (firstTouch === undefined) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.cancelled, firstTouch);
+    };
+
+    UITableView.prototype.handleTouch = function handleTouch(phase, currentTouch) {
+        var _this9 = this;
+
+        if (!this.allowsSelection) {
+            return;
+        }
+        switch (phase) {
+            case UITouch_1.UITouchPhase.began:
+                {
+                    if (!this.tracking) {
+                        var hitTestView = currentTouch.view;
+                        var cellShouldHighlighted = true;
+                        while (hitTestView !== undefined) {
+                            if (hitTestView instanceof UITableViewCell) {
+                                break;
+                            }
+                            if (hitTestView.gestureRecognizers.length > 0) {
+                                cellShouldHighlighted = false;
+                            }
+                            hitTestView = hitTestView.superview;
+                        }
+                        if (cellShouldHighlighted) {
+                            this.firstTouchPoint = currentTouch.windowPoint;
+                            if (hitTestView instanceof UITableViewCell) {
+                                this.firstTouchCell = hitTestView;
+                                setTimeout(function () {
+                                    if (!(hitTestView instanceof UITableViewCell) || _this9.firstTouchPoint === undefined) {
+                                        return;
+                                    }
+                                    if (hitTestView.currentIndexPath) {
+                                        _this9._highlightedRow = hitTestView.currentIndexPath.mapKey();
+                                    }
+                                    hitTestView.highlighted = true;
+                                    hitTestView.emit("highlighted", hitTestView, true, false);
+                                }, 150);
+                            }
+                        }
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.moved:
+                {
+                    if (this.firstTouchPoint !== undefined && currentTouch.windowPoint) {
+                        if (UIView_1.UIView.recognizedGesture !== undefined || Math.abs(currentTouch.windowPoint.y - this.firstTouchPoint.y) > 8) {
+                            this._highlightedRow = undefined;
+                            Object.keys(this._cachedCells).map(function (it) {
+                                return _this9._cachedCells[it];
+                            }).forEach(function (it) {
+                                it.highlighted = false;
+                                it.emit("highlighted", it, true, false);
+                            });
+                            this.firstTouchPoint = undefined;
+                            this.firstTouchCell = undefined;
+                        }
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.ended:
+                {
+                    if (this.firstTouchCell) {
+                        var cell = this.firstTouchCell;
+                        this._highlightedRow = undefined;
+                        if (!this.allowsMultipleSelection) {
+                            this._selectedRows.forEach(function (indexPathKey) {
+                                Object.keys(_this9._cachedCells).map(function (it) {
+                                    return _this9._cachedCells[it];
+                                }).forEach(function (it) {
+                                    if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
+                                        it.selected = false;
+                                        it.emit("selected", it, false, false);
+                                        _this9.emit("didDeselectRow", it.currentIndexPath, it);
+                                    }
+                                });
+                            });
+                            this._selectedRows = [];
+                        }
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._highlightedRow = undefined;
+                        Object.keys(this._cachedCells).map(function (it) {
+                            return _this9._cachedCells[it];
+                        }).forEach(function (it) {
+                            it.highlighted = false;
+                            it.emit("highlighted", it, false, false);
+                        });
+                        if (cell.currentIndexPath) {
+                            var it = cell.currentIndexPath.mapKey();
+                            var idx = this._selectedRows.indexOf(it);
+                            if (idx >= 0) {
+                                this._selectedRows.splice(idx, 1);
+                            } else {
+                                this._selectedRows.push(it);
+                            }
+                        }
+                        cell.selected = !cell.selected;
+                        cell.emit("selected", cell, cell.selected, false);
+                        if (cell.selected) {
+                            if (cell.currentIndexPath) {
+                                this.didSelectRow(cell.currentIndexPath);
+                            }
+                            this.emit("didSelectRow", cell.currentIndexPath, cell);
+                        } else {
+                            if (cell.currentIndexPath) {
+                                this.didDeselectRow(cell.currentIndexPath);
+                            }
+                            this.emit("didDeselectRow", cell.currentIndexPath, cell);
+                        }
+                    } else {
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._highlightedRow = undefined;
+                        Object.keys(this._cachedCells).map(function (it) {
+                            return _this9._cachedCells[it];
+                        }).forEach(function (it) {
+                            it.highlighted = false;
+                            it.emit("highlighted", it, false, false);
+                        });
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.cancelled:
+                {
+                    this.firstTouchPoint = undefined;
+                    this.firstTouchCell = undefined;
+                    this._highlightedRow = undefined;
+                    Object.keys(this._cachedCells).map(function (it) {
+                        return _this9._cachedCells[it];
+                    }).forEach(function (it) {
+                        it.highlighted = false;
+                        it.emit("highlighted", it, false, false);
+                    });
+                    break;
+                }
+        }
+    };
+
+    _createClass(UITableView, [{
+        key: "tableHeaderView",
+        get: function get() {
+            return this._tableHeaderView;
+        },
+        set: function set(value) {
+            if (this._tableHeaderView) {
+                this._tableHeaderView.removeFromSuperview();
+            }
+            this._tableHeaderView = value;
+            this._setContentSize();
+            if (value) {
+                this.addSubview(value);
+            }
+            this._layoutTableView();
+            this._layoutSectionHeaders();
+            this._layoutSectionFooters();
+        }
+    }, {
+        key: "tableFooterView",
+        get: function get() {
+            return this._tableFooterView;
+        },
+        set: function set(value) {
+            if (this._tableFooterView) {
+                this._tableFooterView.removeFromSuperview();
+            }
+            this._tableFooterView = value;
+            this._setContentSize();
+            if (value) {
+                this.addSubview(value);
+            }
+            this._layoutTableView();
+            this._layoutSectionHeaders();
+            this._layoutSectionFooters();
+        }
+    }]);
+
+    return UITableView;
+}(UIScrollView_1.UIScrollView);
+
+exports.UITableView = UITableView;
+
+var UITableViewSection = function () {
+    function UITableViewSection() {
+        _classCallCheck(this, UITableViewSection);
+
+        this.rowsHeight = 0.0;
+        this.headerHeight = 0.0;
+        this.footerHeight = 0.0;
+        this.numberOfRows = 0;
+        this.rowHeights = [];
+        this.headerView = undefined;
+        this.footerView = undefined;
+    }
+
+    UITableViewSection.prototype.sectionHeight = function sectionHeight() {
+        return this.headerHeight + this.rowsHeight + this.footerHeight;
+    };
+
+    UITableViewSection.prototype.setNumberOfRows = function setNumberOfRows(rows, rowHeights) {
+        this.numberOfRows = rows;
+        this.rowHeights = rowHeights;
+    };
+
+    return UITableViewSection;
+}();
+
+var UITableViewCell = function (_UIView_1$UIView) {
+    _inherits(UITableViewCell, _UIView_1$UIView);
+
+    function UITableViewCell() {
+        _classCallCheck(this, UITableViewCell);
+
+        var _this10 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this10.selectionView = new UIView_1.UIView();
+        _this10.contentView = new UIView_1.UIView();
+        // separatorElement = document.createElement("div")
+        _this10.reuseIdentifier = undefined;
+        _this10.hasSelectionStyle = true;
+        _this10._selected = false;
+        _this10._highlighted = false;
+        _this10.currentIndexPath = undefined;
+        _this10.currentSectionRecord = undefined;
+        _this10.restoringContentViewBackgroundColor = undefined;
+        _this10.selectionView.alpha = 0.0;
+        _this10.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
+        _this10.contentView.backgroundColor = UIColor_1.UIColor.white;
+        _this10.addSubview(_this10.selectionView);
+        _this10.addSubview(_this10.contentView);
+        // this.domElement.appendChild(this.separatorElement)
+        return _this10;
+    }
+
+    UITableViewCell.prototype.onStateChanged = function onStateChanged() {
+        if (this.hasSelectionStyle) {
+            if (this.selected || this.highlighted) {
+                if (this.restoringContentViewBackgroundColor == undefined) {
+                    this.restoringContentViewBackgroundColor = this.contentView.backgroundColor;
+                }
+                this.selectionView.alpha = 1.0;
+                this.contentView.backgroundColor = UIColor_1.UIColor.clear;
+            } else {
+                this.selectionView.alpha = 0.0;
+                if (this.restoringContentViewBackgroundColor != undefined) {
+                    this.contentView.backgroundColor = this.restoringContentViewBackgroundColor;
+                    this.restoringContentViewBackgroundColor = undefined;
+                }
+            }
+        }
+    };
+
+    UITableViewCell.prototype.setSeparator = function setSeparator(hidden, color, insets) {
+        // if (hidden || color === undefined) {
+        //     this.separatorElement.style.display = "none"
+        // }
+        // else {
+        //     this.separatorElement.style.display = null
+        //     this.separatorElement.style.position = "absolute"
+        //     this.separatorElement.style.borderTopStyle = "solid"
+        //     this.separatorElement.style.width = "100%"
+        //     this.separatorElement.style.borderTopWidth = "1px"
+        //     this.separatorElement.style.borderTopColor = color.toStyle()
+        //     this.separatorElement.style.marginLeft = insets.left.toString() + "px"
+        //     this.separatorElement.style.marginRight = insets.right.toString() + "px"
+        // }
+    };
+
+    UITableViewCell.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this.selectionView.frame = this.bounds;
+        this.contentView.frame = this.bounds;
+        // this.separatorElement.style.marginTop = (Math.floor((this.bounds.height - 1.0))).toString() + "px"
+    };
+
+    _createClass(UITableViewCell, [{
+        key: "selected",
+        get: function get() {
+            return this._selected;
+        },
+        set: function set(value) {
+            this._selected = value;
+            this.onStateChanged();
+        }
+    }, {
+        key: "highlighted",
+        get: function get() {
+            return this._highlighted;
+        },
+        set: function set(value) {
+            this._highlighted = value;
+            this.onStateChanged();
+        }
+    }]);
+
+    return UITableViewCell;
+}(UIView_1.UIView);
+
+exports.UITableViewCell = UITableViewCell;
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var UIIndexPath = function () {
+    function UIIndexPath(row, section) {
+        _classCallCheck(this, UIIndexPath);
+
+        this.row = row;
+        this.section = section;
+    }
+
+    UIIndexPath.prototype.mapKey = function mapKey() {
+        return this.row + "-" + this.section;
+    };
+
+    return UIIndexPath;
+}();
+
+exports.UIIndexPath = UIIndexPath;
 
 /***/ })
 /******/ ]);
