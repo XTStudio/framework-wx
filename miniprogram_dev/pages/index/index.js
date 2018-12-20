@@ -54,8 +54,8 @@ class FooViewController extends UIViewController {
         super.viewDidLoad()
         this.title = "UITableView"
         this.tableView.register((context) => new FooCell(context), "Cell")
-        this.tableView.on("numberOfRows", () => 5000)
-        this.tableView.on("heightForRow", () => 200)
+        this.tableView.on("numberOfRows", () => 10000)
+        this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
             cell.textLabel.text = indexPath.row.toString()

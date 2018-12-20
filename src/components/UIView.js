@@ -6,20 +6,34 @@ const UIViewManager_1 = require("./UIViewManager");
 class UIViewComponent {
     constructor() {
         this.properties = {
-            props: {
-                type: Object,
-                value: {},
-                observer: function (newVal) {
-                    if (newVal === undefined || newVal === null) {
+            // props: {
+            //     type: Object,
+            //     value: {},
+            //     observer: function (newVal: any) {
+            //         if (newVal === undefined || newVal === null) { return }
+            //         if (newVal.viewID) {
+            //             if ((this as any).viewID !== newVal.viewID) {
+            //                 UIComponentManager.shared.addComponent(this, newVal.viewID)
+            //                 const newView = UIViewManager.shared.fetchView(newVal.viewID)
+            //                 if (newView) {
+            //                     newView.markAllFlagsDirty()
+            //                 }
+            //             }
+            //         }
+            //     }
+            // },
+            viewid: {
+                type: String,
+                value: undefined,
+                observer: function (viewID) {
+                    if (viewID === undefined || viewID === null) {
                         return;
                     }
-                    if (newVal.viewID) {
-                        if (this.viewID !== newVal.viewID) {
-                            UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
-                            const newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
-                            if (newView) {
-                                newView.markAllFlagsDirty();
-                            }
+                    if (this.viewID !== viewID) {
+                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
+                        const newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
+                        if (newView) {
+                            newView.markAllFlagsDirty();
                         }
                     }
                 }

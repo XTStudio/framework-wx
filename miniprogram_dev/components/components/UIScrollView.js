@@ -231,20 +231,34 @@ var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
 
     this.properties = {
-        props: {
-            type: Object,
-            value: {},
-            observer: function observer(newVal) {
-                if (newVal === undefined || newVal === null) {
+        // props: {
+        //     type: Object,
+        //     value: {},
+        //     observer: function (newVal: any) {
+        //         if (newVal === undefined || newVal === null) { return }
+        //         if (newVal.viewID) {
+        //             if ((this as any).viewID !== newVal.viewID) {
+        //                 UIComponentManager.shared.addComponent(this, newVal.viewID)
+        //                 const newView = UIViewManager.shared.fetchView(newVal.viewID)
+        //                 if (newView) {
+        //                     newView.markAllFlagsDirty()
+        //                 }
+        //             }
+        //         }
+        //     }
+        // },
+        viewid: {
+            type: String,
+            value: undefined,
+            observer: function observer(viewID) {
+                if (viewID === undefined || viewID === null) {
                     return;
                 }
-                if (newVal.viewID) {
-                    if (this.viewID !== newVal.viewID) {
-                        UIComponentManager_1.UIComponentManager.shared.addComponent(this, newVal.viewID);
-                        var newView = UIViewManager_1.UIViewManager.shared.fetchView(newVal.viewID);
-                        if (newView) {
-                            newView.markAllFlagsDirty();
-                        }
+                if (this.viewID !== viewID) {
+                    UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
+                    var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
+                    if (newView) {
+                        newView.markAllFlagsDirty();
                     }
                 }
             }
@@ -279,6 +293,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(3);
 var UIViewManager_1 = __webpack_require__(0);
+var onScrollTimer = undefined;
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
     _inherits(UIScrollViewComponent, _UIView_1$UIViewCompo);
@@ -290,6 +305,8 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
 
         _this.methods = {
             onScroll: function onScroll(e) {
+                var _this2 = this;
+
                 var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
                 if (view) {
                     if (false) { var deltaY, deltaX; } else {
@@ -313,16 +330,19 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    var query = wx.createSelectorQuery().in(this);
-                    setTimeout(function () {
-                        query.select('#scroll-view').scrollOffset(function (res) {
-                            view._contentOffset = {
-                                x: res.scrollLeft - view._contentInset.left,
-                                y: res.scrollTop - view._contentInset.top
-                            };
-                            view.didScroll();
-                        }).exec();
-                    }, 32);
+                    if (onScrollTimer === undefined) {
+                        onScrollTimer = setTimeout(function () {
+                            var query = wx.createSelectorQuery().in(_this2);
+                            query.select('#scroll-view').scrollOffset(function (res) {
+                                view._contentOffset = {
+                                    x: res.scrollLeft - view._contentInset.left,
+                                    y: res.scrollTop - view._contentInset.top
+                                };
+                                view.didScroll();
+                                onScrollTimer = undefined;
+                            }).exec();
+                        }, 32);
+                    }
                 }
             },
             onTouchStarted: function onTouchStarted(e) {

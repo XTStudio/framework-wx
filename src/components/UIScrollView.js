@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = require("./UIView");
 const UIViewManager_1 = require("./UIViewManager");
+let onScrollTimer = undefined;
 class UIScrollViewComponent extends UIView_1.UIViewComponent {
     constructor() {
         super(...arguments);
@@ -48,16 +49,19 @@ class UIScrollViewComponent extends UIView_1.UIViewComponent {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    const query = wx.createSelectorQuery().in(this);
-                    setTimeout(() => {
-                        query.select('#scroll-view').scrollOffset(function (res) {
-                            view._contentOffset = {
-                                x: res.scrollLeft - view._contentInset.left,
-                                y: res.scrollTop - view._contentInset.top
-                            };
-                            view.didScroll();
-                        }).exec();
-                    }, 32);
+                    if (onScrollTimer === undefined) {
+                        onScrollTimer = setTimeout(() => {
+                            const query = wx.createSelectorQuery().in(this);
+                            query.select('#scroll-view').scrollOffset(function (res) {
+                                view._contentOffset = {
+                                    x: res.scrollLeft - view._contentInset.left,
+                                    y: res.scrollTop - view._contentInset.top
+                                };
+                                view.didScroll();
+                                onScrollTimer = undefined;
+                            }).exec();
+                        }, 32);
+                    }
                 }
             },
             onTouchStarted: function (e) {

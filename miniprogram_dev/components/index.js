@@ -8153,6 +8153,7 @@ var UIIndexPath_1 = __webpack_require__(67);
 var UIRect_1 = __webpack_require__(18);
 var UIAnimator_1 = __webpack_require__(10);
 var UITouch_1 = __webpack_require__(11);
+var MagicObject_1 = __webpack_require__(7);
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 
 var UITableView = function (_UIScrollView_1$UIScr) {
@@ -8170,15 +8171,15 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         _this.separatorInset = { top: 0, left: 15, bottom: 0, right: 0 };
         _this.allowsSelection = true;
         _this.allowsMultipleSelection = false;
-        _this._registeredCells = {};
-        _this._reusableCells = [];
-        _this._cachedCells = {};
+        _this.__registeredCells = new MagicObject_1.MagicObject({});
+        _this.__reusableCells = new MagicObject_1.MagicObject([]);
+        _this.__cachedCells = new MagicObject_1.MagicObject({});
         _this._selectedRows = [];
         _this._highlightedRow = undefined;
         _this._needsReload = false;
-        _this._sections = [];
+        _this.__sections = new MagicObject_1.MagicObject([]);
         _this.firstTouchPoint = undefined;
-        _this.firstTouchCell = undefined;
+        _this._firstTouchCell = new MagicObject_1.MagicObject();
         _this.alwaysBounceVertical = true;
         return _this;
     }
@@ -8426,7 +8427,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
 
         var boundsSize = { width: this.bounds.width, height: this.bounds.height };
         var contentOffset = this.contentOffset.y;
-        var visibleBounds = { x: 0.0, y: contentOffset, width: boundsSize.width, height: boundsSize.height };
+        var visibleBounds = { x: 0.0, y: contentOffset - boundsSize.height, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -8491,7 +8492,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                         }
                         cell.hidden = false;
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
-                    } else if (renderCount > 10) {
+                    } else if (renderCount > 30) {
                         break;
                     }
                 }
@@ -8827,6 +8828,46 @@ var UITableView = function (_UIScrollView_1$UIScr) {
             this._layoutSectionHeaders();
             this._layoutSectionFooters();
         }
+    }, {
+        key: "_registeredCells",
+        get: function get() {
+            return this.__registeredCells.get();
+        },
+        set: function set(value) {
+            this.__registeredCells.set(value);
+        }
+    }, {
+        key: "_reusableCells",
+        get: function get() {
+            return this.__reusableCells.get();
+        },
+        set: function set(value) {
+            this.__reusableCells.set(value);
+        }
+    }, {
+        key: "_cachedCells",
+        get: function get() {
+            return this.__cachedCells.get();
+        },
+        set: function set(value) {
+            this.__cachedCells.set(value);
+        }
+    }, {
+        key: "_sections",
+        get: function get() {
+            return this.__sections.get();
+        },
+        set: function set(value) {
+            this.__sections.set(value);
+        }
+    }, {
+        key: "firstTouchCell",
+        get: function get() {
+            return this._firstTouchCell.get();
+        },
+        set: function set(value) {
+            this._firstTouchCell.set(value);
+        }
     }]);
 
     return UITableView;
@@ -8875,7 +8916,7 @@ var UITableViewCell = function (_UIView_1$UIView) {
         _this10._selected = false;
         _this10._highlighted = false;
         _this10.currentIndexPath = undefined;
-        _this10.currentSectionRecord = undefined;
+        _this10._currentSectionRecord = new MagicObject_1.MagicObject();
         _this10.restoringContentViewBackgroundColor = undefined;
         _this10.selectionView.alpha = 0.0;
         _this10.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
@@ -8944,6 +8985,14 @@ var UITableViewCell = function (_UIView_1$UIView) {
         set: function set(value) {
             this._highlighted = value;
             this.onStateChanged();
+        }
+    }, {
+        key: "currentSectionRecord",
+        get: function get() {
+            return this._currentSectionRecord.get();
+        },
+        set: function set(value) {
+            this._currentSectionRecord.set(value);
         }
     }]);
 

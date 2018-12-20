@@ -1,6 +1,8 @@
 import { UIViewComponent } from "./UIView";
 import { UIViewManager } from "./UIViewManager";
 
+let onScrollTimer: any = undefined
+
 export class UIScrollViewComponent extends UIViewComponent {
 
     methods = {
@@ -46,16 +48,19 @@ export class UIScrollViewComponent extends UIViewComponent {
                     }
                     view._lastScrollTimeStamp = e.timeStamp
                 }
-                const query = (wx.createSelectorQuery() as any).in(this)
-                setTimeout(() => {
-                    query.select('#scroll-view').scrollOffset(function (res: any) {
-                        view._contentOffset = {
-                            x: res.scrollLeft - view._contentInset.left,
-                            y: res.scrollTop - view._contentInset.top
-                        }
-                        view.didScroll()
-                    }).exec()
-                }, 32)
+                if (onScrollTimer === undefined) {
+                    onScrollTimer = setTimeout(() => {
+                        const query = (wx.createSelectorQuery() as any).in(this)
+                        query.select('#scroll-view').scrollOffset(function (res: any) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            }
+                            view.didScroll()
+                            onScrollTimer = undefined
+                        }).exec()
+                    }, 32)
+                }
             }
         },
         onTouchStarted: function (e: any) {

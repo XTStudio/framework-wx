@@ -1,7 +1,7 @@
-<uiview wx:if="{{clazz == 'UIView'}}" props="{{view}}"></uiview>
-<uiscrollview wx:if="{{clazz == 'UIScrollView'}}" props="{{view}}"></uiscrollview>
-<uiwindow wx:if="{{clazz == 'UIWindow'}}" props="{{view}}"></uiwindow>
-<uilabel wx:if="{{clazz == 'UILabel'}}" props="{{view}}"></uilabel>
-<uiimageview wx:if="{{clazz == 'UIImageView'}}" props="{{view}}"></uiimageview>
-<uibutton wx:if="{{clazz == 'UIButton'}}" props="{{view}}"></uibutton>
-<uiactivityindicatorview wx:if="{{clazz == 'UIActivityIndicatorView'}}" props="{{view}}"></uiactivityindicatorview>
+<uiview wx:if="{{clazz == 'UIView'}}" viewid="{{view.viewID}}"></uiview>
+<uiscrollview wx:if="{{clazz == 'UIScrollView'}}" viewid="{{view.viewID}}"></uiscrollview>
+<uiwindow wx:if="{{clazz == 'UIWindow'}}" viewid="{{view.viewID}}"></uiwindow>
+<uilabel wx:if="{{clazz == 'UILabel'}}" viewid="{{view.viewID}}"></uilabel>
+<uiimageview wx:if="{{clazz == 'UIImageView'}}" viewid="{{view.viewID}}"></uiimageview>
+<uibutton wx:if="{{clazz == 'UIButton'}}" viewid="{{view.viewID}}"></uibutton>
+<uiactivityindicatorview wx:if="{{clazz == 'UIActivityIndicatorView'}}" viewid="{{view.viewID}}"></uiactivityindicatorview>
