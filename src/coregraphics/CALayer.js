@@ -2,10 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = require("../uikit/UIRect");
 const UISize_1 = require("../uikit/UISize");
-const MagicObject_1 = require("../uikit/helpers/MagicObject");
 class CALayer {
     constructor() {
-        this._view = new MagicObject_1.MagicObject;
+        this._view = undefined;
         this._frame = UIRect_1.UIRectZero;
         this._hidden = false;
         this._cornerRadius = 0.0;
@@ -23,12 +22,12 @@ class CALayer {
     }
     get view() {
         if (this.superlayer) {
-            return this.superlayer._view.get();
+            return this.superlayer._view;
         }
-        return this._view.get();
+        return this._view;
     }
     set view(value) {
-        this._view.set(value);
+        this._view = value;
     }
     get frame() {
         return this._frame;

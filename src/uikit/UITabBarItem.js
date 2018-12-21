@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
-const MagicObject_1 = require("./helpers/MagicObject");
 class UITabBarItem {
     constructor() {
         this._title = undefined;
@@ -9,7 +8,7 @@ class UITabBarItem {
         this._selectedImage = undefined;
         this._imageInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         // Implementation
-        this._barButton = new MagicObject_1.MagicObject;
+        this.barButton = undefined;
     }
     get title() {
         return this._title;
@@ -46,12 +45,6 @@ class UITabBarItem {
         if (this.barButton) {
             this.barButton.setNeedUpdate();
         }
-    }
-    get barButton() {
-        return this._barButton.get();
-    }
-    set barButton(value) {
-        this._barButton.set(value);
     }
 }
 exports.UITabBarItem = UITabBarItem;

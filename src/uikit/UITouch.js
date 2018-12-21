@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIPoint_1 = require("./UIPoint");
-const MagicObject_1 = require("./helpers/MagicObject");
 var UITouchPhase;
 (function (UITouchPhase) {
     UITouchPhase[UITouchPhase["began"] = 0] = "began";
@@ -16,22 +15,10 @@ class UITouch {
         this.timestamp = 0.0;
         this.phase = UITouchPhase.cancelled;
         this.tapCount = 0;
-        this._window = new MagicObject_1.MagicObject();
+        this.window = undefined;
         this.windowPoint = undefined;
-        this._view = new MagicObject_1.MagicObject();
+        this.view = undefined;
         this.gestureRecognizers = [];
-    }
-    get window() {
-        return this._window.get();
-    }
-    set window(value) {
-        this._window.set(value);
-    }
-    get view() {
-        return this._view.get();
-    }
-    set view(value) {
-        this._view.set(value);
     }
     locationInView(view) {
         const aView = view || this.view;

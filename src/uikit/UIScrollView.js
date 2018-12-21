@@ -32,7 +32,7 @@ class UIScrollView extends UIView_1.UIView {
         this.tracking = false;
         this.dragging = false;
         this.decelerating = false;
-        this._scrollsToTop = false;
+        this._scrollsToTop = true;
         this._endDraggingVelocity = UIPoint_1.UIPointZero;
         // Build Data
         this.isContentBoundsDirty = false;
@@ -235,6 +235,7 @@ class UIScrollView extends UIView_1.UIView {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
         }
         data.inertia = this._pagingEnabled === true ? false : true;
+        data.scrollsToTop = this.scrollsToTop;
         if (this.isContentBoundsDirty) {
             data.direction = (() => {
                 if (totalContentSize.width > this.bounds.width && totalContentSize.height > this.bounds.height) {

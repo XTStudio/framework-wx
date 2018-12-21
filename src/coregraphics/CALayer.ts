@@ -2,21 +2,20 @@ import { UIRect, UIRectZero, UIRectEqualToRect } from "../uikit/UIRect";
 import { UIColor } from "../uikit/UIColor";
 import { UISize, UISizeEqualToSize } from "../uikit/UISize";
 import { UILabel } from "../uikit/UILabel";
-import { MagicObject } from "../uikit/helpers/MagicObject";
 
 export class CALayer {
 
-    private _view: MagicObject = new MagicObject
+    private _view: any | undefined = undefined
 
     public get view(): any | undefined {
         if (this.superlayer) {
-            return this.superlayer._view.get()
+            return this.superlayer._view
         }
-        return this._view.get()
+        return this._view
     }
 
     public set view(value: any | undefined) {
-        this._view.set(value)
+        this._view = value
     }
 
     private _frame: UIRect = UIRectZero

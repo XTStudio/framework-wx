@@ -2,7 +2,6 @@ import { UIPoint, UIPointZero } from "./UIPoint";
 import { UITouch } from "./UITouch";
 import { UIView } from "./UIView";
 import { EventEmitter } from "../kimi/EventEmitter";
-import { MagicObject } from "./helpers/MagicObject";
 
 export enum UIGestureRecognizerState {
     possible,
@@ -45,15 +44,7 @@ export class UIGestureRecognizer extends EventEmitter {
         return UIPointZero
     }
 
-    private _touches: MagicObject = new MagicObject([])
-
-    get touches(): UITouch[] {
-        return this._touches.get()
-    }
-
-    set touches(value: UITouch[]) {
-        this._touches.set(value)
-    }
+    touches: UITouch[] = []
 
     handleTouch(touches: UITouch[]) { this.touches = touches }
 

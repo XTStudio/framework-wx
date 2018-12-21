@@ -7,7 +7,6 @@ import { UIRectIntersectsRect, UIRect, UIRectZero, UIRectMake } from "./UIRect";
 import { UIAnimator } from "./UIAnimator";
 import { UIPoint } from "./UIPoint";
 import { UITouch, UITouchPhase } from "./UITouch";
-import { MagicObject } from "./helpers/MagicObject";
 
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 export class UITableView extends UIScrollView {
@@ -55,7 +54,7 @@ export class UITableView extends UIScrollView {
     }
 
     separatorColor: UIColor | undefined = new UIColor(0xbc / 255.0, 0xba / 255.0, 0xc1 / 255.0, 0.75)
-    
+
     separatorInset: UIEdgeInsets = { top: 0, left: 15, bottom: 0, right: 0 }
 
     allowsSelection: boolean = true
@@ -199,35 +198,11 @@ export class UITableView extends UIScrollView {
 
     }
 
-    private __registeredCells = new MagicObject({})
+    private _registeredCells: { [key: string]: () => UITableViewCell } = {}
 
-    private get _registeredCells(): { [key: string]: () => UITableViewCell } {
-        return this.__registeredCells.get()
-    }
+    private _reusableCells: UITableViewCell[] = []
 
-    private set _registeredCells(value: { [key: string]: () => UITableViewCell }) {
-        this.__registeredCells.set(value)
-    }
-
-    private __reusableCells = new MagicObject([])
-
-    private get _reusableCells(): UITableViewCell[] {
-        return this.__reusableCells.get()
-    }
-
-    private set _reusableCells(value: UITableViewCell[]) {
-        this.__reusableCells.set(value)
-    }
-
-    private __cachedCells = new MagicObject({})
-
-    private get _cachedCells(): { [key: string]: UITableViewCell } {
-        return this.__cachedCells.get()
-    }
-
-    private set _cachedCells(value: { [key: string]: UITableViewCell }) {
-        this.__cachedCells.set(value)
-    }
+    private _cachedCells: { [key: string]: UITableViewCell } = {}
 
     private _selectedRows: string[] = []
 
@@ -235,15 +210,7 @@ export class UITableView extends UIScrollView {
 
     private _needsReload = false
 
-    private __sections = new MagicObject([])
-
-    private get _sections(): UITableViewSection[] {
-        return this.__sections.get()
-    }
-
-    private set _sections(value: UITableViewSection[]) {
-        this.__sections.set(value)
-    }
+    private _sections: UITableViewSection[] = []
 
     constructor() {
         super()
@@ -320,8 +287,8 @@ export class UITableView extends UIScrollView {
 
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height }
-        const contentOffsetY = this.contentOffset.y - boundsSize.height
-        const visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 }
+        let contentOffsetY = this.contentOffset.y - boundsSize.height
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 }
         var tableHeight = 0.0
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height }
@@ -554,15 +521,7 @@ export class UITableView extends UIScrollView {
 
     private firstTouchPoint: UIPoint | undefined = undefined
 
-    private _firstTouchCell: MagicObject = new MagicObject()
-
-    private get firstTouchCell(): UITableViewCell | undefined {
-        return this._firstTouchCell.get()
-    }
-
-    private set firstTouchCell(value: UITableViewCell | undefined) {
-        this._firstTouchCell.set(value)
-    }
+    private firstTouchCell: UITableViewCell | undefined = undefined
 
     private handleTouch(phase: UITouchPhase, currentTouch: UITouch) {
         if (!this.allowsSelection) { return }
@@ -748,15 +707,7 @@ export class UITableViewCell extends UIView {
 
     currentIndexPath: UIIndexPath | undefined = undefined
 
-    private _currentSectionRecord: MagicObject = new MagicObject
-
-    public get currentSectionRecord(): UITableViewSection | undefined {
-        return this._currentSectionRecord.get()
-    }
-
-    public set currentSectionRecord(value: UITableViewSection | undefined) {
-        this._currentSectionRecord.set(value)
-    }
+    private currentSectionRecord: UITableViewSection | undefined = undefined
 
     constructor() {
         super()

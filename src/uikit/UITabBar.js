@@ -8,7 +8,6 @@ const UIFont_1 = require("./UIFont");
 const UIEnums_1 = require("./UIEnums");
 const UITapGestureRecognizer_1 = require("./UITapGestureRecognizer");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
-const MagicObject_1 = require("./helpers/MagicObject");
 class UITabBar extends UIView_1.UIView {
     constructor() {
         super();
@@ -17,7 +16,7 @@ class UITabBar extends UIView_1.UIView {
         this._barTintColor = undefined;
         this.unselectedItemTintColor = new UIColor_1.UIColor(0x73 / 255.0, 0x73 / 255.0, 0x73 / 255.0, 1.0);
         // Implementation
-        this._tabBarController = new MagicObject_1.MagicObject(undefined);
+        this.tabBarController = undefined;
         this.barButtons = [];
         this.barTintColor = UIColor_1.UIColor.white;
         this.tintColor = UIColor_1.UIColor.black;
@@ -43,12 +42,6 @@ class UITabBar extends UIView_1.UIView {
     set barTintColor(value) {
         this._barTintColor = value;
         this.backgroundColor = value;
-    }
-    get tabBarController() {
-        return this._tabBarController.get();
-    }
-    set tabBarController(value) {
-        this._tabBarController.set(value);
     }
     resetItems() {
         this.barButtons.forEach(it => {
@@ -96,7 +89,7 @@ exports.UITabBar = UITabBar;
 class UITabBarButton extends UIView_1.UIView {
     constructor() {
         super();
-        this._barItem = new MagicObject_1.MagicObject;
+        this._barItem = undefined;
         this._itemSelected = false;
         this.iconImageView = new UIImageView_1.UIImageView;
         this.titleLabel = new UILabel_1.UILabel;
@@ -107,10 +100,10 @@ class UITabBarButton extends UIView_1.UIView {
         this.addSubview(this.titleLabel);
     }
     get barItem() {
-        return this._barItem.get();
+        return this._barItem;
     }
     set barItem(value) {
-        this._barItem.set(value);
+        this._barItem = value;
         this.setNeedUpdate();
     }
     get itemSelected() {

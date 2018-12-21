@@ -164,7 +164,7 @@ export class UIScrollView extends UIView {
 
     decelerating: boolean = false
 
-    private _scrollsToTop: boolean = false
+    private _scrollsToTop: boolean = true
 
     public get scrollsToTop(): boolean {
         return this._scrollsToTop;
@@ -287,6 +287,7 @@ export class UIScrollView extends UIView {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top
         }
         data.inertia = this._pagingEnabled === true ? false : true
+        data.scrollsToTop = this.scrollsToTop
         if (this.isContentBoundsDirty) {
             data.direction = (() => {
                 if (totalContentSize.width > this.bounds.width && totalContentSize.height > this.bounds.height) {

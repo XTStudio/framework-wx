@@ -1365,40 +1365,7 @@ exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
 };
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var MagicObject = function () {
-    function MagicObject() {
-        var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
-
-        _classCallCheck(this, MagicObject);
-
-        this.value = new Map();
-        this.set(value);
-    }
-
-    MagicObject.prototype.set = function set(value) {
-        this.value.set("1", value);
-    };
-
-    MagicObject.prototype.get = function get() {
-        return this.value.get("1");
-    };
-
-    return MagicObject;
-}();
-
-exports.MagicObject = MagicObject;
-
-/***/ }),
+/* 7 */,
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1525,8 +1492,6 @@ var UIStatusBarStyle;
 "use strict";
 
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -1536,7 +1501,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIPoint_1 = __webpack_require__(14);
 var EventEmitter_1 = __webpack_require__(15);
-var MagicObject_1 = __webpack_require__(7);
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
     UIGestureRecognizerState[UIGestureRecognizerState["possible"] = 0] = "possible";
@@ -1558,7 +1522,7 @@ var UIGestureRecognizer = function (_EventEmitter_1$Event) {
         _this.state = UIGestureRecognizerState.possible;
         _this.enabled = true;
         _this.view = undefined;
-        _this._touches = new MagicObject_1.MagicObject([]);
+        _this.touches = [];
         return _this;
     }
 
@@ -1589,16 +1553,6 @@ var UIGestureRecognizer = function (_EventEmitter_1$Event) {
     };
 
     UIGestureRecognizer.prototype.handleEvent = function handleEvent(name) {};
-
-    _createClass(UIGestureRecognizer, [{
-        key: "touches",
-        get: function get() {
-            return this._touches.get();
-        },
-        set: function set(value) {
-            this._touches.set(value);
-        }
-    }]);
 
     return UIGestureRecognizer;
 }(EventEmitter_1.EventEmitter);
@@ -1680,13 +1634,10 @@ exports.UIAnimator = UIAnimator;
 "use strict";
 
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIPoint_1 = __webpack_require__(14);
-var MagicObject_1 = __webpack_require__(7);
 var UITouchPhase;
 (function (UITouchPhase) {
     UITouchPhase[UITouchPhase["began"] = 0] = "began";
@@ -1704,9 +1655,9 @@ var UITouch = function () {
         this.timestamp = 0.0;
         this.phase = UITouchPhase.cancelled;
         this.tapCount = 0;
-        this._window = new MagicObject_1.MagicObject();
+        this.window = undefined;
         this.windowPoint = undefined;
-        this._view = new MagicObject_1.MagicObject();
+        this.view = undefined;
         this.gestureRecognizers = [];
     }
 
@@ -1722,24 +1673,6 @@ var UITouch = function () {
     UITouch.prototype.previousLocationInView = function previousLocationInView(view) {
         return UIPoint_1.UIPointZero;
     };
-
-    _createClass(UITouch, [{
-        key: "window",
-        get: function get() {
-            return this._window.get();
-        },
-        set: function set(value) {
-            this._window.set(value);
-        }
-    }, {
-        key: "view",
-        get: function get() {
-            return this._view.get();
-        },
-        set: function set(value) {
-            this._view.set(value);
-        }
-    }]);
 
     return UITouch;
 }();
@@ -5224,13 +5157,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIRect_1 = __webpack_require__(18);
 var UISize_1 = __webpack_require__(16);
-var MagicObject_1 = __webpack_require__(7);
 
 var CALayer = function () {
     function CALayer() {
         _classCallCheck(this, CALayer);
 
-        this._view = new MagicObject_1.MagicObject();
+        this._view = undefined;
         this._frame = UIRect_1.UIRectZero;
         this._hidden = false;
         this._cornerRadius = 0.0;
@@ -5287,12 +5219,12 @@ var CALayer = function () {
         key: "view",
         get: function get() {
             if (this.superlayer) {
-                return this.superlayer._view.get();
+                return this.superlayer._view;
             }
-            return this._view.get();
+            return this._view;
         },
         set: function set(value) {
-            this._view.set(value);
+            this._view = value;
         }
     }, {
         key: "frame",
@@ -5826,7 +5758,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIEdgeInsets_1 = __webpack_require__(6);
-var MagicObject_1 = __webpack_require__(7);
 
 var UITabBarItem = function () {
     function UITabBarItem() {
@@ -5837,7 +5768,7 @@ var UITabBarItem = function () {
         this._selectedImage = undefined;
         this._imageInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         // Implementation
-        this._barButton = new MagicObject_1.MagicObject();
+        this.barButton = undefined;
     }
 
     _createClass(UITabBarItem, [{
@@ -5883,14 +5814,6 @@ var UITabBarItem = function () {
             if (this.barButton) {
                 this.barButton.setNeedUpdate();
             }
-        }
-    }, {
-        key: "barButton",
-        get: function get() {
-            return this._barButton.get();
-        },
-        set: function set(value) {
-            this._barButton.set(value);
         }
     }]);
 
@@ -6150,7 +6073,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.tracking = false;
         _this.dragging = false;
         _this.decelerating = false;
-        _this._scrollsToTop = false;
+        _this._scrollsToTop = true;
         _this._endDraggingVelocity = UIPoint_1.UIPointZero;
         // Build Data
         _this.isContentBoundsDirty = false;
@@ -6292,6 +6215,7 @@ var UIScrollView = function (_UIView_1$UIView) {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
         }
         data.inertia = this._pagingEnabled === true ? false : true;
+        data.scrollsToTop = this.scrollsToTop;
         if (this.isContentBoundsDirty) {
             data.direction = function () {
                 if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
@@ -7015,7 +6939,6 @@ var UIFont_1 = __webpack_require__(19);
 var UIEnums_1 = __webpack_require__(8);
 var UITapGestureRecognizer_1 = __webpack_require__(20);
 var UIEdgeInsets_1 = __webpack_require__(6);
-var MagicObject_1 = __webpack_require__(7);
 
 var UITabBar = function (_UIView_1$UIView) {
     _inherits(UITabBar, _UIView_1$UIView);
@@ -7030,7 +6953,7 @@ var UITabBar = function (_UIView_1$UIView) {
         _this._barTintColor = undefined;
         _this.unselectedItemTintColor = new UIColor_1.UIColor(0x73 / 255.0, 0x73 / 255.0, 0x73 / 255.0, 1.0);
         // Implementation
-        _this._tabBarController = new MagicObject_1.MagicObject(undefined);
+        _this.tabBarController = undefined;
         _this.barButtons = [];
         _this.barTintColor = UIColor_1.UIColor.white;
         _this.tintColor = UIColor_1.UIColor.black;
@@ -7109,14 +7032,6 @@ var UITabBar = function (_UIView_1$UIView) {
             this._barTintColor = value;
             this.backgroundColor = value;
         }
-    }, {
-        key: "tabBarController",
-        get: function get() {
-            return this._tabBarController.get();
-        },
-        set: function set(value) {
-            this._tabBarController.set(value);
-        }
     }]);
 
     return UITabBar;
@@ -7132,7 +7047,7 @@ var UITabBarButton = function (_UIView_1$UIView2) {
 
         var _this5 = _possibleConstructorReturn(this, _UIView_1$UIView2.call(this));
 
-        _this5._barItem = new MagicObject_1.MagicObject();
+        _this5._barItem = undefined;
         _this5._itemSelected = false;
         _this5.iconImageView = new UIImageView_1.UIImageView();
         _this5.titleLabel = new UILabel_1.UILabel();
@@ -7186,10 +7101,10 @@ var UITabBarButton = function (_UIView_1$UIView2) {
     _createClass(UITabBarButton, [{
         key: "barItem",
         get: function get() {
-            return this._barItem.get();
+            return this._barItem;
         },
         set: function set(value) {
-            this._barItem.set(value);
+            this._barItem = value;
             this.setNeedUpdate();
         }
     }, {
@@ -8130,7 +8045,6 @@ var UIIndexPath_1 = __webpack_require__(67);
 var UIRect_1 = __webpack_require__(18);
 var UIAnimator_1 = __webpack_require__(10);
 var UITouch_1 = __webpack_require__(11);
-var MagicObject_1 = __webpack_require__(7);
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 
 var UITableView = function (_UIScrollView_1$UIScr) {
@@ -8148,15 +8062,15 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         _this.separatorInset = { top: 0, left: 15, bottom: 0, right: 0 };
         _this.allowsSelection = true;
         _this.allowsMultipleSelection = false;
-        _this.__registeredCells = new MagicObject_1.MagicObject({});
-        _this.__reusableCells = new MagicObject_1.MagicObject([]);
-        _this.__cachedCells = new MagicObject_1.MagicObject({});
+        _this._registeredCells = {};
+        _this._reusableCells = [];
+        _this._cachedCells = {};
         _this._selectedRows = [];
         _this._highlightedRow = undefined;
         _this._needsReload = false;
-        _this.__sections = new MagicObject_1.MagicObject([]);
+        _this._sections = [];
         _this.firstTouchPoint = undefined;
-        _this._firstTouchCell = new MagicObject_1.MagicObject();
+        _this.firstTouchCell = undefined;
         _this.alwaysBounceVertical = true;
         return _this;
     }
@@ -8805,46 +8719,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
             this._layoutSectionHeaders();
             this._layoutSectionFooters();
         }
-    }, {
-        key: "_registeredCells",
-        get: function get() {
-            return this.__registeredCells.get();
-        },
-        set: function set(value) {
-            this.__registeredCells.set(value);
-        }
-    }, {
-        key: "_reusableCells",
-        get: function get() {
-            return this.__reusableCells.get();
-        },
-        set: function set(value) {
-            this.__reusableCells.set(value);
-        }
-    }, {
-        key: "_cachedCells",
-        get: function get() {
-            return this.__cachedCells.get();
-        },
-        set: function set(value) {
-            this.__cachedCells.set(value);
-        }
-    }, {
-        key: "_sections",
-        get: function get() {
-            return this.__sections.get();
-        },
-        set: function set(value) {
-            this.__sections.set(value);
-        }
-    }, {
-        key: "firstTouchCell",
-        get: function get() {
-            return this._firstTouchCell.get();
-        },
-        set: function set(value) {
-            this._firstTouchCell.set(value);
-        }
     }]);
 
     return UITableView;
@@ -8893,7 +8767,7 @@ var UITableViewCell = function (_UIView_1$UIView) {
         _this10._selected = false;
         _this10._highlighted = false;
         _this10.currentIndexPath = undefined;
-        _this10._currentSectionRecord = new MagicObject_1.MagicObject();
+        _this10.currentSectionRecord = undefined;
         _this10.restoringContentViewBackgroundColor = undefined;
         _this10.selectionView.alpha = 0.0;
         _this10.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
@@ -8962,14 +8836,6 @@ var UITableViewCell = function (_UIView_1$UIView) {
         set: function set(value) {
             this._highlighted = value;
             this.onStateChanged();
-        }
-    }, {
-        key: "currentSectionRecord",
-        get: function get() {
-            return this._currentSectionRecord.get();
-        },
-        set: function set(value) {
-            this._currentSectionRecord.set(value);
         }
     }]);
 

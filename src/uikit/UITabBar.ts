@@ -8,7 +8,6 @@ import { UITabBarItem } from "./UITabBarItem";
 import { UITapGestureRecognizer } from "./UITapGestureRecognizer";
 import { UISizeZero } from "./UISize";
 import { UIEdgeInsetsZero } from "./UIEdgeInsets";
-import { MagicObject } from "./helpers/MagicObject";
 
 export class UITabBar extends UIView {
 
@@ -43,15 +42,7 @@ export class UITabBar extends UIView {
 
     // Implementation
 
-    private _tabBarController: MagicObject = new MagicObject(undefined)
-
-    public get tabBarController(): any {
-        return this._tabBarController.get()
-    }
-
-    public set tabBarController(value: any) {
-        this._tabBarController.set(value)
-    }
+    tabBarController: any = undefined
 
     private barButtons: UITabBarButton[] = []
 
@@ -114,14 +105,14 @@ export class UITabBar extends UIView {
 
 export class UITabBarButton extends UIView {
 
-    private _barItem: MagicObject = new MagicObject
+    private _barItem: UITabBarItem | undefined = undefined
 
     public get barItem(): UITabBarItem | undefined {
-        return this._barItem.get();
+        return this._barItem
     }
 
     public set barItem(value: UITabBarItem | undefined) {
-        this._barItem.set(value);
+        this._barItem = value
         this.setNeedUpdate()
     }
 

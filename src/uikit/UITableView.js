@@ -7,7 +7,6 @@ const UIIndexPath_1 = require("./UIIndexPath");
 const UIRect_1 = require("./UIRect");
 const UIAnimator_1 = require("./UIAnimator");
 const UITouch_1 = require("./UITouch");
-const MagicObject_1 = require("./helpers/MagicObject");
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 class UITableView extends UIScrollView_1.UIScrollView {
     constructor() {
@@ -19,15 +18,15 @@ class UITableView extends UIScrollView_1.UIScrollView {
         this.separatorInset = { top: 0, left: 15, bottom: 0, right: 0 };
         this.allowsSelection = true;
         this.allowsMultipleSelection = false;
-        this.__registeredCells = new MagicObject_1.MagicObject({});
-        this.__reusableCells = new MagicObject_1.MagicObject([]);
-        this.__cachedCells = new MagicObject_1.MagicObject({});
+        this._registeredCells = {};
+        this._reusableCells = [];
+        this._cachedCells = {};
         this._selectedRows = [];
         this._highlightedRow = undefined;
         this._needsReload = false;
-        this.__sections = new MagicObject_1.MagicObject([]);
+        this._sections = [];
         this.firstTouchPoint = undefined;
-        this._firstTouchCell = new MagicObject_1.MagicObject();
+        this.firstTouchCell = undefined;
         this.alwaysBounceVertical = true;
     }
     get tableHeaderView() {
@@ -181,30 +180,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
     }
     didDeselectRow(indexPath) {
     }
-    get _registeredCells() {
-        return this.__registeredCells.get();
-    }
-    set _registeredCells(value) {
-        this.__registeredCells.set(value);
-    }
-    get _reusableCells() {
-        return this.__reusableCells.get();
-    }
-    set _reusableCells(value) {
-        this.__reusableCells.set(value);
-    }
-    get _cachedCells() {
-        return this.__cachedCells.get();
-    }
-    set _cachedCells(value) {
-        this.__cachedCells.set(value);
-    }
-    get _sections() {
-        return this.__sections.get();
-    }
-    set _sections(value) {
-        this.__sections.set(value);
-    }
     contentOffsetDidChanged() {
         this._layoutTableView();
         this._layoutSectionHeaders();
@@ -270,8 +245,8 @@ class UITableView extends UIScrollView_1.UIScrollView {
     }
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        const contentOffsetY = this.contentOffset.y - boundsSize.height;
-        const visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
+        let contentOffsetY = this.contentOffset.y - boundsSize.height;
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -487,12 +462,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
         }
         this.handleTouch(UITouch_1.UITouchPhase.cancelled, firstTouch);
     }
-    get firstTouchCell() {
-        return this._firstTouchCell.get();
-    }
-    set firstTouchCell(value) {
-        this._firstTouchCell.set(value);
-    }
     handleTouch(phase, currentTouch) {
         if (!this.allowsSelection) {
             return;
@@ -646,7 +615,7 @@ class UITableViewCell extends UIView_1.UIView {
         this._selected = false;
         this._highlighted = false;
         this.currentIndexPath = undefined;
-        this._currentSectionRecord = new MagicObject_1.MagicObject;
+        this.currentSectionRecord = undefined;
         this.restoringContentViewBackgroundColor = undefined;
         this.selectionView.alpha = 0.0;
         this.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
@@ -668,12 +637,6 @@ class UITableViewCell extends UIView_1.UIView {
     set highlighted(value) {
         this._highlighted = value;
         this.onStateChanged();
-    }
-    get currentSectionRecord() {
-        return this._currentSectionRecord.get();
-    }
-    set currentSectionRecord(value) {
-        this._currentSectionRecord.set(value);
     }
     onStateChanged() {
         if (this.hasSelectionStyle) {

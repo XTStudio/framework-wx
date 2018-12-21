@@ -1,6 +1,5 @@
 import { UIPoint, UIPointZero } from "./UIPoint";
 import { UIView, UIWindow } from "./UIView";
-import { MagicObject } from "./helpers/MagicObject";
 
 export enum UITouchPhase {
     began,
@@ -20,27 +19,11 @@ export class UITouch {
 
     tapCount: number = 0
 
-    _window: MagicObject = new MagicObject()
-
-    get window(): UIWindow | undefined {
-        return this._window.get()
-    }
-
-    set window(value: UIWindow | undefined) {
-        this._window.set(value)
-    }
+    window: UIWindow | undefined = undefined
 
     windowPoint: UIPoint | undefined = undefined
 
-    _view: MagicObject = new MagicObject()
-
-    get view(): UIView | undefined {
-        return this._view.get()
-    }
-
-    set view(value: UIView | undefined) {
-        this._view.set(value)
-    }
+    view: UIView | undefined = undefined
 
     gestureRecognizers: any[] = []
 
