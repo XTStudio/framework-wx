@@ -707,7 +707,7 @@ export class UITableViewCell extends UIView {
 
     currentIndexPath: UIIndexPath | undefined = undefined
 
-    private currentSectionRecord: UITableViewSection | undefined = undefined
+    currentSectionRecord: UITableViewSection | undefined = undefined
 
     constructor() {
         super()
