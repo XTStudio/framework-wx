@@ -238,6 +238,7 @@ var EventEmitter_1 = __webpack_require__(15);
 var UIEnums_1 = __webpack_require__(8);
 var CALayer_1 = __webpack_require__(46);
 var UIComponentManager_1 = __webpack_require__(1);
+var OperationQueue_1 = __webpack_require__(7);
 exports.dirtyItems = [];
 
 var UIView = function (_EventEmitter_1$Event) {
@@ -278,6 +279,7 @@ var UIView = function (_EventEmitter_1$Event) {
         _this.animationProps = {};
         _this.animationValues = {};
         _this.invalidateCallHandler = undefined;
+        _this.setDataQueue = new OperationQueue_1.OperationQueue();
         UIViewManager_1.UIViewManager.shared.addView(_this);
         exports.dirtyItems.push(_this);
         return _this;
@@ -670,6 +672,31 @@ var UIView = function (_EventEmitter_1$Event) {
         this.invalidate();
     };
 
+    UIView.prototype.invalidateStylesBeforeAnimation = function invalidateStylesBeforeAnimation() {
+        if (this.viewID) {
+            var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+            if (component) {
+                var data = {};
+                data.viewID = this.viewID;
+                if (this.isStyleDirty) {
+                    data.style = this.buildStyle();
+                }
+                data.animation = emptyAnimation;
+                this.setDataQueue.reset();
+                this.setDataQueue.addOperation(function () {
+                    return new Promise(function (resolver) {
+                        component.setData(data, function () {
+                            setTimeout(function () {
+                                resolver();
+                            }, 150);
+                        });
+                    });
+                });
+                this.isStyleDirty = false;
+            }
+        }
+    };
+
     UIView.prototype.invalidate = function invalidate() {
         var _this3 = this;
 
@@ -687,18 +714,24 @@ var UIView = function (_EventEmitter_1$Event) {
                             if (_this3.isStyleDirty) {
                                 data.style = _this3.buildStyle();
                             }
-                            if (_this3.isHierarchyDirty) {
-                                data.subviews = _this3.subviews.map(function (it) {
-                                    return {
-                                        clazz: it.clazz,
-                                        viewID: it.viewID
-                                    };
-                                });
-                            }
                             data.animation = emptyAnimation;
-                            Object.assign(data, _this3.buildExtras());
                         }
-                        component.setData(data);
+                        if (_this3.isHierarchyDirty) {
+                            data.subviews = _this3.subviews.map(function (it) {
+                                return {
+                                    clazz: it.clazz,
+                                    viewID: it.viewID
+                                };
+                            });
+                        }
+                        Object.assign(data, _this3.buildExtras());
+                        _this3.setDataQueue.addOperation(function () {
+                            return new Promise(function (resolver) {
+                                component.setData(data, function () {
+                                    resolver();
+                                });
+                            });
+                        });
                         _this3.clearDirtyFlags();
                     }
                 }
@@ -812,6 +845,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.invalidateStylesBeforeAnimation();
                 this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -856,6 +890,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.invalidateStylesBeforeAnimation();
                 this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["transform"] = value;
@@ -943,6 +978,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.invalidateStylesBeforeAnimation();
                 this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["alpha"] = value;
@@ -965,6 +1001,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 }
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.invalidateStylesBeforeAnimation();
                 this.isAnimationDirty = true;
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["backgroundColor"] = value;
@@ -1365,7 +1402,57 @@ exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
 };
 
 /***/ }),
-/* 7 */,
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var OperationQueue = function () {
+    function OperationQueue() {
+        _classCallCheck(this, OperationQueue);
+
+        this.locked = false;
+        this.operations = [];
+    }
+
+    OperationQueue.prototype.addOperation = function addOperation(operation) {
+        this.operations.push(operation);
+        this.run();
+    };
+
+    OperationQueue.prototype.reset = function reset() {
+        this.operations = [];
+    };
+
+    OperationQueue.prototype.run = function run() {
+        var _this = this;
+
+        if (this.locked) {
+            return;
+        }
+        if (this.operations.length > 0) {
+            this.locked = true;
+            this.operations[0]().then(function () {
+                _this.operations.shift();
+                _this.locked = false;
+                _this.run();
+            }).catch(function (error) {
+                console.error(error);
+            });
+        }
+    };
+
+    return OperationQueue;
+}();
+
+exports.OperationQueue = OperationQueue;
+
+/***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8238,6 +8325,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         this._layoutTableView();
         this._layoutSectionHeaders();
         this._layoutSectionFooters();
+        this.touchesMoved([]);
     };
 
     UITableView.prototype.layoutSubviews = function layoutSubviews() {
@@ -8522,11 +8610,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
 
     UITableView.prototype.touchesMoved = function touchesMoved(touches) {
         _UIScrollView_1$UIScr.prototype.touchesMoved.call(this, touches);
-        var firstTouch = touches[0];
-        if (firstTouch === undefined) {
-            return;
-        }
-        this.handleTouch(UITouch_1.UITouchPhase.moved, firstTouch);
+        this.handleTouch(UITouch_1.UITouchPhase.moved, undefined);
     };
 
     UITableView.prototype.touchesEnded = function touchesEnded(touches) {
@@ -8589,8 +8673,8 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                 }
             case UITouch_1.UITouchPhase.moved:
                 {
-                    if (this.firstTouchPoint !== undefined && currentTouch.windowPoint) {
-                        if (UIView_1.UIView.recognizedGesture !== undefined || Math.abs(currentTouch.windowPoint.y - this.firstTouchPoint.y) > 8) {
+                    if (this.firstTouchPoint !== undefined) {
+                        if (UIView_1.UIView.recognizedGesture !== undefined) {
                             this._highlightedRow = undefined;
                             Object.keys(this._cachedCells).map(function (it) {
                                 return _this9._cachedCells[it];

@@ -85,6 +85,9 @@ class FooViewController extends UIViewController {
             cell.textLabel.text = indexPath.row.toString()
             return cell
         })
+        this.tableView.on("didSelectRow", (indexPath) => {
+            this.tableView.deselectRow(indexPath, true)
+        })
         this.tableView.reloadData()
         this.view.addSubview(this.tableView)
     }

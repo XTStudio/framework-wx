@@ -13,6 +13,7 @@ import { EventEmitter } from "../kimi/EventEmitter";
 import { UIViewContentMode } from "./UIEnums";
 import { CALayer } from "../coregraphics/CALayer";
 import { UIComponentManager } from "../components/UIComponentManager";
+import { OperationQueue } from "./helpers/OperationQueue";
 
 export let dirtyItems: UIView[] = []
 
@@ -51,6 +52,7 @@ export class UIView extends EventEmitter {
     set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation()
             this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -102,6 +104,7 @@ export class UIView extends EventEmitter {
             return
         }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation()
             this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["transform"] = value;
@@ -355,6 +358,7 @@ export class UIView extends EventEmitter {
     set alpha(value) {
         if (this._alpha === value) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation()
             this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["alpha"] = value;
@@ -375,6 +379,7 @@ export class UIView extends EventEmitter {
             if (this._backgroundColor.toStyle() === value.toStyle()) { return }
         }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation()
             this.isAnimationDirty = true
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["backgroundColor"] = value;
@@ -630,6 +635,7 @@ export class UIView extends EventEmitter {
     protected animationProps: { [key: string]: any } = {}
     protected animationValues: { [key: string]: any } = {}
     protected invalidateCallHandler: any = undefined
+    protected setDataQueue = new OperationQueue
 
     invalidateStyle() {
         this.isStyleDirty = true
@@ -639,6 +645,31 @@ export class UIView extends EventEmitter {
     invalidateHierarchy() {
         this.isHierarchyDirty = true
         this.invalidate()
+    }
+
+    invalidateStylesBeforeAnimation() {
+        if (this.viewID) {
+            const component = UIComponentManager.shared.fetchComponent(this.viewID)
+            if (component) {
+                let data: any = {}
+                data.viewID = this.viewID
+                if (this.isStyleDirty) {
+                    data.style = this.buildStyle()
+                }
+                data.animation = emptyAnimation
+                this.setDataQueue.reset()
+                this.setDataQueue.addOperation(() => {
+                    return new Promise((resolver) => {
+                        component.setData(data, () => {
+                            setTimeout(() => {
+                                resolver()
+                            }, 150)
+                        })
+                    })
+                })
+                this.isStyleDirty = false
+            }
+        }
     }
 
     invalidate() {
@@ -657,18 +688,24 @@ export class UIView extends EventEmitter {
                             if (this.isStyleDirty) {
                                 data.style = this.buildStyle()
                             }
-                            if (this.isHierarchyDirty) {
-                                data.subviews = this.subviews.map(it => {
-                                    return {
-                                        clazz: it.clazz,
-                                        viewID: it.viewID,
-                                    }
-                                })
-                            }
                             data.animation = emptyAnimation
-                            Object.assign(data, this.buildExtras())
                         }
-                        component.setData(data)
+                        if (this.isHierarchyDirty) {
+                            data.subviews = this.subviews.map(it => {
+                                return {
+                                    clazz: it.clazz,
+                                    viewID: it.viewID,
+                                }
+                            })
+                        }
+                        Object.assign(data, this.buildExtras())
+                        this.setDataQueue.addOperation(() => {
+                            return new Promise((resolver) => {
+                                component.setData(data, () => {
+                                    resolver()
+                                })
+                            })
+                        })
                         this.clearDirtyFlags()
                     }
                 }

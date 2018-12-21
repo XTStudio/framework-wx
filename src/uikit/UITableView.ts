@@ -221,6 +221,7 @@ export class UITableView extends UIScrollView {
         this._layoutTableView()
         this._layoutSectionHeaders()
         this._layoutSectionFooters()
+        this.touchesMoved([])
     }
 
     layoutSubviews() {
@@ -494,11 +495,7 @@ export class UITableView extends UIScrollView {
 
     touchesMoved(touches: UITouch[]) {
         super.touchesMoved(touches)
-        const firstTouch = touches[0]
-        if (firstTouch === undefined) {
-            return
-        }
-        this.handleTouch(UITouchPhase.moved, firstTouch)
+        this.handleTouch(UITouchPhase.moved, undefined as any)
     }
 
     touchesEnded(touches: UITouch[]) {
@@ -557,8 +554,8 @@ export class UITableView extends UIScrollView {
                 break;
             }
             case UITouchPhase.moved: {
-                if (this.firstTouchPoint !== undefined && currentTouch.windowPoint) {
-                    if (UIView.recognizedGesture !== undefined || Math.abs((currentTouch.windowPoint.y) - this.firstTouchPoint.y) > 8) {
+                if (this.firstTouchPoint !== undefined) {
+                    if (UIView.recognizedGesture !== undefined) {
                         this._highlightedRow = undefined
                         Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
                             it.highlighted = false

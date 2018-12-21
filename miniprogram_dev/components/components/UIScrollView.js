@@ -314,19 +314,21 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    if (onScrollTimer === undefined) {
-                        onScrollTimer = setTimeout(function () {
-                            var query = wx.createSelectorQuery().in(_this2);
-                            query.select('#scroll-view').scrollOffset(function (res) {
-                                view._contentOffset = {
-                                    x: res.scrollLeft - view._contentInset.left,
-                                    y: res.scrollTop - view._contentInset.top
-                                };
-                                view.didScroll();
-                                onScrollTimer = undefined;
-                            }).exec();
-                        }, 32);
+                    if (onScrollTimer !== undefined) {
+                        clearTimeout(onScrollTimer);
+                        onScrollTimer = undefined;
                     }
+                    onScrollTimer = setTimeout(function () {
+                        var query = wx.createSelectorQuery().in(_this2);
+                        query.select('#scroll-view').scrollOffset(function (res) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            };
+                            view.didScroll();
+                            onScrollTimer = undefined;
+                        }).exec();
+                    }, 32);
                 }
             },
             onTouchStarted: function onTouchStarted(e) {

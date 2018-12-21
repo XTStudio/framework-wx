@@ -12,6 +12,7 @@ const EventEmitter_1 = require("../kimi/EventEmitter");
 const UIEnums_1 = require("./UIEnums");
 const CALayer_1 = require("../coregraphics/CALayer");
 const UIComponentManager_1 = require("../components/UIComponentManager");
+const OperationQueue_1 = require("./helpers/OperationQueue");
 exports.dirtyItems = [];
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
@@ -46,6 +47,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         this.animationProps = {};
         this.animationValues = {};
         this.invalidateCallHandler = undefined;
+        this.setDataQueue = new OperationQueue_1.OperationQueue;
         UIViewManager_1.UIViewManager.shared.addView(this);
         exports.dirtyItems.push(this);
     }
@@ -67,6 +69,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation();
             this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -107,6 +110,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation();
             this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["transform"] = value;
@@ -319,6 +323,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation();
             this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["alpha"] = value;
@@ -339,6 +344,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             }
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.invalidateStylesBeforeAnimation();
             this.isAnimationDirty = true;
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["backgroundColor"] = value;
@@ -562,6 +568,30 @@ class UIView extends EventEmitter_1.EventEmitter {
         this.isHierarchyDirty = true;
         this.invalidate();
     }
+    invalidateStylesBeforeAnimation() {
+        if (this.viewID) {
+            const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+            if (component) {
+                let data = {};
+                data.viewID = this.viewID;
+                if (this.isStyleDirty) {
+                    data.style = this.buildStyle();
+                }
+                data.animation = emptyAnimation;
+                this.setDataQueue.reset();
+                this.setDataQueue.addOperation(() => {
+                    return new Promise((resolver) => {
+                        component.setData(data, () => {
+                            setTimeout(() => {
+                                resolver();
+                            }, 150);
+                        });
+                    });
+                });
+                this.isStyleDirty = false;
+            }
+        }
+    }
     invalidate() {
         if (this.invalidateCallHandler === undefined) {
             this.invalidateCallHandler = setTimeout(() => {
@@ -578,18 +608,24 @@ class UIView extends EventEmitter_1.EventEmitter {
                             if (this.isStyleDirty) {
                                 data.style = this.buildStyle();
                             }
-                            if (this.isHierarchyDirty) {
-                                data.subviews = this.subviews.map(it => {
-                                    return {
-                                        clazz: it.clazz,
-                                        viewID: it.viewID,
-                                    };
-                                });
-                            }
                             data.animation = emptyAnimation;
-                            Object.assign(data, this.buildExtras());
                         }
-                        component.setData(data);
+                        if (this.isHierarchyDirty) {
+                            data.subviews = this.subviews.map(it => {
+                                return {
+                                    clazz: it.clazz,
+                                    viewID: it.viewID,
+                                };
+                            });
+                        }
+                        Object.assign(data, this.buildExtras());
+                        this.setDataQueue.addOperation(() => {
+                            return new Promise((resolver) => {
+                                component.setData(data, () => {
+                                    resolver();
+                                });
+                            });
+                        });
                         this.clearDirtyFlags();
                     }
                 }
