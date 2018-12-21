@@ -26,22 +26,10 @@
     </movable-view>
   </movable-area> -->
 
-<scroll-view 
-    id="scroll-view"
-    style='{{style}};' 
-    scroll-x="{{direction == 'horizontal' || direction == 'all'}}" 
-    scroll-y="{{direction == 'vertical' || direction == 'all'}}" 
-    scroll-top="{{contentOffsetY}}"
-    scroll-left="{{contentOffsetX}}"
-    scroll-with-animation="{{scrollWithAnimation}}"
-    enable-back-to-top="{{scrollsToTop}}"
-    bindscroll="onScroll"
-    bindtouchstart="onTouchStarted"
-    bindtouchend="onTouchEnded"
-    bindtouchcancel="onTouchCancelled"
+<view 
+    style='{{style}};overflow: hidden;' 
     data-viewID="{{viewID}}">
-    <view style="transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}})" wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <view style="width:{{contentSize.width}}; height:{{contentSize.width}};transform: matrix(1,0,0,1,{{contentOffset.x}},{{contentOffset.y}});" wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
       <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
     </view>
-    <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>
-</scroll-view>
+</view>

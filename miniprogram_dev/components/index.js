@@ -6127,6 +6127,17 @@ var UIPoint_1 = __webpack_require__(14);
 var UISize_1 = __webpack_require__(16);
 var UIEdgeInsets_1 = __webpack_require__(6);
 var UIPanGestureRecognizer_1 = __webpack_require__(30);
+var UIComponentManager_1 = __webpack_require__(1);
+var Scroller_1 = __webpack_require__(68);
+var RAF = function () {
+    try {
+        return requestAnimationFrame;
+    } catch (error) {
+        return function (callback) {
+            setTimeout(callback, 4);
+        };
+    }
+}();
 
 var UIScrollView = function (_UIView_1$UIView) {
     _inherits(UIScrollView, _UIView_1$UIView);
@@ -6137,7 +6148,12 @@ var UIScrollView = function (_UIView_1$UIView) {
         var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
 
         _this.clazz = "UIScrollView";
-        _this._panGesture = new UIPanGestureRecognizer_1.UIPanGestureRecognizer();
+        _this.panGestureRecognizer = new UIPanGestureRecognizer_1.UIPanGestureRecognizer();
+        _this.refreshControl = undefined;
+        _this.fetchMoreControl = undefined;
+        _this.currentLockedDirection = undefined;
+        _this.scroller = new Scroller_1.Scroller();
+        _this.deceleratingWasCancelled = false;
         _this._contentOffset = UIPoint_1.UIPointZero;
         _this._contentSize = UISize_1.UISizeZero;
         _this._contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -6167,9 +6183,198 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.isContentOffsetDirty = false;
         _this.isContentOffsetScrollAnimatedDirty = false;
         _this.isContentOffsetScrollAnimated = false;
-        _this._panGesture.enabled = false;
+        _this.panGestureRecognizer.on("began", function (sender) {
+            _this.deceleratingWasCancelled = false;
+            _this.currentLockedDirection = undefined;
+            sender.setTranslation({ x: 0, y: 0 }, undefined);
+            _this.willBeginDragging();
+        }).on("changed", function (sender) {
+            var translation = sender.translationInView(undefined);
+            if (_this.directionalLockEnabled && _this.currentLockedDirection == undefined) {
+                if (Math.abs(translation.x) >= 4.0) {
+                    _this.currentLockedDirection = 0;
+                } else if (Math.abs(translation.y) >= 4.0) {
+                    _this.currentLockedDirection = 1;
+                }
+                return;
+            } else if (_this.directionalLockEnabled && _this.currentLockedDirection == 0) {
+                translation = { x: translation.x, y: 0.0 };
+            } else if (_this.directionalLockEnabled && _this.currentLockedDirection == 1) {
+                translation = { x: 0.0, y: translation.y };
+            }
+            // this.createFetchMoreEffect(translation)
+            var refreshOffset = undefined; //this.createRefreshEffect(translation)
+            // if (refreshOffset == undefined) {
+            //     this.createBounceEffect(translation, this.locationInView(undefined))
+            // }
+            _this.contentOffset = {
+                x: Math.max(-_this.contentInset.left, Math.min(Math.max(0.0, _this.contentSize.width + _this.contentInset.right - _this.bounds.width), _this.contentOffset.x - translation.x)),
+                y: Math.max(-_this.contentInset.top - (_this.refreshControl && _this.refreshControl.enabled ? 240.0 : 0.0), Math.min(Math.max(0.0, _this.contentSize.height + _this.contentInset.bottom - _this.bounds.height), _this.contentOffset.y - (refreshOffset !== undefined ? refreshOffset : translation.y)))
+            };
+            sender.setTranslation({ x: 0, y: 0 }, undefined);
+            _this.didScroll();
+        }).on("ended", function (sender) {
+            // if (!this.edgeVerticalEffect.isFinished || !this.edgeHorizontalEffect.isFinished) {
+            //     this.edgeVerticalEffect.onRelease()
+            //     this.edgeHorizontalEffect.onRelease()
+            //     this.startFinishEdgeAnimation()
+            // }
+            var velocity = sender.velocityInView(undefined);
+            if (_this.directionalLockEnabled && _this.currentLockedDirection == undefined) {
+                velocity = UIPoint_1.UIPointZero;
+            } else if (_this.directionalLockEnabled && _this.currentLockedDirection == 0) {
+                velocity = { x: velocity.x, y: 0.0 };
+            } else if (_this.directionalLockEnabled && _this.currentLockedDirection == 1) {
+                velocity = { x: 0.0, y: velocity.y };
+            }
+            _this.willEndDragging(velocity);
+            if (_this.refreshControl !== undefined && _this.refreshControl.animationView.alpha >= 1.0) {
+                _this.didEndDragging(false);
+                _this.willBeginDecelerating();
+                _this.didEndDecelerating();
+                _this.refreshControl.beginRefreshing_callFromScrollView();
+                _this.setContentOffset({ x: 0.0, y: -_this.contentInset.top - 44.0 }, true);
+            } else if (_this.refreshControl !== undefined && _this.refreshControl.animationView.alpha > 0.0) {
+                _this.didEndDragging(false);
+                _this.willBeginDecelerating();
+                _this.didEndDecelerating();
+                _this.refreshControl.animationView.alpha = 0.0;
+                _this.setContentOffset({ x: 0.0, y: -_this.contentInset.top }, true);
+            } else if (_this.shouldDecelerating(velocity)) {
+                _this.didEndDragging(true);
+                _this.willBeginDecelerating();
+                _this.startDecelerating(velocity);
+            } else {
+                _this.didEndDragging(false);
+                _this.willBeginDecelerating();
+                _this.didEndDecelerating();
+            }
+        });
+        _this.addGestureRecognizer(_this.panGestureRecognizer);
+        _this.clipsToBounds = true;
         return _this;
     }
+
+    UIScrollView.prototype.resetLockedDirection = function resetLockedDirection() {
+        var contentWidth = this.contentSize.width + this.contentInset.left + this.contentInset.right;
+        var contentHeight = this.contentSize.height + this.contentInset.top + this.contentInset.bottom;
+        if (contentWidth <= this.bounds.width && contentHeight <= this.bounds.height) {
+            this.panGestureRecognizer.lockedDirection = 0;
+        } else if (contentWidth <= this.bounds.width) {
+            this.panGestureRecognizer.lockedDirection = 1;
+        } else if (contentHeight <= this.bounds.height) {
+            this.panGestureRecognizer.lockedDirection = 2;
+        }
+    };
+
+    UIScrollView.prototype.touchesBegan = function touchesBegan(touches) {
+        _UIView_1$UIView.prototype.touchesBegan.call(this, touches);
+        this.deceleratingWasCancelled = false;
+        if (!this.scroller.finished) {
+            UIView_1.UIView.recognizedGesture = this.panGestureRecognizer;
+            this.scroller.abortAnimation();
+            this.tracking = true;
+            if (this.decelerating) {
+                this.deceleratingWasCancelled = true;
+                this.didEndDecelerating();
+            }
+        }
+    };
+
+    UIScrollView.prototype.touchesEnded = function touchesEnded(touches) {
+        _UIView_1$UIView.prototype.touchesEnded.call(this, touches);
+        this.tracking = false;
+        if (this.deceleratingWasCancelled && this.pagingEnabled) {
+            this.startDecelerating({ x: 0, y: 0 });
+        }
+        if (this.deceleratingWasCancelled) {
+            setTimeout(function () {
+                UIView_1.UIView.recognizedGesture = undefined;
+            }, 0);
+        }
+    };
+
+    UIScrollView.prototype.touchesCancelled = function touchesCancelled(touches) {
+        _UIView_1$UIView.prototype.touchesCancelled.call(this, touches);
+        this.tracking = false;
+        if (this.deceleratingWasCancelled && this.pagingEnabled) {
+            this.startDecelerating({ x: 0, y: 0 });
+        }
+        if (this.deceleratingWasCancelled) {
+            setTimeout(function () {
+                UIView_1.UIView.recognizedGesture = undefined;
+            }, 0);
+        }
+    };
+
+    UIScrollView.prototype.shouldDecelerating = function shouldDecelerating(velocity) {
+        if (this.pagingEnabled) {
+            return true;
+        }
+        if (velocity.y > 0 && this.contentOffset.y < this.contentSize.height + this.contentInset.bottom - this.bounds.height) {
+            return true;
+        } else if (velocity.y < 0 && this.contentOffset.y > -this.contentInset.top) {
+            return true;
+        }
+        if (velocity.x > 0 && this.contentOffset.x < this.contentSize.width + this.contentInset.right - this.bounds.width) {
+            return true;
+        } else if (velocity.x < 0 && this.contentOffset.x > -this.contentInset.left) {
+            return true;
+        }
+        return false;
+    };
+
+    UIScrollView.prototype.startDecelerating = function startDecelerating(velocity) {
+        this.scroller.fling(this.contentOffset.x, this.contentOffset.y, -velocity.x, -velocity.y, -this.contentInset.left - 1000, this.contentSize.width + this.contentInset.right - this.bounds.width + 1000, -this.contentInset.top - 1000, this.contentSize.height + this.contentInset.bottom - this.bounds.height + 1000);
+        if (this.pagingEnabled) {
+            this.scroller.abortAnimation();
+            var minY = Math.floor(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+            var maxY = Math.ceil(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+            var minX = Math.floor(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+            var maxX = Math.ceil(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+            this.scroller.startScroll(this.contentOffset.x, this.contentOffset.y, Math.ceil(Math.max(minX, Math.min(maxX, Math.round(this.scroller.finalX / this.bounds.width) * this.bounds.width)) - this.contentOffset.x), Math.ceil(Math.max(minY, Math.min(maxY, Math.round(this.scroller.finalY / this.bounds.height) * this.bounds.height)) - this.contentOffset.y), 500);
+        }
+        this.loopScrollAnimation();
+    };
+
+    UIScrollView.prototype.loopScrollAnimation = function loopScrollAnimation() {
+        var _this2 = this;
+
+        var ignoreBounds = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+        var finished = !this.scroller.computeScrollOffset();
+        if (!finished) {
+            var minY = -this.contentInset.top;
+            if (this.refreshControl && this.refreshControl.refreshing === true) {
+                minY -= 44.0;
+            }
+            if (ignoreBounds === true && this.contentSize.height !== 0.0) {
+                minY = -Infinity;
+            }
+            this.contentOffset = {
+                x: Math.max(-this.contentInset.left, Math.min(Math.max(-this.contentInset.left, this.contentSize.width + this.contentInset.right - this.bounds.width), this.scroller.currX)),
+                y: Math.max(minY, Math.min(Math.max(minY, this.contentSize.height + this.contentInset.bottom - this.bounds.height), this.scroller.currY))
+            };
+            this.didScroll();
+            if (this.contentSize.height > this.bounds.height && Math.abs(this.scroller.currY - this.contentOffset.y) > 0.01) {
+                this.scroller.forceFinished(true);
+                this.didEndDecelerating();
+                return;
+            }
+            if (this.contentSize.width > this.bounds.width && Math.abs(this.scroller.currX - this.contentOffset.x) > 0.01) {
+                this.scroller.forceFinished(true);
+                this.didEndDecelerating();
+                return;
+            }
+            RAF(function () {
+                _this2.loopScrollAnimation(ignoreBounds);
+            });
+        } else if (this.decelerating) {
+            this.didEndDecelerating();
+        } else {
+            this.didEndScrollingAnimation();
+        }
+    };
 
     UIScrollView.prototype.contentOffsetDidChanged = function contentOffsetDidChanged() {};
 
@@ -6206,7 +6411,7 @@ var UIScrollView = function (_UIView_1$UIView) {
     };
 
     UIScrollView.prototype.willBeginDragging = function willBeginDragging() {
-        UIView_1.UIView.recognizedGesture = this._panGesture;
+        UIView_1.UIView.recognizedGesture = this.panGestureRecognizer;
         this.emit("willBeginDragging", this);
         this.tracking = true;
         this.dragging = true;
@@ -6279,7 +6484,7 @@ var UIScrollView = function (_UIView_1$UIView) {
     };
 
     UIScrollView.prototype.buildExtras = function buildExtras() {
-        var _this2 = this;
+        var _this3 = this;
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
         var totalContentSize = {
@@ -6291,10 +6496,10 @@ var UIScrollView = function (_UIView_1$UIView) {
                 data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
                 var isContentBoundsDirty = this.isContentBoundsDirty;
                 setTimeout(function () {
-                    _this2.isContentBoundsDirty = isContentBoundsDirty;
-                    _this2.isContentOffsetDirty = true;
-                    _this2.isContentOffsetScrollAnimatedDirty = false;
-                    _this2.invalidate();
+                    _this3.isContentBoundsDirty = isContentBoundsDirty;
+                    _this3.isContentOffsetDirty = true;
+                    _this3.isContentOffsetScrollAnimatedDirty = false;
+                    _this3.invalidate();
                 }, 0);
                 return data;
             }
@@ -6305,11 +6510,11 @@ var UIScrollView = function (_UIView_1$UIView) {
         data.scrollsToTop = this.scrollsToTop;
         if (this.isContentBoundsDirty) {
             data.direction = function () {
-                if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
+                if (totalContentSize.width > _this3.bounds.width && totalContentSize.height > _this3.bounds.height) {
                     return "all";
-                } else if (totalContentSize.width > _this2.bounds.width) {
+                } else if (totalContentSize.width > _this3.bounds.width) {
                     return "horizontal";
-                } else if (totalContentSize.height > _this2.bounds.height) {
+                } else if (totalContentSize.height > _this3.bounds.height) {
                     return "vertical";
                 } else {
                     return "none";
@@ -6348,7 +6553,17 @@ var UIScrollView = function (_UIView_1$UIView) {
             this.isContentOffsetScrollAnimatedDirty = true;
             this.isContentOffsetScrollAnimated = false;
             this.contentOffsetDidChanged();
-            this.invalidate();
+            if (this.viewID) {
+                var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+                if (component) {
+                    component.setData({
+                        contentOffset: {
+                            x: -value.x,
+                            y: -value.y
+                        }
+                    });
+                }
+            }
         }
     }, {
         key: "contentSize",
@@ -8955,6 +9170,320 @@ var UIIndexPath = function () {
 }();
 
 exports.UIIndexPath = UIIndexPath;
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+ * Copyright (C) 2006 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Now_1 = __webpack_require__(69);
+
+var ViscousFluidInterpolator = function () {
+    function ViscousFluidInterpolator() {
+        _classCallCheck(this, ViscousFluidInterpolator);
+    }
+
+    ViscousFluidInterpolator.viscousFluid = function viscousFluid(x) {
+        x *= ViscousFluidInterpolator.VISCOUS_FLUID_SCALE;
+        if (x < 1.0) {
+            x -= 1.0 - Math.exp(-x);
+        } else {
+            var start = 0.36787944117; // 1/e == exp(-1)
+            x = 1.0 - Math.exp(1.0 - x);
+            x = start + x * (1.0 - start);
+        }
+        return x;
+    };
+
+    ViscousFluidInterpolator.prototype.getInterpolation = function getInterpolation(input) {
+        var interpolated = ViscousFluidInterpolator.VISCOUS_FLUID_NORMALIZE * ViscousFluidInterpolator.viscousFluid(input);
+        if (interpolated > 0) {
+            return interpolated + ViscousFluidInterpolator.VISCOUS_FLUID_OFFSET;
+        }
+        return interpolated;
+    };
+
+    return ViscousFluidInterpolator;
+}();
+
+ViscousFluidInterpolator.VISCOUS_FLUID_SCALE = 8.0;
+{
+    ViscousFluidInterpolator.VISCOUS_FLUID_NORMALIZE = 1.0 / ViscousFluidInterpolator.viscousFluid(1.0);
+    ViscousFluidInterpolator.VISCOUS_FLUID_OFFSET = 1.0 - ViscousFluidInterpolator.VISCOUS_FLUID_NORMALIZE * ViscousFluidInterpolator.viscousFluid(1.0);
+}
+
+var Scroller = function () {
+    function Scroller() {
+        _classCallCheck(this, Scroller);
+
+        this.mode = 0;
+        this.startX = 0;
+        this.startY = 0;
+        this.finalX = 0;
+        this.finalY = 0;
+        this.minX = 0;
+        this.maxX = 0;
+        this.minY = 0;
+        this.maxY = 0;
+        this.currX = 0;
+        this.currY = 0;
+        this.startTime = 0;
+        this.duration = 0;
+        this.durationReciprocal = 0.0;
+        this.deltaX = 0.0;
+        this.deltaY = 0.0;
+        this.finished = false;
+        this.flywheel = false;
+        this.velocity = 0.0;
+        this.currVelocity = 0.0;
+        this.distance = 0;
+        this.flingFriction = 0.015;
+        this.deceleration = 0.0;
+        this.physicalCoeff = 0.0;
+        this.finished = true;
+        this.interpolator = new ViscousFluidInterpolator();
+        this.deceleration = this.computeDeceleration(0.015);
+        this.physicalCoeff = this.computeDeceleration(0.84); // look and feel tuning
+    }
+
+    Scroller.prototype.setFriction = function setFriction(friction) {
+        this.deceleration = this.computeDeceleration(friction);
+        this.flingFriction = friction;
+    };
+
+    Scroller.prototype.computeDeceleration = function computeDeceleration(friction) {
+        return 9.80665 // g (m/s^2)
+        * 39.37 // inch/meter
+        * 160.0 * friction;
+    };
+
+    Scroller.prototype.forceFinished = function forceFinished(finished) {
+        this.finished = finished;
+    };
+
+    Scroller.prototype.getCurrVelocity = function getCurrVelocity() {
+        return this.mode == Scroller.FLING_MODE ? this.currVelocity : this.velocity - this.deceleration * this.timePassed() / 2000.0;
+    };
+
+    Scroller.prototype.computeScrollOffset = function computeScrollOffset() {
+        if (this.finished) {
+            return false;
+        }
+        var timePassed = Now_1.currentAnimationTimeMillis() - this.startTime;
+        if (timePassed < this.duration) {
+            switch (this.mode) {
+                case Scroller.SCROLL_MODE:
+                    var x = this.interpolator.getInterpolation(timePassed * this.durationReciprocal);
+                    this.currX = this.startX + Math.round(x * this.deltaX);
+                    this.currY = this.startY + Math.round(x * this.deltaY);
+                    break;
+                case Scroller.FLING_MODE:
+                    var t = timePassed / this.duration;
+                    var index = Math.floor(Scroller.NB_SAMPLES * t);
+                    var distanceCoef = 1;
+                    var velocityCoef = 0;
+                    if (index < Scroller.NB_SAMPLES) {
+                        var t_inf = index / Scroller.NB_SAMPLES;
+                        var t_sup = (index + 1) / Scroller.NB_SAMPLES;
+                        var d_inf = Scroller.SPLINE_POSITION[index];
+                        var d_sup = Scroller.SPLINE_POSITION[index + 1];
+                        velocityCoef = (d_sup - d_inf) / (t_sup - t_inf);
+                        distanceCoef = d_inf + (t - t_inf) * velocityCoef;
+                    }
+                    this.currVelocity = velocityCoef * this.distance / (this.duration * 1000.0);
+                    this.currX = this.startX + Math.round(distanceCoef * (this.finalX - this.startX));
+                    // Pin to mMinX <= this.CurrX<= mMaxX
+                    this.currX = Math.min(this.currX, this.maxX);
+                    this.currX = Math.max(this.currX, this.minX);
+                    this.currY = this.startY + Math.round(distanceCoef * (this.finalY - this.startY));
+                    // Pin to mMinY <= this.CurrY  <= mMaxY
+                    this.currY = Math.min(this.currY, this.maxY);
+                    this.currY = Math.max(this.currY, this.minY);
+                    if (this.currX == this.finalX && this.currY == this.finalY) {
+                        this.finished = true;
+                    }
+                    break;
+            }
+        } else {
+            this.currX = this.finalX;
+            this.currY = this.finalY;
+            this.finished = true;
+        }
+        return true;
+    };
+
+    Scroller.prototype.startScroll = function startScroll(startX, startY, dx, dy) {
+        var duration = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : Scroller.DEFAULT_DURATION;
+
+        this.mode = Scroller.SCROLL_MODE;
+        this.finished = false;
+        this.duration = duration;
+        this.startTime = Now_1.currentAnimationTimeMillis();
+        this.startX = startX;
+        this.startY = startY;
+        this.finalX = startX + dx;
+        this.finalY = startY + dy;
+        this.deltaX = dx;
+        this.deltaY = dy;
+        this.durationReciprocal = 1.0 / this.duration;
+    };
+
+    Scroller.prototype.fling = function fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY) {
+        // Continue a scroll or fling in progress
+        this.mode = Scroller.FLING_MODE;
+        this.finished = false;
+        var velocity = Math.hypot(velocityX, velocityY);
+        this.velocity = velocity;
+        this.duration = this.getSplineFlingDuration(velocity);
+        this.startTime = Now_1.currentAnimationTimeMillis();
+        this.startX = startX;
+        this.startY = startY;
+        var coeffX = velocity == 0 ? 1.0 : velocityX / velocity;
+        var coeffY = velocity == 0 ? 1.0 : velocityY / velocity;
+        var totalDistance = this.getSplineFlingDistance(velocity);
+        this.distance = totalDistance * Math.sign(velocity);
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+        this.finalX = startX + Math.round(totalDistance * coeffX);
+        // Pin to mMinX <= mFinalX <= mMaxX
+        this.finalX = Math.min(this.finalX, this.maxX);
+        this.finalX = Math.max(this.finalX, this.minX);
+        this.finalY = startY + Math.round(totalDistance * coeffY);
+        // Pin to mMinY <= mFinalY <= mMaxY
+        this.finalY = Math.min(this.finalY, this.maxY);
+        this.finalY = Math.max(this.finalY, this.minY);
+    };
+
+    Scroller.prototype.getSplineDeceleration = function getSplineDeceleration(velocity) {
+        return Math.log(Scroller.INFLEXION * Math.abs(velocity) / (this.flingFriction * this.physicalCoeff));
+    };
+
+    Scroller.prototype.getSplineFlingDuration = function getSplineFlingDuration(velocity) {
+        var l = this.getSplineDeceleration(velocity);
+        var decelMinusOne = Scroller.DECELERATION_RATE - 1.0;
+        return 1000.0 * Math.exp(l / decelMinusOne);
+    };
+
+    Scroller.prototype.getSplineFlingDistance = function getSplineFlingDistance(velocity) {
+        var l = this.getSplineDeceleration(velocity);
+        var decelMinusOne = Scroller.DECELERATION_RATE - 1.0;
+        return this.flingFriction * this.physicalCoeff * Math.exp(Scroller.DECELERATION_RATE / decelMinusOne * l);
+    };
+
+    Scroller.prototype.abortAnimation = function abortAnimation() {
+        this.currX = this.finalX;
+        this.currY = this.finalY;
+        this.finished = true;
+    };
+
+    Scroller.prototype.extendDuration = function extendDuration(extend) {
+        var passed = this.timePassed();
+        this.duration = passed + extend;
+        this.durationReciprocal = 1.0 / this.duration;
+        this.finished = false;
+    };
+
+    Scroller.prototype.timePassed = function timePassed() {
+        return Now_1.currentAnimationTimeMillis() - this.startTime;
+    };
+
+    Scroller.prototype.setFinalX = function setFinalX(newX) {
+        this.finalX = newX;
+        this.deltaX = this.finalX - this.startX;
+        this.finished = false;
+    };
+
+    Scroller.prototype.setFinalY = function setFinalY(newY) {
+        this.finalY = newY;
+        this.deltaY = this.finalY - this.startY;
+        this.finished = false;
+    };
+
+    Scroller.prototype.isScrollingInDirection = function isScrollingInDirection(xvel, yvel) {
+        return !this.finished && Math.sign(xvel) == Math.sign(this.finalX - this.startX) && Math.sign(yvel) == Math.sign(this.finalY - this.startY);
+    };
+
+    return Scroller;
+}();
+
+Scroller.DEFAULT_DURATION = 250;
+Scroller.SCROLL_MODE = 0;
+Scroller.FLING_MODE = 1;
+Scroller.DECELERATION_RATE = Math.log(0.78) / Math.log(0.9);
+Scroller.INFLEXION = 0.35; // Tension lines cross at (INFLEXION, 1)
+Scroller.START_TENSION = 0.5;
+Scroller.END_TENSION = 1.0;
+Scroller.P1 = Scroller.START_TENSION * Scroller.INFLEXION;
+Scroller.P2 = 1.0 - Scroller.END_TENSION * (1.0 - Scroller.INFLEXION);
+Scroller.NB_SAMPLES = 100;
+Scroller.SPLINE_POSITION = [];
+Scroller.SPLINE_TIME = [];
+exports.Scroller = Scroller;
+{
+    var x_min = 0.0;
+    var y_min = 0.0;
+    for (var i = 0; i < Scroller.NB_SAMPLES; i++) {
+        var alpha = i / Scroller.NB_SAMPLES;
+        var x_max = 1.0;
+        var x = 0.0,
+            tx = 0.0,
+            coef = 0.0;
+        while (true) {
+            x = x_min + (x_max - x_min) / 2.0;
+            coef = 3.0 * x * (1.0 - x);
+            tx = coef * ((1.0 - x) * Scroller.P1 + x * Scroller.P2) + x * x * x;
+            if (Math.abs(tx - alpha) < 1E-5) break;
+            if (tx > alpha) x_max = x;else x_min = x;
+        }
+        Scroller.SPLINE_POSITION[i] = coef * ((1.0 - x) * Scroller.START_TENSION + x) + x * x * x;
+        var y_max = 1.0;
+        var y = 0.0,
+            dy = 0.0;
+        while (true) {
+            y = y_min + (y_max - y_min) / 2.0;
+            coef = 3.0 * y * (1.0 - y);
+            dy = coef * ((1.0 - y) * Scroller.START_TENSION + y) + y * y * y;
+            if (Math.abs(dy - alpha) < 1E-5) break;
+            if (dy > alpha) y_max = y;else y_min = y;
+        }
+        Scroller.SPLINE_TIME[i] = coef * ((1.0 - y) * Scroller.P1 + y * Scroller.P2) + y * y * y;
+    }
+    Scroller.SPLINE_POSITION[Scroller.NB_SAMPLES] = Scroller.SPLINE_TIME[Scroller.NB_SAMPLES] = 1.0;
+}
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.currentAnimationTimeMillis = function () {
+    return Date.now();
+};
 
 /***/ })
 /******/ ]);

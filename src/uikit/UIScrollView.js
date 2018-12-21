@@ -5,11 +5,28 @@ const UIPoint_1 = require("./UIPoint");
 const UISize_1 = require("./UISize");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const UIPanGestureRecognizer_1 = require("./UIPanGestureRecognizer");
+const UIComponentManager_1 = require("../components/UIComponentManager");
+const Scroller_1 = require("./helpers/Scroller");
+const RAF = (() => {
+    try {
+        return requestAnimationFrame;
+    }
+    catch (error) {
+        return function (callback) {
+            setTimeout(callback, 4);
+        };
+    }
+})();
 class UIScrollView extends UIView_1.UIView {
     constructor() {
         super();
         this.clazz = "UIScrollView";
-        this._panGesture = new UIPanGestureRecognizer_1.UIPanGestureRecognizer;
+        this.panGestureRecognizer = new UIPanGestureRecognizer_1.UIPanGestureRecognizer;
+        this.refreshControl = undefined;
+        this.fetchMoreControl = undefined;
+        this.currentLockedDirection = undefined;
+        this.scroller = new Scroller_1.Scroller;
+        this.deceleratingWasCancelled = false;
         this._contentOffset = UIPoint_1.UIPointZero;
         this._contentSize = UISize_1.UISizeZero;
         this._contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
@@ -39,7 +56,202 @@ class UIScrollView extends UIView_1.UIView {
         this.isContentOffsetDirty = false;
         this.isContentOffsetScrollAnimatedDirty = false;
         this.isContentOffsetScrollAnimated = false;
-        this._panGesture.enabled = false;
+        this.panGestureRecognizer
+            .on("began", (sender) => {
+            this.deceleratingWasCancelled = false;
+            this.currentLockedDirection = undefined;
+            sender.setTranslation({ x: 0, y: 0 }, undefined);
+            this.willBeginDragging();
+        })
+            .on("changed", (sender) => {
+            let translation = sender.translationInView(undefined);
+            if (this.directionalLockEnabled && this.currentLockedDirection == undefined) {
+                if (Math.abs(translation.x) >= 4.0) {
+                    this.currentLockedDirection = 0;
+                }
+                else if (Math.abs(translation.y) >= 4.0) {
+                    this.currentLockedDirection = 1;
+                }
+                return;
+            }
+            else if (this.directionalLockEnabled && this.currentLockedDirection == 0) {
+                translation = { x: translation.x, y: 0.0 };
+            }
+            else if (this.directionalLockEnabled && this.currentLockedDirection == 1) {
+                translation = { x: 0.0, y: translation.y };
+            }
+            // this.createFetchMoreEffect(translation)
+            const refreshOffset = undefined; //this.createRefreshEffect(translation)
+            // if (refreshOffset == undefined) {
+            //     this.createBounceEffect(translation, this.locationInView(undefined))
+            // }
+            this.contentOffset = {
+                x: Math.max(-this.contentInset.left, Math.min(Math.max(0.0, this.contentSize.width + this.contentInset.right - this.bounds.width), this.contentOffset.x - translation.x)),
+                y: Math.max(-this.contentInset.top - (this.refreshControl && this.refreshControl.enabled ? 240.0 : 0.0), Math.min(Math.max(0.0, this.contentSize.height + this.contentInset.bottom - this.bounds.height), this.contentOffset.y - (refreshOffset !== undefined ? refreshOffset : translation.y)))
+            };
+            sender.setTranslation({ x: 0, y: 0 }, undefined);
+            this.didScroll();
+        })
+            .on("ended", (sender) => {
+            // if (!this.edgeVerticalEffect.isFinished || !this.edgeHorizontalEffect.isFinished) {
+            //     this.edgeVerticalEffect.onRelease()
+            //     this.edgeHorizontalEffect.onRelease()
+            //     this.startFinishEdgeAnimation()
+            // }
+            var velocity = sender.velocityInView(undefined);
+            if (this.directionalLockEnabled && this.currentLockedDirection == undefined) {
+                velocity = UIPoint_1.UIPointZero;
+            }
+            else if (this.directionalLockEnabled && this.currentLockedDirection == 0) {
+                velocity = { x: velocity.x, y: 0.0 };
+            }
+            else if (this.directionalLockEnabled && this.currentLockedDirection == 1) {
+                velocity = { x: 0.0, y: velocity.y };
+            }
+            this.willEndDragging(velocity);
+            if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha >= 1.0) {
+                this.didEndDragging(false);
+                this.willBeginDecelerating();
+                this.didEndDecelerating();
+                this.refreshControl.beginRefreshing_callFromScrollView();
+                this.setContentOffset({ x: 0.0, y: -this.contentInset.top - 44.0 }, true);
+            }
+            else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
+                this.didEndDragging(false);
+                this.willBeginDecelerating();
+                this.didEndDecelerating();
+                this.refreshControl.animationView.alpha = 0.0;
+                this.setContentOffset({ x: 0.0, y: -this.contentInset.top }, true);
+            }
+            else if (this.shouldDecelerating(velocity)) {
+                this.didEndDragging(true);
+                this.willBeginDecelerating();
+                this.startDecelerating(velocity);
+            }
+            else {
+                this.didEndDragging(false);
+                this.willBeginDecelerating();
+                this.didEndDecelerating();
+            }
+        });
+        this.addGestureRecognizer(this.panGestureRecognizer);
+        this.clipsToBounds = true;
+    }
+    resetLockedDirection() {
+        const contentWidth = this.contentSize.width + this.contentInset.left + this.contentInset.right;
+        const contentHeight = this.contentSize.height + this.contentInset.top + this.contentInset.bottom;
+        if (contentWidth <= this.bounds.width && contentHeight <= this.bounds.height) {
+            this.panGestureRecognizer.lockedDirection = 0;
+        }
+        else if (contentWidth <= this.bounds.width) {
+            this.panGestureRecognizer.lockedDirection = 1;
+        }
+        else if (contentHeight <= this.bounds.height) {
+            this.panGestureRecognizer.lockedDirection = 2;
+        }
+    }
+    touchesBegan(touches) {
+        super.touchesBegan(touches);
+        this.deceleratingWasCancelled = false;
+        if (!this.scroller.finished) {
+            UIView_1.UIView.recognizedGesture = this.panGestureRecognizer;
+            this.scroller.abortAnimation();
+            this.tracking = true;
+            if (this.decelerating) {
+                this.deceleratingWasCancelled = true;
+                this.didEndDecelerating();
+            }
+        }
+    }
+    touchesEnded(touches) {
+        super.touchesEnded(touches);
+        this.tracking = false;
+        if (this.deceleratingWasCancelled && this.pagingEnabled) {
+            this.startDecelerating({ x: 0, y: 0 });
+        }
+        if (this.deceleratingWasCancelled) {
+            setTimeout(() => {
+                UIView_1.UIView.recognizedGesture = undefined;
+            }, 0);
+        }
+    }
+    touchesCancelled(touches) {
+        super.touchesCancelled(touches);
+        this.tracking = false;
+        if (this.deceleratingWasCancelled && this.pagingEnabled) {
+            this.startDecelerating({ x: 0, y: 0 });
+        }
+        if (this.deceleratingWasCancelled) {
+            setTimeout(() => {
+                UIView_1.UIView.recognizedGesture = undefined;
+            }, 0);
+        }
+    }
+    shouldDecelerating(velocity) {
+        if (this.pagingEnabled) {
+            return true;
+        }
+        if (velocity.y > 0 && this.contentOffset.y < this.contentSize.height + this.contentInset.bottom - this.bounds.height) {
+            return true;
+        }
+        else if (velocity.y < 0 && this.contentOffset.y > -this.contentInset.top) {
+            return true;
+        }
+        if (velocity.x > 0 && this.contentOffset.x < this.contentSize.width + this.contentInset.right - this.bounds.width) {
+            return true;
+        }
+        else if (velocity.x < 0 && this.contentOffset.x > -this.contentInset.left) {
+            return true;
+        }
+        return false;
+    }
+    startDecelerating(velocity) {
+        this.scroller.fling(this.contentOffset.x, this.contentOffset.y, -velocity.x, -velocity.y, -this.contentInset.left - 1000, (this.contentSize.width + this.contentInset.right - this.bounds.width) + 1000, -this.contentInset.top - 1000, (this.contentSize.height + this.contentInset.bottom - this.bounds.height) + 1000);
+        if (this.pagingEnabled) {
+            this.scroller.abortAnimation();
+            const minY = Math.floor(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+            const maxY = Math.ceil(this.contentOffset.y / this.bounds.height) * this.bounds.height;
+            const minX = Math.floor(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+            const maxX = Math.ceil(this.contentOffset.x / this.bounds.width) * this.bounds.width;
+            this.scroller.startScroll(this.contentOffset.x, this.contentOffset.y, Math.ceil(Math.max(minX, Math.min(maxX, (Math.round(this.scroller.finalX / this.bounds.width) * this.bounds.width))) - this.contentOffset.x), Math.ceil(Math.max(minY, Math.min(maxY, (Math.round(this.scroller.finalY / this.bounds.height) * this.bounds.height))) - this.contentOffset.y), 500);
+        }
+        this.loopScrollAnimation();
+    }
+    loopScrollAnimation(ignoreBounds = false) {
+        const finished = !this.scroller.computeScrollOffset();
+        if (!finished) {
+            var minY = -this.contentInset.top;
+            if (this.refreshControl && this.refreshControl.refreshing === true) {
+                minY -= 44.0;
+            }
+            if (ignoreBounds === true && this.contentSize.height !== 0.0) {
+                minY = -Infinity;
+            }
+            this.contentOffset = {
+                x: Math.max(-this.contentInset.left, Math.min(Math.max(-this.contentInset.left, this.contentSize.width + this.contentInset.right - this.bounds.width), this.scroller.currX)),
+                y: Math.max(minY, Math.min(Math.max(minY, this.contentSize.height + this.contentInset.bottom - this.bounds.height), this.scroller.currY))
+            };
+            this.didScroll();
+            if (this.contentSize.height > this.bounds.height && Math.abs(this.scroller.currY - this.contentOffset.y) > 0.01) {
+                this.scroller.forceFinished(true);
+                this.didEndDecelerating();
+                return;
+            }
+            if (this.contentSize.width > this.bounds.width && Math.abs(this.scroller.currX - this.contentOffset.x) > 0.01) {
+                this.scroller.forceFinished(true);
+                this.didEndDecelerating();
+                return;
+            }
+            RAF(() => {
+                this.loopScrollAnimation(ignoreBounds);
+            });
+        }
+        else if (this.decelerating) {
+            this.didEndDecelerating();
+        }
+        else {
+            this.didEndScrollingAnimation();
+        }
     }
     get contentOffset() {
         return this._contentOffset;
@@ -50,7 +262,17 @@ class UIScrollView extends UIView_1.UIView {
         this.isContentOffsetScrollAnimatedDirty = true;
         this.isContentOffsetScrollAnimated = false;
         this.contentOffsetDidChanged();
-        this.invalidate();
+        if (this.viewID) {
+            const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+            if (component) {
+                component.setData({
+                    contentOffset: {
+                        x: -value.x,
+                        y: -value.y,
+                    }
+                });
+            }
+        }
     }
     contentOffsetDidChanged() { }
     get contentSize() {
@@ -144,7 +366,7 @@ class UIScrollView extends UIView_1.UIView {
         this.contentOffsetDidChanged();
     }
     willBeginDragging() {
-        UIView_1.UIView.recognizedGesture = this._panGesture;
+        UIView_1.UIView.recognizedGesture = this.panGestureRecognizer;
         this.emit("willBeginDragging", this);
         this.tracking = true;
         this.dragging = true;

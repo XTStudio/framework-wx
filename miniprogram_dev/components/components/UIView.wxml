@@ -1,6 +1,6 @@
 <!--xt-framework/uiview.wxml-->
 <view style='{{style}}' animation='{{animation}}'>
-  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
     <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
-  </view>
+  </block>
 </view>

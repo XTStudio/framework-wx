@@ -9,7 +9,7 @@
          bindload="onImageLoaded"></image>
   <text style='line-height: {{textHeight}}px; {{textStyle}}; margin: 0px {{titleMargin.right}}px 0px {{titleMargin.left}}px;' 
         animation='{{contentAlphaAnimation}}'>{{text}}</text>
-  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
     <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
-  </view>
+  </block>
 </button>
