@@ -22,8 +22,7 @@ class UILabel extends UIView_1.UIView {
             return;
         }
         this._text = value;
-        this.markFlagDirty("text");
-        this.markFlagDirty("richText");
+        this.markFlagDirty("text", "richText");
     }
     get attributedText() {
         return this._attributedText;
@@ -33,8 +32,7 @@ class UILabel extends UIView_1.UIView {
             return;
         }
         this._attributedText = value;
-        this.markFlagDirty("text");
-        this.markFlagDirty("richText");
+        this.markFlagDirty("text", "richText");
     }
     get font() {
         return this._font;
@@ -79,8 +77,8 @@ class UILabel extends UIView_1.UIView {
     // invalidate
     buildExtras() {
         let data = super.buildExtras();
-        if (this._attributedText) {
-            data.richText = this._attributedText.toHTMLText();
+        if (this.attributedText) {
+            data.richText = this.attributedText.toHTMLText();
         }
         else {
             data.text = this._text !== undefined ? this._text : "";

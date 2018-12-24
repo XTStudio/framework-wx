@@ -692,17 +692,12 @@ var UIView = function (_EventEmitter_1$Event) {
     };
 
     UIView.prototype.buildData = function buildData() {
-        return {
-            viewID: this.viewID,
-            style: this.buildStyle(),
-            subviews: this.subviews.map(function (it) {
+        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), subviews: this.subviews.map(function (it) {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID
                 };
-            }),
-            animation: this.buildAnimation()
-        };
+            }), animation: this.buildAnimation() }, this.buildExtras());
     };
 
     UIView.prototype.buildExtras = function buildExtras() {
@@ -2240,8 +2235,8 @@ var UILabel = function (_UIView_1$UIView) {
         var _this2 = this;
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this._attributedText) {
-            data.richText = this._attributedText.toHTMLText();
+        if (this.attributedText) {
+            data.richText = this.attributedText.toHTMLText();
         } else {
             data.text = this._text !== undefined ? this._text : "";
         }
@@ -2275,8 +2270,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._text = value;
-            this.markFlagDirty("text");
-            this.markFlagDirty("richText");
+            this.markFlagDirty("text", "richText");
         }
     }, {
         key: "attributedText",
@@ -2288,8 +2282,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._attributedText = value;
-            this.markFlagDirty("text");
-            this.markFlagDirty("richText");
+            this.markFlagDirty("text", "richText");
         }
     }, {
         key: "font",

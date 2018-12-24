@@ -575,17 +575,12 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
     }
     buildData() {
-        return {
-            viewID: this.viewID,
-            style: this.buildStyle(),
-            subviews: this.subviews.map(it => {
+        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID,
                 };
-            }),
-            animation: this.buildAnimation(),
-        };
+            }), animation: this.buildAnimation() }, this.buildExtras());
     }
     buildExtras() {
         return {};

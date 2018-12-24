@@ -17,8 +17,7 @@ export class UILabel extends UIView {
     public set text(value: string | undefined) {
         if (this._text === value) { return }
         this._text = value;
-        this.markFlagDirty("text")
-        this.markFlagDirty("richText")
+        this.markFlagDirty("text", "richText")
     }
 
     private _attributedText: UIAttributedString | undefined = undefined
@@ -30,8 +29,7 @@ export class UILabel extends UIView {
     public set attributedText(value: UIAttributedString | undefined) {
         if (this._attributedText === value) { return }
         this._attributedText = value
-        this.markFlagDirty("text")
-        this.markFlagDirty("richText")
+        this.markFlagDirty("text", "richText")
     }
 
     private _font: UIFont | undefined = undefined
@@ -86,8 +84,8 @@ export class UILabel extends UIView {
 
     buildExtras() {
         let data = super.buildExtras()
-        if (this._attributedText) {
-            data.richText = this._attributedText.toHTMLText()
+        if (this.attributedText) {
+            data.richText = this.attributedText.toHTMLText()
         }
         else {
             data.text = this._text !== undefined ? this._text : ""

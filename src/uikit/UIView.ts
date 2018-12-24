@@ -664,6 +664,7 @@ export class UIView extends EventEmitter {
                 }
             }),
             animation: this.buildAnimation(),
+            ... this.buildExtras(),
         }
     }
 

@@ -30,6 +30,7 @@ const {
     UIAttributedStringKey,
     UIMutableAttributedString,
     UITableView,
+    UITextAlignment,
     UITableViewCell,
 } = require("../../components/index")
 
@@ -49,32 +50,16 @@ class FooCell extends UITableViewCell {
 class BarViewController extends UIViewController {
 
     scrollView = new UIScrollView
-    redView = new UIView
+    redView = new UILabel
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.redView.backgroundColor = UIColor.red
-        this.redView.frame = UIRectMake(0, 0, 44, 44)
-        this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            UIAnimator.curve(0.3, () => {
-                this.redView.frame = UIRectMake(88, 88, 88, 88)
-                this.redView.backgroundColor = UIColor.yellow
-            })
-        }))
+        this.redView.text = "Hello, World"
+        this.redView.textAlignment = UITextAlignment.center
+        this.redView.frame = UIRectMake(0, 0, 300, 300)
         this.scrollView.addSubview(this.redView)
-        this.scrollView.on("didScroll", () => {
-            this.redView.frame = UIRectMake(0, this.scrollView.contentOffset.y + 44, 44, 44)
-        })
         this.scrollView.contentSize = { width: 0, height: 9000 }
         this.view.addSubview(this.scrollView)
-        // setTimeout(() => {
-        //     this.redView.backgroundColor = UIColor.gray
-        //     this.redView.alpha = 0.5
-        //     const yView = new UIView
-        //     yView.frame = UIRectMake(88, 88, 88, 88)
-        //     yView.backgroundColor = UIColor.yellow
-        //     this.scrollView.addSubview(yView)
-        // }, 2000)
     }
 
     viewWillLayoutSubviews() {
@@ -143,29 +128,29 @@ class ThirdViewController extends UIViewController {
 
 }
 
-// const tabBarController = new UITabBarController()
-// tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
-// tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
+const tabBarController = new UITabBarController()
+tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
+tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
 
-// const firstViewController = new UINavigationController(new FooViewController)
-// firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
-// firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
-// firstViewController.tabBarItem.title = "首页"
+const firstViewController = new UINavigationController(new FooViewController)
+firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
+firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
+firstViewController.tabBarItem.title = "首页"
 
-// const secondViewController = new UINavigationController(new SecondViewController)
-// secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
-// secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
-// secondViewController.tabBarItem.title = "我的"
+const secondViewController = new UINavigationController(new SecondViewController)
+secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
+secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
+secondViewController.tabBarItem.title = "我的"
 
-// tabBarController.setViewControllers([
-//     firstViewController,
-//     secondViewController,
-// ])
+tabBarController.setViewControllers([
+    firstViewController,
+    secondViewController,
+])
 
-// const window = new UIWindow
-// window.backgroundColor = UIColor.gray
+const window = new UIWindow
+window.backgroundColor = UIColor.gray
 
-const main = new BarViewController
+const main = tabBarController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({
