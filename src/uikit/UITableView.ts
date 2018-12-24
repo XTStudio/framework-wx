@@ -5,9 +5,8 @@ import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UIIndexPath } from "./UIIndexPath";
 import { UIRectIntersectsRect, UIRect, UIRectZero, UIRectMake } from "./UIRect";
 import { UIAnimator } from "./UIAnimator";
-import { UIPoint, UIPointEqualToPoint } from "./UIPoint";
+import { UIPoint } from "./UIPoint";
 import { UITouch, UITouchPhase } from "./UITouch";
-import { Ticker } from "./helpers/Ticker";
 
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 export class UITableView extends UIScrollView {
@@ -30,8 +29,6 @@ export class UITableView extends UIScrollView {
             this.addSubview(value)
         }
         this._layoutTableView()
-        this._layoutSectionHeaders()
-        this._layoutSectionFooters()
     }
 
     private _tableFooterView: UIView | undefined = undefined
@@ -50,8 +47,6 @@ export class UITableView extends UIScrollView {
             this.addSubview(value)
         }
         this._layoutTableView()
-        this._layoutSectionHeaders()
-        this._layoutSectionFooters()
     }
 
     separatorColor: UIColor | undefined = new UIColor(0xbc / 255.0, 0xba / 255.0, 0xc1 / 255.0, 0.75)
@@ -90,8 +85,6 @@ export class UITableView extends UIScrollView {
         this._setContentSize()
         this._needsReload = false
         this._layoutTableView()
-        this._layoutSectionHeaders()
-        this._layoutSectionFooters()
     }
 
     selectRow(indexPath: UIIndexPath, animated: boolean) {
@@ -219,20 +212,12 @@ export class UITableView extends UIScrollView {
     }
 
     contentOffsetDidChanged() {
-        if (Ticker.shared.hasTask("contentOffsetDidChanged." + this.viewID)) { return }
-        Ticker.shared.addTask("contentOffsetDidChanged." + this.viewID, () => {
-            this._layoutTableView()
-            this._layoutSectionHeaders()
-            this._layoutSectionFooters()
-            this.touchesMoved([])
-        })
+        this.touchesMoved([])
     }
 
     layoutSubviews() {
         super.layoutSubviews()
         this._layoutTableView()
-        this._layoutSectionHeaders()
-        this._layoutSectionFooters()
     }
 
     _updateSectionsCache() {
@@ -292,8 +277,8 @@ export class UITableView extends UIScrollView {
 
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height }
-        let contentOffsetY = this.contentOffset.y - boundsSize.height
-        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height * 3 }
+        let contentOffsetY = 0.0
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: this.contentSize.height }
         var tableHeight = 0.0
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height }
@@ -386,10 +371,6 @@ export class UITableView extends UIScrollView {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height }
         }
     }
-
-    _layoutSectionHeaders() { }
-
-    _layoutSectionFooters() { }
 
     _rectForSection(section: number): UIRect {
         this._updateSectionsCacheIfNeeded()

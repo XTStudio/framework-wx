@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 36);
+/******/ 	return __webpack_require__(__webpack_require__.s = 37);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -214,7 +214,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 36:
+/***/ 37:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -258,6 +258,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIComponentManager_1 = __webpack_require__(0);
 var UIViewManager_1 = __webpack_require__(1);
 // xt-framework/uiview.js
+var isDevtools = wx.getSystemInfoSync().platform === "devtools";
 
 var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
@@ -267,13 +268,22 @@ var UIViewComponent = function UIViewComponent() {
             type: String,
             value: undefined,
             observer: function observer(viewID) {
+                var _this = this;
+
                 if (viewID === undefined || viewID === null) {
                     return;
                 }
                 if (this.viewID !== viewID) {
                     UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
                     var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                    this.setData(newView.buildData());
+                    if (isDevtools) {
+                        // prevent vdSync over 1M size.
+                        wx.nextTick(function () {
+                            _this.setData(newView.buildData());
+                        });
+                    } else {
+                        this.setData(newView.buildData());
+                    }
                 }
             }
         }

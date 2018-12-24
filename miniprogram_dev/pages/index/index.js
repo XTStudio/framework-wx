@@ -89,7 +89,7 @@ class FooViewController extends UIViewController {
         super.viewDidLoad()
         this.title = "UITableView"
         this.tableView.register((context) => new FooCell(context), "Cell")
-        this.tableView.on("numberOfRows", () => 80)
+        this.tableView.on("numberOfRows", () => 100)
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)

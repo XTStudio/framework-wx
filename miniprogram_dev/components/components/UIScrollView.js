@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 31);
+/******/ 	return __webpack_require__(__webpack_require__.s = 32);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -197,6 +197,72 @@ exports.UIViewManager = UIViewManager;
 
 /***/ }),
 
+/***/ 29:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Ticker = function () {
+    function Ticker() {
+        _classCallCheck(this, Ticker);
+
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+    }
+
+    Ticker.prototype.hasTask = function hasTask(taskID) {
+        return this.taskBlocks[taskID] !== undefined;
+    };
+
+    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
+        this.taskBlocks[taskID] = taskBlock;
+        this.activeTimer();
+    };
+
+    Ticker.prototype.run = function run() {
+        var currentBlocks = this.taskBlocks;
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+        if (Object.keys(currentBlocks).length > 0) {
+            for (var key in currentBlocks) {
+                try {
+                    currentBlocks[key]();
+                } catch (error) {}
+            }
+        }
+    };
+
+    Ticker.prototype.activeTimer = function activeTimer() {
+        if (this.timerHandler !== undefined) {
+            return;
+        }
+        this.timerHandler = setTimeout(this.run.bind(this), 16);
+    };
+
+    _createClass(Ticker, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().TickerShared === undefined) {
+                getApp().TickerShared = new Ticker();
+            }
+            return getApp().TickerShared;
+        }
+    }]);
+
+    return Ticker;
+}();
+
+exports.Ticker = Ticker;
+
+/***/ }),
+
 /***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -214,7 +280,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 31:
+/***/ 32:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -229,7 +295,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(4);
 var UIViewManager_1 = __webpack_require__(1);
-var onScrollTimer = undefined;
+var Ticker_1 = __webpack_require__(29);
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
     _inherits(UIScrollViewComponent, _UIView_1$UIViewCompo);
@@ -241,6 +307,8 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
 
         _this.methods = {
             onScroll: function onScroll(e) {
+                var _this2 = this;
+
                 var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
                 if (view) {
                     if (false) { var deltaY, deltaX; } else {
@@ -264,21 +332,16 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    // if (onScrollTimer !== undefined) {
-                    //     clearTimeout(onScrollTimer)
-                    //     onScrollTimer = undefined
-                    // }
-                    // onScrollTimer = setTimeout(() => {
-                    //     const query = (wx.createSelectorQuery() as any).in(this)
-                    //     query.select('#scroll-view').scrollOffset(function (res: any) {
-                    //         view._contentOffset = {
-                    //             x: res.scrollLeft - view._contentInset.left,
-                    //             y: res.scrollTop - view._contentInset.top
-                    //         }
-                    //         view.didScroll()
-                    //         onScrollTimer = undefined
-                    //     }).exec()
-                    // }, 32)
+                    Ticker_1.Ticker.shared.addTask("scroll-view.onScroll", function () {
+                        var query = wx.createSelectorQuery().in(_this2);
+                        query.select('#scroll-view').scrollOffset(function (res) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            };
+                            view.didScroll();
+                        }).exec();
+                    });
                 }
             },
             onTouchStarted: function onTouchStarted(e) {
@@ -330,6 +393,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIComponentManager_1 = __webpack_require__(0);
 var UIViewManager_1 = __webpack_require__(1);
 // xt-framework/uiview.js
+var isDevtools = wx.getSystemInfoSync().platform === "devtools";
 
 var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
@@ -339,13 +403,22 @@ var UIViewComponent = function UIViewComponent() {
             type: String,
             value: undefined,
             observer: function observer(viewID) {
+                var _this = this;
+
                 if (viewID === undefined || viewID === null) {
                     return;
                 }
                 if (this.viewID !== viewID) {
                     UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
                     var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                    this.setData(newView.buildData());
+                    if (isDevtools) {
+                        // prevent vdSync over 1M size.
+                        wx.nextTick(function () {
+                            _this.setData(newView.buildData());
+                        });
+                    } else {
+                        this.setData(newView.buildData());
+                    }
                 }
             }
         }

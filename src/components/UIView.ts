@@ -3,6 +3,8 @@ import { UIViewManager } from "./UIViewManager";
 
 // xt-framework/uiview.js
 
+const isDevtools = wx.getSystemInfoSync().platform === "devtools"
+
 export class UIViewComponent {
 
     properties = {
@@ -14,7 +16,15 @@ export class UIViewComponent {
                 if ((this as any).viewID !== viewID) {
                     UIComponentManager.shared.addComponent(this, viewID)
                     const newView = UIViewManager.shared.fetchView(viewID);
-                    (this as any).setData(newView.buildData());
+                    if (isDevtools) {
+                        // prevent vdSync over 1M size.
+                        (wx as any).nextTick(() => {
+                            (this as any).setData(newView.buildData());
+                        })
+                    }
+                    else {
+                        (this as any).setData(newView.buildData());
+                    }
                 }
             }
         }

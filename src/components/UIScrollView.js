@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = require("./UIView");
 const UIViewManager_1 = require("./UIViewManager");
-let onScrollTimer = undefined;
+const Ticker_1 = require("../uikit/helpers/Ticker");
 class UIScrollViewComponent extends UIView_1.UIViewComponent {
     constructor() {
         super(...arguments);
@@ -49,21 +49,16 @@ class UIScrollViewComponent extends UIView_1.UIViewComponent {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    // if (onScrollTimer !== undefined) {
-                    //     clearTimeout(onScrollTimer)
-                    //     onScrollTimer = undefined
-                    // }
-                    // onScrollTimer = setTimeout(() => {
-                    //     const query = (wx.createSelectorQuery() as any).in(this)
-                    //     query.select('#scroll-view').scrollOffset(function (res: any) {
-                    //         view._contentOffset = {
-                    //             x: res.scrollLeft - view._contentInset.left,
-                    //             y: res.scrollTop - view._contentInset.top
-                    //         }
-                    //         view.didScroll()
-                    //         onScrollTimer = undefined
-                    //     }).exec()
-                    // }, 32)
+                    Ticker_1.Ticker.shared.addTask("scroll-view.onScroll", () => {
+                        const query = wx.createSelectorQuery().in(this);
+                        query.select('#scroll-view').scrollOffset(function (res) {
+                            view._contentOffset = {
+                                x: res.scrollLeft - view._contentInset.left,
+                                y: res.scrollTop - view._contentInset.top
+                            };
+                            view.didScroll();
+                        }).exec();
+                    });
                 }
             },
             onTouchStarted: function (e) {

@@ -7,7 +7,6 @@ const UIIndexPath_1 = require("./UIIndexPath");
 const UIRect_1 = require("./UIRect");
 const UIAnimator_1 = require("./UIAnimator");
 const UITouch_1 = require("./UITouch");
-const Ticker_1 = require("./helpers/Ticker");
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 class UITableView extends UIScrollView_1.UIScrollView {
     constructor() {
@@ -43,8 +42,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
             this.addSubview(value);
         }
         this._layoutTableView();
-        this._layoutSectionHeaders();
-        this._layoutSectionFooters();
     }
     get tableFooterView() {
         return this._tableFooterView;
@@ -59,8 +56,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
             this.addSubview(value);
         }
         this._layoutTableView();
-        this._layoutSectionHeaders();
-        this._layoutSectionFooters();
     }
     register(initializer, reuseIdentifier) {
         this._registeredCells[reuseIdentifier] = initializer;
@@ -88,8 +83,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
         this._setContentSize();
         this._needsReload = false;
         this._layoutTableView();
-        this._layoutSectionHeaders();
-        this._layoutSectionFooters();
     }
     selectRow(indexPath, animated) {
         if (!this.allowsMultipleSelection) {
@@ -182,21 +175,11 @@ class UITableView extends UIScrollView_1.UIScrollView {
     didDeselectRow(indexPath) {
     }
     contentOffsetDidChanged() {
-        if (Ticker_1.Ticker.shared.hasTask("contentOffsetDidChanged." + this.viewID)) {
-            return;
-        }
-        Ticker_1.Ticker.shared.addTask("contentOffsetDidChanged." + this.viewID, () => {
-            this._layoutTableView();
-            this._layoutSectionHeaders();
-            this._layoutSectionFooters();
-            this.touchesMoved([]);
-        });
+        this.touchesMoved([]);
     }
     layoutSubviews() {
         super.layoutSubviews();
         this._layoutTableView();
-        this._layoutSectionHeaders();
-        this._layoutSectionFooters();
     }
     _updateSectionsCache() {
         this._sections.forEach((it) => {
@@ -252,8 +235,8 @@ class UITableView extends UIScrollView_1.UIScrollView {
     }
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        let contentOffsetY = this.contentOffset.y - boundsSize.height;
-        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height * 3 };
+        let contentOffsetY = 0.0;
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: this.contentSize.height };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -346,8 +329,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height };
         }
     }
-    _layoutSectionHeaders() { }
-    _layoutSectionFooters() { }
     _rectForSection(section) {
         this._updateSectionsCacheIfNeeded();
         return this._UIRectFromVerticalOffset(this._offsetForSection(section), this._sections[section].sectionHeight());

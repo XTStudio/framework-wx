@@ -1,7 +1,6 @@
 import { UIViewComponent } from "./UIView";
 import { UIViewManager } from "./UIViewManager";
-
-let onScrollTimer: any = undefined
+import { Ticker } from "../uikit/helpers/Ticker";
 
 export class UIScrollViewComponent extends UIViewComponent {
 
@@ -48,21 +47,16 @@ export class UIScrollViewComponent extends UIViewComponent {
                     }
                     view._lastScrollTimeStamp = e.timeStamp
                 }
-                // if (onScrollTimer !== undefined) {
-                //     clearTimeout(onScrollTimer)
-                //     onScrollTimer = undefined
-                // }
-                // onScrollTimer = setTimeout(() => {
-                //     const query = (wx.createSelectorQuery() as any).in(this)
-                //     query.select('#scroll-view').scrollOffset(function (res: any) {
-                //         view._contentOffset = {
-                //             x: res.scrollLeft - view._contentInset.left,
-                //             y: res.scrollTop - view._contentInset.top
-                //         }
-                //         view.didScroll()
-                //         onScrollTimer = undefined
-                //     }).exec()
-                // }, 32)
+                Ticker.shared.addTask("scroll-view.onScroll", () => {
+                    const query = (wx.createSelectorQuery() as any).in(this)
+                    query.select('#scroll-view').scrollOffset(function (res: any) {
+                        view._contentOffset = {
+                            x: res.scrollLeft - view._contentInset.left,
+                            y: res.scrollTop - view._contentInset.top
+                        }
+                        view.didScroll()
+                    }).exec()
+                })
             }
         },
         onTouchStarted: function (e: any) {
