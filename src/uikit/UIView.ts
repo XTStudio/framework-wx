@@ -14,8 +14,7 @@ import { UIViewContentMode } from "./UIEnums";
 import { CALayer } from "../coregraphics/CALayer";
 import { UIComponentManager } from "../components/UIComponentManager";
 import { OperationQueue } from "./helpers/OperationQueue";
-
-export let dirtyItems: UIView[] = []
+import { Ticker } from "./helpers/Ticker";
 
 export class UIView extends EventEmitter {
 
@@ -27,7 +26,6 @@ export class UIView extends EventEmitter {
     constructor() {
         super()
         UIViewManager.shared.addView(this)
-        dirtyItems.push(this)
     }
 
     attach(dataOwner: any, dataField: string) {
@@ -52,8 +50,7 @@ export class UIView extends EventEmitter {
     set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         if (UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation()
-            this.isAnimationDirty = true
+            this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             if (Math.abs(this._frame.x - value.x) > 0.001) {
                 this.animationValues["frame.x"] = value.x;
@@ -74,7 +71,7 @@ export class UIView extends EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height }
             this.setNeedsLayout(true)
         }
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     get frame(): UIRect {
@@ -104,13 +101,12 @@ export class UIView extends EventEmitter {
             return
         }
         if (UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation()
-            this.isAnimationDirty = true
+            this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["transform"] = value;
         }
         this._transform = value;
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     // hierarchy
@@ -150,7 +146,7 @@ export class UIView extends EventEmitter {
             this.willMoveToSuperview(undefined)
             superview.subviews = this.superview.subviews.filter(it => it !== this)
             this.superview = undefined
-            superview.invalidateHierarchy()
+            superview.markFlagDirty("subviews")
             this.didMoveToSuperview()
             this.didRemovedFromWindow()
         }
@@ -167,8 +163,8 @@ export class UIView extends EventEmitter {
         view.willMoveToSuperview(this)
         view.superview = this
         this.subviews.splice(index, 0, view)
-        this.invalidateHierarchy()
-        view.invalidateHierarchy()
+        this.markFlagDirty("subviews")
+        view.markFlagDirty("subviews")
         view.didMoveToSuperview()
         this.didAddSubview(view)
     }
@@ -177,7 +173,7 @@ export class UIView extends EventEmitter {
         const index2View = this.subviews[index2]
         this.subviews[index2] = this.subviews[index1]
         this.subviews[index1] = index2View
-        this.invalidateHierarchy()
+        this.markFlagDirty("subviews")
     }
 
     addSubview(view: UIView): void {
@@ -190,8 +186,8 @@ export class UIView extends EventEmitter {
         }
         view.superview = this
         this.subviews.push(view)
-        this.invalidateHierarchy()
-        view.invalidateHierarchy()
+        this.markFlagDirty("subviews")
+        view.markFlagDirty("subviews")
         view.didMoveToSuperview()
         this.didAddSubview(view)
         view.didMoveToWindow()
@@ -216,7 +212,7 @@ export class UIView extends EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1)
             this.subviews.push(view)
-            this.invalidateHierarchy()
+            this.markFlagDirty("subviews")
         }
     }
 
@@ -225,7 +221,7 @@ export class UIView extends EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1)
             this.subviews.unshift(view)
-            this.invalidateHierarchy()
+            this.markFlagDirty("subviews")
         }
     }
 
@@ -307,7 +303,7 @@ export class UIView extends EventEmitter {
     public set clipsToBounds(value: boolean) {
         if (this._clipsToBounds === value) { return }
         this._clipsToBounds = value;
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     public _hidden: boolean = false
@@ -315,7 +311,7 @@ export class UIView extends EventEmitter {
     set hidden(value) {
         if (this._hidden === value) { return }
         this._hidden = value
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     get hidden() {
@@ -331,7 +327,6 @@ export class UIView extends EventEmitter {
     public set contentMode(value: UIViewContentMode) {
         if (this._contentMode === value) { return }
         this._contentMode = value;
-        this.invalidateStyle()
     }
 
     private _tintColor: UIColor | undefined = undefined
@@ -358,13 +353,12 @@ export class UIView extends EventEmitter {
     set alpha(value) {
         if (this._alpha === value) { return }
         if (UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation()
-            this.isAnimationDirty = true
+            this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["alpha"] = value;
         }
         this._alpha = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
 
     get alpha() {
@@ -379,13 +373,12 @@ export class UIView extends EventEmitter {
             if (this._backgroundColor.toStyle() === value.toStyle()) { return }
         }
         if (UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation()
-            this.isAnimationDirty = true
+            this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["backgroundColor"] = value;
         }
         this._backgroundColor = value
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     get backgroundColor(): UIColor | undefined {
@@ -400,7 +393,7 @@ export class UIView extends EventEmitter {
 
     public set extraStyles(value: string | undefined) {
         this._extraStyles = value;
-        this.invalidateStyle()
+        this.markFlagDirty("style")
     }
 
     convertPointToView(point: UIPoint, toView: UIView): UIPoint {
@@ -629,103 +622,49 @@ export class UIView extends EventEmitter {
 
     // Component Data Builder
 
-    protected isStyleDirty: boolean = true
-    protected isHierarchyDirty: boolean = true
-    protected isAnimationDirty: boolean = false
+    protected dirtyFlags: { [key: string]: boolean } = {}
     protected animationProps: { [key: string]: any } = {}
     protected animationValues: { [key: string]: any } = {}
-    protected invalidateCallHandler: any = undefined
-    protected setDataQueue = new OperationQueue
 
-    invalidateStyle() {
-        this.isStyleDirty = true
+    markFlagDirty(...flags: string[]) {
+        flags.forEach(it => {
+            this.dirtyFlags[it] = true
+        })
         this.invalidate()
-    }
-
-    invalidateHierarchy() {
-        this.isHierarchyDirty = true
-        this.invalidate()
-    }
-
-    invalidateStylesBeforeAnimation() {
-        if (this.viewID) {
-            const component = UIComponentManager.shared.fetchComponent(this.viewID)
-            if (component) {
-                let data: any = {}
-                data.viewID = this.viewID
-                if (this.isStyleDirty) {
-                    data.style = this.buildStyle()
-                }
-                data.animation = emptyAnimation
-                this.setDataQueue.reset()
-                this.setDataQueue.addOperation(() => {
-                    return new Promise((resolver) => {
-                        component.setData(data, () => {
-                            setTimeout(() => {
-                                resolver()
-                            }, 150)
-                        })
-                    })
-                })
-                this.isStyleDirty = false
-            }
-        }
     }
 
     invalidate() {
-        if (this.invalidateCallHandler === undefined) {
-            this.invalidateCallHandler = setTimeout(() => {
-                this.invalidateCallHandler = undefined;
-                if (this.viewID) {
-                    const component = UIComponentManager.shared.fetchComponent(this.viewID)
-                    if (component) {
-                        let data: any = {}
-                        data.viewID = this.viewID
-                        if (this.isAnimationDirty) {
-                            data.animation = this.buildAnimation()
+        const viewID = this.viewID
+        if (viewID) {
+            Ticker.shared.addTask("setData." + this.clazz + "." + this.viewID, () => {
+                const component = UIComponentManager.shared.fetchComponent(viewID)
+                if (component) {
+                    const data = this.buildData()
+                    let newData: any = {}
+                    for (const flag in this.dirtyFlags) {
+                        if (data[flag] !== undefined) {
+                            newData[flag] = data[flag]
                         }
-                        else {
-                            if (this.isStyleDirty) {
-                                data.style = this.buildStyle()
-                            }
-                            data.animation = emptyAnimation
-                        }
-                        if (this.isHierarchyDirty) {
-                            data.subviews = this.subviews.map(it => {
-                                return {
-                                    clazz: it.clazz,
-                                    viewID: it.viewID,
-                                }
-                            })
-                        }
-                        Object.assign(data, this.buildExtras())
-                        this.setDataQueue.addOperation(() => {
-                            return new Promise((resolver) => {
-                                component.setData(data, () => {
-                                    resolver()
-                                })
-                            })
-                        })
-                        this.clearDirtyFlags()
                     }
+                    component.setData(newData)
+                    this.dirtyFlags = {}
                 }
             })
         }
     }
 
-    markAllFlagsDirty() {
-        this.isStyleDirty = true
-        this.isHierarchyDirty = true
-        this.invalidate()
-        this.subviews.forEach(it => it.markAllFlagsDirty())
-    }
-
-    clearDirtyFlags() {
-        this.isStyleDirty = false
-        this.isHierarchyDirty = false
-        this.isAnimationDirty = false
-        this.animationProps = {}
-        this.animationValues = {}
+    buildData(): any {
+        return {
+            viewID: this.viewID,
+            style: this.buildStyle(),
+            subviews: this.subviews.map(it => {
+                return {
+                    clazz: it.clazz,
+                    viewID: it.viewID,
+                }
+            }),
+            animation: this.buildAnimation(),
+        }
     }
 
     buildExtras(): any {
@@ -740,20 +679,20 @@ export class UIView extends EventEmitter {
             width: ${this._frame.width}px;
             height: ${this._frame.height}px; 
         `
-        if (this._backgroundColor !== undefined) {
-            styles += `background-color: ${UIColor.toStyle(this._backgroundColor)};`
+        if (this.backgroundColor !== undefined) {
+            styles += `background-color: ${UIColor.toStyle(this.backgroundColor)};`
         }
-        if (this._alpha < 1.0) {
-            styles += `opacity: ${this._alpha};`
+        if (this.alpha < 1.0) {
+            styles += `opacity: ${this.alpha};`
         }
-        if (this._hidden) {
+        if (this.hidden) {
             styles += `display: none;`
         }
-        if (this._clipsToBounds) {
+        if (this.clipsToBounds) {
             styles += "overflow: hidden;"
         }
-        if (!UIAffineTransformIsIdentity(this._transform)) {
-            styles += `transform: ${'matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')'};`
+        if (!UIAffineTransformIsIdentity(this.transform)) {
+            styles += `transform: ${'matrix(' + this.transform.a + ', ' + this.transform.b + ', ' + this.transform.c + ', ' + this.transform.d + ', ' + this.transform.tx + ', ' + this.transform.ty + ')'};`
         }
         if (this._layer) {
             if (this._layer._cornerRadius > 0) {
@@ -773,8 +712,8 @@ export class UIView extends EventEmitter {
                 `
             }
         }
-        if (this._extraStyles) {
-            styles += this._extraStyles
+        if (this.extraStyles) {
+            styles += this.extraStyles
         }
         return styles
     }
@@ -818,7 +757,7 @@ export class UIView extends EventEmitter {
             return animation.export()
         }
         else {
-            return undefined
+            return emptyAnimation
         }
     }
 
@@ -844,8 +783,8 @@ export class UIWindow extends UIView {
                 viewID: this.viewID,
             }
         })
-        this.invalidateStyle()
-        this.invalidateHierarchy()
+        this.markFlagDirty("style")
+        this.markFlagDirty("subviews")
     }
 
     layoutSubviews() {

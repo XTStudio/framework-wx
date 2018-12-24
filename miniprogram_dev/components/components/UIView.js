@@ -237,9 +237,7 @@ var UIViewComponent = function UIViewComponent() {
                 if (this.viewID !== viewID) {
                     UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
                     var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                    if (newView) {
-                        newView.markAllFlagsDirty();
-                    }
+                    this.setData(newView.buildData());
                 }
             }
         }

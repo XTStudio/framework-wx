@@ -63,7 +63,7 @@ export class UIButton extends UIView {
         if (this._highlighted === value) { return }
         this._highlighted = value;
         this.reloadContents()
-        this.invalidateHighlight()
+        this.markFlagDirty("contentAlphaAnimation")
     }
 
     private _tracking: boolean = false
@@ -138,7 +138,7 @@ export class UIButton extends UIView {
 
     setTitleFont(font: UIFont) {
         this.titleLabel.font = font
-        this.invalidateText()
+        this.markFlagDirty("textStyle")
     }
 
     setImage(image: UIImage | undefined, state: number) {
@@ -172,7 +172,8 @@ export class UIButton extends UIView {
     public set contentEdgeInsets(value: UIEdgeInsets) {
         if (UIEdgeInsetsEqualToEdgeInsets(this._contentEdgeInsets, value)) { return }
         this._contentEdgeInsets = value;
-        this.invalidateLayout()
+        this.markFlagDirty("titleMargin")
+        this.markFlagDirty("imageMargin")
     }
 
     private _titleEdgeInsets: UIEdgeInsets = UIEdgeInsetsZero
@@ -184,7 +185,7 @@ export class UIButton extends UIView {
     public set titleEdgeInsets(value: UIEdgeInsets) {
         if (UIEdgeInsetsEqualToEdgeInsets(this._titleEdgeInsets, value)) { return }
         this._titleEdgeInsets = value;
-        this.invalidateLayout()
+        this.markFlagDirty("titleMargin")
     }
 
     private _imageEdgeInsets: UIEdgeInsets = UIEdgeInsetsZero
@@ -196,7 +197,7 @@ export class UIButton extends UIView {
     public set imageEdgeInsets(value: UIEdgeInsets) {
         if (UIEdgeInsetsEqualToEdgeInsets(this._imageEdgeInsets, value)) { return }
         this._imageEdgeInsets = value;
-        this.invalidateLayout()
+        this.markFlagDirty("imageMargin")
     }
 
     // implements
@@ -265,18 +266,19 @@ export class UIButton extends UIView {
     private reloadContents() {
         if (this.titleLabel.text !== this.titleForState(this.currentState())) {
             this.titleLabel.text = this.titleForState(this.currentState())
-            this.invalidateText()
+            this.markFlagDirty("text")
         }
         if (this.titleLabel.textColor !== this.titleColorForState(this.currentState())) {
             this.titleLabel.textColor = this.titleColorForState(this.currentState())
-            this.invalidateText()
+            this.markFlagDirty("textStyle")
         }
         if (this.imageView.image !== this.imageForState(this.currentState())) {
             this.imageView.image = this.imageForState(this.currentState())
-            this.invalidateImgae()
+            this.markFlagDirty("imageSource")
         }
         if (!this.isCustom) {
             this.contentAlpha = this.highlighted ? 0.3 : 1.0
+            this.markFlagDirty("contentAlphaAnimation")
         }
     }
 
@@ -334,93 +336,39 @@ export class UIButton extends UIView {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0
     }
 
-    protected isTextDirty = true
-    protected isImageDirty = true
-    protected isHighlightDirty = true
-    protected isLayoutDirty = true
-
-    protected invalidateText() {
-        this.isTextDirty = true
-        this.invalidate()
-    }
-
-    protected invalidateImgae() {
-        this.isImageDirty = true
-        this.invalidate()
-    }
-
-    protected invalidateHighlight() {
-        this.isHighlightDirty = true
-        this.invalidate()
-    }
-
-    protected invalidateLayout() {
-        this.isLayoutDirty = true
-        this.invalidate()
-    }
-
     buildExtras() {
         let data = super.buildExtras()
-        if (this.isTextDirty) {
-            data.text = this.titleLabel.text || ""
-            data.textStyle = `
+        data.text = this.titleLabel.text || ""
+        data.textStyle = `
             color: ${this.titleLabel.textColor !== undefined ? UIColor.toStyle(this.titleLabel.textColor) : "black"};
             font-size: ${this.titleLabel.font !== undefined ? this.titleLabel.font.pointSize : 14}px;
             font-family: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontName : ""}; 
             font-weight: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : ""}; 
             font-style: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : ""}; 
             `
-            data.textHeight = this.bounds.height
+        data.textHeight = this.bounds.height
+        data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null
+        if (this.dirtyFlags["contentAlphaAnimation"]) {
+            data.contentAlphaAnimation = (wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step() as any).export()
         }
-        if (this.isImageDirty) {
-            data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null
+        data.imageMargin = {
+            top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.imageEdgeInsets.right + this.contentEdgeInsets.right,
         }
-        if (this.isHighlightDirty) {
-            if (this.isTextDirty) {
-                setTimeout(() => {
-                    this.invalidateHighlight()
-                }, 0)
-            }
-            else {
-                data.contentAlphaAnimation = (wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step() as any).export()
-            }
-        }
-        if (this.isLayoutDirty) {
-            data.imageMargin = {
-                top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.imageEdgeInsets.right + this.contentEdgeInsets.right,
-            }
-            data.titleMargin = {
-                top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.titleEdgeInsets.right + this.contentEdgeInsets.right,
-            }
+        data.titleMargin = {
+            top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.titleEdgeInsets.right + this.contentEdgeInsets.right,
         }
         return data
     }
 
-    markAllFlagsDirty() {
-        super.markAllFlagsDirty()
-        this.isTextDirty = true
-        this.isImageDirty = true
-        this.isHighlightDirty = false
-        this.isLayoutDirty = true
-    }
-
-    clearDirtyFlags() {
-        super.clearDirtyFlags()
-        this.isTextDirty = false
-        this.isImageDirty = false
-        this.isHighlightDirty = false
-        this.isLayoutDirty = false
-    }
-
     layoutSubviews() {
         super.layoutSubviews()
-        this.invalidateText()
+        this.markFlagDirty("textHeight")
     }
 
 }

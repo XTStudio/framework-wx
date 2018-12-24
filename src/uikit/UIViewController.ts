@@ -181,11 +181,4 @@ export class UIViewController extends EventEmitter {
         return undefined
     }
 
-    invalidate(dirty: boolean = true, force: boolean = false) {
-        let nextResponder = this.nextResponder()
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force)
-        }
-    }
-
 }

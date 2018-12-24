@@ -241,9 +241,7 @@ var UIViewComponent = function UIViewComponent() {
                 if (this.viewID !== viewID) {
                     UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
                     var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                    if (newView) {
-                        newView.markAllFlagsDirty();
-                    }
+                    this.setData(newView.buildData());
                 }
             }
         }
@@ -289,8 +287,6 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
 
         _this.methods = {
             onScroll: function onScroll(e) {
-                var _this2 = this;
-
                 var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
                 if (view) {
                     if (false) { var deltaY, deltaX; } else {
@@ -314,21 +310,21 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                         }
                         view._lastScrollTimeStamp = e.timeStamp;
                     }
-                    if (onScrollTimer !== undefined) {
-                        clearTimeout(onScrollTimer);
-                        onScrollTimer = undefined;
-                    }
-                    onScrollTimer = setTimeout(function () {
-                        var query = wx.createSelectorQuery().in(_this2);
-                        query.select('#scroll-view').scrollOffset(function (res) {
-                            view._contentOffset = {
-                                x: res.scrollLeft - view._contentInset.left,
-                                y: res.scrollTop - view._contentInset.top
-                            };
-                            view.didScroll();
-                            onScrollTimer = undefined;
-                        }).exec();
-                    }, 32);
+                    // if (onScrollTimer !== undefined) {
+                    //     clearTimeout(onScrollTimer)
+                    //     onScrollTimer = undefined
+                    // }
+                    // onScrollTimer = setTimeout(() => {
+                    //     const query = (wx.createSelectorQuery() as any).in(this)
+                    //     query.select('#scroll-view').scrollOffset(function (res: any) {
+                    //         view._contentOffset = {
+                    //             x: res.scrollLeft - view._contentInset.left,
+                    //             y: res.scrollTop - view._contentInset.top
+                    //         }
+                    //         view.didScroll()
+                    //         onScrollTimer = undefined
+                    //     }).exec()
+                    // }, 32)
                 }
             },
             onTouchStarted: function onTouchStarted(e) {

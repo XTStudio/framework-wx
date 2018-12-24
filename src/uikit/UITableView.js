@@ -246,8 +246,8 @@ class UITableView extends UIScrollView_1.UIScrollView {
     }
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        let contentOffsetY = this.contentOffset.y - boundsSize.height;
-        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
+        let contentOffsetY = this.contentOffset.y;
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };

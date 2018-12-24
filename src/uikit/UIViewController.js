@@ -154,11 +154,5 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         }
         return undefined;
     }
-    invalidate(dirty = true, force = false) {
-        let nextResponder = this.nextResponder();
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force);
-        }
-    }
 }
 exports.UIViewController = UIViewController;

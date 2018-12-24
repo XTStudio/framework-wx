@@ -15,41 +15,36 @@ export class UIImageView extends UIView {
     set image(value: UIImage | undefined) {
         if (this._image === value) { return }
         this._image = value
-        this.isImageDirty = true
-        this.invalidate()
+        this.markFlagDirty("imageSource")
     }
 
-    private isImageDirty = false
+    protected _contentMode: UIViewContentMode = UIViewContentMode.scaleToFill
+
+    public get contentMode(): UIViewContentMode {
+        return this._contentMode;
+    }
+
+    public set contentMode(value: UIViewContentMode) {
+        if (this._contentMode === value) { return }
+        this._contentMode = value;
+        this.markFlagDirty("scaleMode")
+    }
 
     buildExtras() {
         let data = super.buildExtras()
-        if (this.isImageDirty) {
-            data.imageSource = this._image !== undefined ? this._image.imageSource : null
-        }
-        if (this.isStyleDirty) {
-            data.scaleMode = (() => {
-                switch (this._contentMode) {
-                    case UIViewContentMode.scaleToFill:
-                        return "scaleToFill"
-                    case UIViewContentMode.scaleAspectFit:
-                        return "aspectFit"
-                    case UIViewContentMode.scaleAspectFill:
-                        return "aspectFill"
-                }
-                return "scaleToFill"
-            })()
-        }
+        data.imageSource = this._image !== undefined ? this._image.imageSource : null
+        data.scaleMode = (() => {
+            switch (this._contentMode) {
+                case UIViewContentMode.scaleToFill:
+                    return "scaleToFill"
+                case UIViewContentMode.scaleAspectFit:
+                    return "aspectFit"
+                case UIViewContentMode.scaleAspectFill:
+                    return "aspectFill"
+            }
+            return "scaleToFill"
+        })()
         return data
-    }
-
-    markAllFlagsDirty() {
-        super.markAllFlagsDirty()
-        this.isImageDirty = true
-    }
-
-    clearDirtyFlags() {
-        super.clearDirtyFlags()
-        this.isImageDirty = false
     }
 
 }

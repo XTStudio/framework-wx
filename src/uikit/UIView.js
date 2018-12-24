@@ -12,8 +12,7 @@ const EventEmitter_1 = require("../kimi/EventEmitter");
 const UIEnums_1 = require("./UIEnums");
 const CALayer_1 = require("../coregraphics/CALayer");
 const UIComponentManager_1 = require("../components/UIComponentManager");
-const OperationQueue_1 = require("./helpers/OperationQueue");
-exports.dirtyItems = [];
+const Ticker_1 = require("./helpers/Ticker");
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
         super();
@@ -41,15 +40,10 @@ class UIView extends EventEmitter_1.EventEmitter {
         this._userInteractionEnabled = true;
         this.gestureRecognizers = [];
         // Component Data Builder
-        this.isStyleDirty = true;
-        this.isHierarchyDirty = true;
-        this.isAnimationDirty = false;
+        this.dirtyFlags = {};
         this.animationProps = {};
         this.animationValues = {};
-        this.invalidateCallHandler = undefined;
-        this.setDataQueue = new OperationQueue_1.OperationQueue;
         UIViewManager_1.UIViewManager.shared.addView(this);
-        exports.dirtyItems.push(this);
     }
     attach(dataOwner, dataField) {
         if (!(this instanceof UIWindow)) {
@@ -69,8 +63,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation();
-            this.isAnimationDirty = true;
+            this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             if (Math.abs(this._frame.x - value.x) > 0.001) {
                 this.animationValues["frame.x"] = value.x;
@@ -91,7 +84,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height };
             this.setNeedsLayout(true);
         }
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     get frame() {
         return this._frame;
@@ -110,13 +103,12 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation();
-            this.isAnimationDirty = true;
+            this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["transform"] = value;
         }
         this._transform = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     get window() {
         if (this instanceof UIWindow) {
@@ -143,7 +135,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.willMoveToSuperview(undefined);
             superview.subviews = this.superview.subviews.filter(it => it !== this);
             this.superview = undefined;
-            superview.invalidateHierarchy();
+            superview.markFlagDirty("subviews");
             this.didMoveToSuperview();
             this.didRemovedFromWindow();
         }
@@ -158,8 +150,8 @@ class UIView extends EventEmitter_1.EventEmitter {
         view.willMoveToSuperview(this);
         view.superview = this;
         this.subviews.splice(index, 0, view);
-        this.invalidateHierarchy();
-        view.invalidateHierarchy();
+        this.markFlagDirty("subviews");
+        view.markFlagDirty("subviews");
         view.didMoveToSuperview();
         this.didAddSubview(view);
     }
@@ -167,7 +159,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         const index2View = this.subviews[index2];
         this.subviews[index2] = this.subviews[index1];
         this.subviews[index1] = index2View;
-        this.invalidateHierarchy();
+        this.markFlagDirty("subviews");
     }
     addSubview(view) {
         if (view.superview !== undefined) {
@@ -179,8 +171,8 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
         view.superview = this;
         this.subviews.push(view);
-        this.invalidateHierarchy();
-        view.invalidateHierarchy();
+        this.markFlagDirty("subviews");
+        view.markFlagDirty("subviews");
         view.didMoveToSuperview();
         this.didAddSubview(view);
         view.didMoveToWindow();
@@ -202,7 +194,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.push(view);
-            this.invalidateHierarchy();
+            this.markFlagDirty("subviews");
         }
     }
     sendSubviewToBack(view) {
@@ -210,7 +202,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.unshift(view);
-            this.invalidateHierarchy();
+            this.markFlagDirty("subviews");
         }
     }
     isDescendantOfView(view) {
@@ -278,14 +270,14 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         this._clipsToBounds = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     set hidden(value) {
         if (this._hidden === value) {
             return;
         }
         this._hidden = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     get hidden() {
         return this._hidden;
@@ -298,7 +290,6 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         this._contentMode = value;
-        this.invalidateStyle();
     }
     set tintColor(value) {
         if (this._tintColor === value) {
@@ -323,13 +314,12 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation();
-            this.isAnimationDirty = true;
+            this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["alpha"] = value;
         }
         this._alpha = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     get alpha() {
         return this._alpha;
@@ -344,13 +334,12 @@ class UIView extends EventEmitter_1.EventEmitter {
             }
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-            this.invalidateStylesBeforeAnimation();
-            this.isAnimationDirty = true;
+            this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["backgroundColor"] = value;
         }
         this._backgroundColor = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     get backgroundColor() {
         return this._backgroundColor;
@@ -360,7 +349,7 @@ class UIView extends EventEmitter_1.EventEmitter {
     }
     set extraStyles(value) {
         this._extraStyles = value;
-        this.invalidateStyle();
+        this.markFlagDirty("style");
     }
     convertPointToView(point, toView) {
         const fromPoint = this.convertPointToWindow(point);
@@ -560,90 +549,43 @@ class UIView extends EventEmitter_1.EventEmitter {
         //     })
         // }
     }
-    invalidateStyle() {
-        this.isStyleDirty = true;
+    markFlagDirty(...flags) {
+        flags.forEach(it => {
+            this.dirtyFlags[it] = true;
+        });
         this.invalidate();
-    }
-    invalidateHierarchy() {
-        this.isHierarchyDirty = true;
-        this.invalidate();
-    }
-    invalidateStylesBeforeAnimation() {
-        if (this.viewID) {
-            const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
-            if (component) {
-                let data = {};
-                data.viewID = this.viewID;
-                if (this.isStyleDirty) {
-                    data.style = this.buildStyle();
-                }
-                data.animation = emptyAnimation;
-                this.setDataQueue.reset();
-                this.setDataQueue.addOperation(() => {
-                    return new Promise((resolver) => {
-                        component.setData(data, () => {
-                            setTimeout(() => {
-                                resolver();
-                            }, 150);
-                        });
-                    });
-                });
-                this.isStyleDirty = false;
-            }
-        }
     }
     invalidate() {
-        if (this.invalidateCallHandler === undefined) {
-            this.invalidateCallHandler = setTimeout(() => {
-                this.invalidateCallHandler = undefined;
-                if (this.viewID) {
-                    const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
-                    if (component) {
-                        let data = {};
-                        data.viewID = this.viewID;
-                        if (this.isAnimationDirty) {
-                            data.animation = this.buildAnimation();
+        const viewID = this.viewID;
+        if (viewID) {
+            Ticker_1.Ticker.shared.addTask("setData." + this.clazz + "." + this.viewID, () => {
+                const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(viewID);
+                if (component) {
+                    const data = this.buildData();
+                    let newData = {};
+                    for (const flag in this.dirtyFlags) {
+                        if (data[flag] !== undefined) {
+                            newData[flag] = data[flag];
                         }
-                        else {
-                            if (this.isStyleDirty) {
-                                data.style = this.buildStyle();
-                            }
-                            data.animation = emptyAnimation;
-                        }
-                        if (this.isHierarchyDirty) {
-                            data.subviews = this.subviews.map(it => {
-                                return {
-                                    clazz: it.clazz,
-                                    viewID: it.viewID,
-                                };
-                            });
-                        }
-                        Object.assign(data, this.buildExtras());
-                        this.setDataQueue.addOperation(() => {
-                            return new Promise((resolver) => {
-                                component.setData(data, () => {
-                                    resolver();
-                                });
-                            });
-                        });
-                        this.clearDirtyFlags();
                     }
+                    component.setData(newData);
+                    this.dirtyFlags = {};
                 }
             });
         }
     }
-    markAllFlagsDirty() {
-        this.isStyleDirty = true;
-        this.isHierarchyDirty = true;
-        this.invalidate();
-        this.subviews.forEach(it => it.markAllFlagsDirty());
-    }
-    clearDirtyFlags() {
-        this.isStyleDirty = false;
-        this.isHierarchyDirty = false;
-        this.isAnimationDirty = false;
-        this.animationProps = {};
-        this.animationValues = {};
+    buildData() {
+        return {
+            viewID: this.viewID,
+            style: this.buildStyle(),
+            subviews: this.subviews.map(it => {
+                return {
+                    clazz: it.clazz,
+                    viewID: it.viewID,
+                };
+            }),
+            animation: this.buildAnimation(),
+        };
     }
     buildExtras() {
         return {};
@@ -656,20 +598,20 @@ class UIView extends EventEmitter_1.EventEmitter {
             width: ${this._frame.width}px;
             height: ${this._frame.height}px; 
         `;
-        if (this._backgroundColor !== undefined) {
-            styles += `background-color: ${UIColor_1.UIColor.toStyle(this._backgroundColor)};`;
+        if (this.backgroundColor !== undefined) {
+            styles += `background-color: ${UIColor_1.UIColor.toStyle(this.backgroundColor)};`;
         }
-        if (this._alpha < 1.0) {
-            styles += `opacity: ${this._alpha};`;
+        if (this.alpha < 1.0) {
+            styles += `opacity: ${this.alpha};`;
         }
-        if (this._hidden) {
+        if (this.hidden) {
             styles += `display: none;`;
         }
-        if (this._clipsToBounds) {
+        if (this.clipsToBounds) {
             styles += "overflow: hidden;";
         }
-        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
-            styles += `transform: ${'matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')'};`;
+        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this.transform)) {
+            styles += `transform: ${'matrix(' + this.transform.a + ', ' + this.transform.b + ', ' + this.transform.c + ', ' + this.transform.d + ', ' + this.transform.tx + ', ' + this.transform.ty + ')'};`;
         }
         if (this._layer) {
             if (this._layer._cornerRadius > 0) {
@@ -689,8 +631,8 @@ class UIView extends EventEmitter_1.EventEmitter {
                 `;
             }
         }
-        if (this._extraStyles) {
-            styles += this._extraStyles;
+        if (this.extraStyles) {
+            styles += this.extraStyles;
         }
         return styles;
     }
@@ -733,7 +675,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return animation.export();
         }
         else {
-            return undefined;
+            return emptyAnimation;
         }
     }
 }
@@ -762,8 +704,8 @@ class UIWindow extends UIView {
                 viewID: this.viewID,
             }
         });
-        this.invalidateStyle();
-        this.invalidateHierarchy();
+        this.markFlagDirty("style");
+        this.markFlagDirty("subviews");
     }
     layoutSubviews() {
         super.layoutSubviews();

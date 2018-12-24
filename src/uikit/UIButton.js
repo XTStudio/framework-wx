@@ -42,10 +42,6 @@ class UIButton extends UIView_1.UIView {
         // private statedAttributedTitles: { [key: number]: UIAttributedString } = {}
         this.statedTitleColors = {};
         this.statedImages = {};
-        this.isTextDirty = true;
-        this.isImageDirty = true;
-        this.isHighlightDirty = true;
-        this.isLayoutDirty = true;
         this.titleLabel.font = new UIFont_1.UIFont(17.0);
         this.setupTouches();
     }
@@ -81,7 +77,7 @@ class UIButton extends UIView_1.UIView {
         }
         this._highlighted = value;
         this.reloadContents();
-        this.invalidateHighlight();
+        this.markFlagDirty("contentAlphaAnimation");
     }
     get tracking() {
         return this._tracking;
@@ -149,7 +145,7 @@ class UIButton extends UIView_1.UIView {
     }
     setTitleFont(font) {
         this.titleLabel.font = font;
-        this.invalidateText();
+        this.markFlagDirty("textStyle");
     }
     setImage(image, state) {
         if (this.statedImages[state] === image) {
@@ -171,7 +167,8 @@ class UIButton extends UIView_1.UIView {
             return;
         }
         this._contentEdgeInsets = value;
-        this.invalidateLayout();
+        this.markFlagDirty("titleMargin");
+        this.markFlagDirty("imageMargin");
     }
     get titleEdgeInsets() {
         return this._titleEdgeInsets;
@@ -181,7 +178,7 @@ class UIButton extends UIView_1.UIView {
             return;
         }
         this._titleEdgeInsets = value;
-        this.invalidateLayout();
+        this.markFlagDirty("titleMargin");
     }
     get imageEdgeInsets() {
         return this._imageEdgeInsets;
@@ -191,7 +188,7 @@ class UIButton extends UIView_1.UIView {
             return;
         }
         this._imageEdgeInsets = value;
-        this.invalidateLayout();
+        this.markFlagDirty("imageMargin");
     }
     setupTouches() {
         this.addGestureRecognizer(new UITapGestureRecognizer_1.UITapGestureRecognizer().on("touch", () => {
@@ -250,18 +247,19 @@ class UIButton extends UIView_1.UIView {
     reloadContents() {
         if (this.titleLabel.text !== this.titleForState(this.currentState())) {
             this.titleLabel.text = this.titleForState(this.currentState());
-            this.invalidateText();
+            this.markFlagDirty("text");
         }
         if (this.titleLabel.textColor !== this.titleColorForState(this.currentState())) {
             this.titleLabel.textColor = this.titleColorForState(this.currentState());
-            this.invalidateText();
+            this.markFlagDirty("textStyle");
         }
         if (this.imageView.image !== this.imageForState(this.currentState())) {
             this.imageView.image = this.imageForState(this.currentState());
-            this.invalidateImgae();
+            this.markFlagDirty("imageSource");
         }
         if (!this.isCustom) {
             this.contentAlpha = this.highlighted ? 0.3 : 1.0;
+            this.markFlagDirty("contentAlphaAnimation");
         }
     }
     currentState() {
@@ -312,81 +310,38 @@ class UIButton extends UIView_1.UIView {
     highlightedPointInside(point) {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
     }
-    invalidateText() {
-        this.isTextDirty = true;
-        this.invalidate();
-    }
-    invalidateImgae() {
-        this.isImageDirty = true;
-        this.invalidate();
-    }
-    invalidateHighlight() {
-        this.isHighlightDirty = true;
-        this.invalidate();
-    }
-    invalidateLayout() {
-        this.isLayoutDirty = true;
-        this.invalidate();
-    }
     buildExtras() {
         let data = super.buildExtras();
-        if (this.isTextDirty) {
-            data.text = this.titleLabel.text || "";
-            data.textStyle = `
+        data.text = this.titleLabel.text || "";
+        data.textStyle = `
             color: ${this.titleLabel.textColor !== undefined ? UIColor_1.UIColor.toStyle(this.titleLabel.textColor) : "black"};
             font-size: ${this.titleLabel.font !== undefined ? this.titleLabel.font.pointSize : 14}px;
             font-family: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontName : ""}; 
             font-weight: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : ""}; 
             font-style: ${this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : ""}; 
             `;
-            data.textHeight = this.bounds.height;
+        data.textHeight = this.bounds.height;
+        data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null;
+        if (this.dirtyFlags["contentAlphaAnimation"]) {
+            data.contentAlphaAnimation = wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step().export();
         }
-        if (this.isImageDirty) {
-            data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null;
-        }
-        if (this.isHighlightDirty) {
-            if (this.isTextDirty) {
-                setTimeout(() => {
-                    this.invalidateHighlight();
-                }, 0);
-            }
-            else {
-                data.contentAlphaAnimation = wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step().export();
-            }
-        }
-        if (this.isLayoutDirty) {
-            data.imageMargin = {
-                top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.imageEdgeInsets.right + this.contentEdgeInsets.right,
-            };
-            data.titleMargin = {
-                top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.titleEdgeInsets.right + this.contentEdgeInsets.right,
-            };
-        }
+        data.imageMargin = {
+            top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.imageEdgeInsets.right + this.contentEdgeInsets.right,
+        };
+        data.titleMargin = {
+            top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.titleEdgeInsets.right + this.contentEdgeInsets.right,
+        };
         return data;
-    }
-    markAllFlagsDirty() {
-        super.markAllFlagsDirty();
-        this.isTextDirty = true;
-        this.isImageDirty = true;
-        this.isHighlightDirty = false;
-        this.isLayoutDirty = true;
-    }
-    clearDirtyFlags() {
-        super.clearDirtyFlags();
-        this.isTextDirty = false;
-        this.isImageDirty = false;
-        this.isHighlightDirty = false;
-        this.isLayoutDirty = false;
     }
     layoutSubviews() {
         super.layoutSubviews();
-        this.invalidateText();
+        this.markFlagDirty("textHeight");
     }
 }
 exports.UIButton = UIButton;

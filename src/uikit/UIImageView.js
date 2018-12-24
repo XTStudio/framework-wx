@@ -7,7 +7,7 @@ class UIImageView extends UIView_1.UIView {
         super(...arguments);
         this.clazz = "UIImageView";
         this._image = undefined;
-        this.isImageDirty = false;
+        this._contentMode = UIEnums_1.UIViewContentMode.scaleToFill;
     }
     get image() {
         return this._image;
@@ -17,36 +17,33 @@ class UIImageView extends UIView_1.UIView {
             return;
         }
         this._image = value;
-        this.isImageDirty = true;
-        this.invalidate();
+        this.markFlagDirty("imageSource");
+    }
+    get contentMode() {
+        return this._contentMode;
+    }
+    set contentMode(value) {
+        if (this._contentMode === value) {
+            return;
+        }
+        this._contentMode = value;
+        this.markFlagDirty("scaleMode");
     }
     buildExtras() {
         let data = super.buildExtras();
-        if (this.isImageDirty) {
-            data.imageSource = this._image !== undefined ? this._image.imageSource : null;
-        }
-        if (this.isStyleDirty) {
-            data.scaleMode = (() => {
-                switch (this._contentMode) {
-                    case UIEnums_1.UIViewContentMode.scaleToFill:
-                        return "scaleToFill";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFit:
-                        return "aspectFit";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFill:
-                        return "aspectFill";
-                }
-                return "scaleToFill";
-            })();
-        }
+        data.imageSource = this._image !== undefined ? this._image.imageSource : null;
+        data.scaleMode = (() => {
+            switch (this._contentMode) {
+                case UIEnums_1.UIViewContentMode.scaleToFill:
+                    return "scaleToFill";
+                case UIEnums_1.UIViewContentMode.scaleAspectFit:
+                    return "aspectFit";
+                case UIEnums_1.UIViewContentMode.scaleAspectFill:
+                    return "aspectFill";
+            }
+            return "scaleToFill";
+        })();
         return data;
-    }
-    markAllFlagsDirty() {
-        super.markAllFlagsDirty();
-        this.isImageDirty = true;
-    }
-    clearDirtyFlags() {
-        super.clearDirtyFlags();
-        this.isImageDirty = false;
     }
 }
 exports.UIImageView = UIImageView;

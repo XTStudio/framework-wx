@@ -13,10 +13,8 @@ export class UIViewComponent {
                 if (viewID === undefined || viewID === null) { return }
                 if ((this as any).viewID !== viewID) {
                     UIComponentManager.shared.addComponent(this, viewID)
-                    const newView = UIViewManager.shared.fetchView(viewID)
-                    if (newView) {
-                        newView.markAllFlagsDirty()
-                    }
+                    const newView = UIViewManager.shared.fetchView(viewID);
+                    (this as any).setData(newView.buildData());
                 }
             }
         }

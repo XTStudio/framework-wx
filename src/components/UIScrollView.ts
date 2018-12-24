@@ -48,21 +48,21 @@ export class UIScrollViewComponent extends UIViewComponent {
                     }
                     view._lastScrollTimeStamp = e.timeStamp
                 }
-                if (onScrollTimer !== undefined) {
-                    clearTimeout(onScrollTimer)
-                    onScrollTimer = undefined
-                }
-                onScrollTimer = setTimeout(() => {
-                    const query = (wx.createSelectorQuery() as any).in(this)
-                    query.select('#scroll-view').scrollOffset(function (res: any) {
-                        view._contentOffset = {
-                            x: res.scrollLeft - view._contentInset.left,
-                            y: res.scrollTop - view._contentInset.top
-                        }
-                        view.didScroll()
-                        onScrollTimer = undefined
-                    }).exec()
-                }, 32)
+                // if (onScrollTimer !== undefined) {
+                //     clearTimeout(onScrollTimer)
+                //     onScrollTimer = undefined
+                // }
+                // onScrollTimer = setTimeout(() => {
+                //     const query = (wx.createSelectorQuery() as any).in(this)
+                //     query.select('#scroll-view').scrollOffset(function (res: any) {
+                //         view._contentOffset = {
+                //             x: res.scrollLeft - view._contentInset.left,
+                //             y: res.scrollTop - view._contentInset.top
+                //         }
+                //         view.didScroll()
+                //         onScrollTimer = undefined
+                //     }).exec()
+                // }, 32)
             }
         },
         onTouchStarted: function (e: any) {

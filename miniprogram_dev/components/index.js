@@ -238,8 +238,7 @@ var EventEmitter_1 = __webpack_require__(15);
 var UIEnums_1 = __webpack_require__(8);
 var CALayer_1 = __webpack_require__(46);
 var UIComponentManager_1 = __webpack_require__(1);
-var OperationQueue_1 = __webpack_require__(7);
-exports.dirtyItems = [];
+var Ticker_1 = __webpack_require__(68);
 
 var UIView = function (_EventEmitter_1$Event) {
     _inherits(UIView, _EventEmitter_1$Event);
@@ -273,15 +272,10 @@ var UIView = function (_EventEmitter_1$Event) {
         _this._userInteractionEnabled = true;
         _this.gestureRecognizers = [];
         // Component Data Builder
-        _this.isStyleDirty = true;
-        _this.isHierarchyDirty = true;
-        _this.isAnimationDirty = false;
+        _this.dirtyFlags = {};
         _this.animationProps = {};
         _this.animationValues = {};
-        _this.invalidateCallHandler = undefined;
-        _this.setDataQueue = new OperationQueue_1.OperationQueue();
         UIViewManager_1.UIViewManager.shared.addView(_this);
-        exports.dirtyItems.push(_this);
         return _this;
     }
 
@@ -303,7 +297,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return it !== _this2;
             });
             this.superview = undefined;
-            superview.invalidateHierarchy();
+            superview.markFlagDirty("subviews");
             this.didMoveToSuperview();
             this.didRemovedFromWindow();
         }
@@ -322,8 +316,8 @@ var UIView = function (_EventEmitter_1$Event) {
         view.willMoveToSuperview(this);
         view.superview = this;
         this.subviews.splice(index, 0, view);
-        this.invalidateHierarchy();
-        view.invalidateHierarchy();
+        this.markFlagDirty("subviews");
+        view.markFlagDirty("subviews");
         view.didMoveToSuperview();
         this.didAddSubview(view);
     };
@@ -332,7 +326,7 @@ var UIView = function (_EventEmitter_1$Event) {
         var index2View = this.subviews[index2];
         this.subviews[index2] = this.subviews[index1];
         this.subviews[index1] = index2View;
-        this.invalidateHierarchy();
+        this.markFlagDirty("subviews");
     };
 
     UIView.prototype.addSubview = function addSubview(view) {
@@ -345,8 +339,8 @@ var UIView = function (_EventEmitter_1$Event) {
         }
         view.superview = this;
         this.subviews.push(view);
-        this.invalidateHierarchy();
-        view.invalidateHierarchy();
+        this.markFlagDirty("subviews");
+        view.markFlagDirty("subviews");
         view.didMoveToSuperview();
         this.didAddSubview(view);
         view.didMoveToWindow();
@@ -371,7 +365,7 @@ var UIView = function (_EventEmitter_1$Event) {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.push(view);
-            this.invalidateHierarchy();
+            this.markFlagDirty("subviews");
         }
     };
 
@@ -380,7 +374,7 @@ var UIView = function (_EventEmitter_1$Event) {
         if (index >= 0) {
             this.subviews.splice(index, 1);
             this.subviews.unshift(view);
-            this.invalidateHierarchy();
+            this.markFlagDirty("subviews");
         }
     };
 
@@ -662,98 +656,53 @@ var UIView = function (_EventEmitter_1$Event) {
         return point.x >= 0.0 - this.touchAreaInsets.left && point.y >= 0.0 - this.touchAreaInsets.top && point.x <= this.frame.width + this.touchAreaInsets.right && point.y <= this.frame.height + this.touchAreaInsets.bottom;
     };
 
-    UIView.prototype.invalidateStyle = function invalidateStyle() {
-        this.isStyleDirty = true;
-        this.invalidate();
-    };
+    UIView.prototype.markFlagDirty = function markFlagDirty() {
+        var _this3 = this;
 
-    UIView.prototype.invalidateHierarchy = function invalidateHierarchy() {
-        this.isHierarchyDirty = true;
-        this.invalidate();
-    };
-
-    UIView.prototype.invalidateStylesBeforeAnimation = function invalidateStylesBeforeAnimation() {
-        if (this.viewID) {
-            var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
-            if (component) {
-                var data = {};
-                data.viewID = this.viewID;
-                if (this.isStyleDirty) {
-                    data.style = this.buildStyle();
-                }
-                data.animation = emptyAnimation;
-                this.setDataQueue.reset();
-                this.setDataQueue.addOperation(function () {
-                    return new Promise(function (resolver) {
-                        component.setData(data, function () {
-                            setTimeout(function () {
-                                resolver();
-                            }, 150);
-                        });
-                    });
-                });
-                this.isStyleDirty = false;
-            }
+        for (var _len = arguments.length, flags = Array(_len), _key = 0; _key < _len; _key++) {
+            flags[_key] = arguments[_key];
         }
+
+        flags.forEach(function (it) {
+            _this3.dirtyFlags[it] = true;
+        });
+        this.invalidate();
     };
 
     UIView.prototype.invalidate = function invalidate() {
-        var _this3 = this;
+        var _this4 = this;
 
-        if (this.invalidateCallHandler === undefined) {
-            this.invalidateCallHandler = setTimeout(function () {
-                _this3.invalidateCallHandler = undefined;
-                if (_this3.viewID) {
-                    var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(_this3.viewID);
-                    if (component) {
-                        var data = {};
-                        data.viewID = _this3.viewID;
-                        if (_this3.isAnimationDirty) {
-                            data.animation = _this3.buildAnimation();
-                        } else {
-                            if (_this3.isStyleDirty) {
-                                data.style = _this3.buildStyle();
-                            }
-                            data.animation = emptyAnimation;
+        var viewID = this.viewID;
+        if (viewID) {
+            Ticker_1.Ticker.shared.addTask("setData." + this.clazz + "." + this.viewID, function () {
+                var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(viewID);
+                if (component) {
+                    var data = _this4.buildData();
+                    var newData = {};
+                    for (var flag in _this4.dirtyFlags) {
+                        if (data[flag] !== undefined) {
+                            newData[flag] = data[flag];
                         }
-                        if (_this3.isHierarchyDirty) {
-                            data.subviews = _this3.subviews.map(function (it) {
-                                return {
-                                    clazz: it.clazz,
-                                    viewID: it.viewID
-                                };
-                            });
-                        }
-                        Object.assign(data, _this3.buildExtras());
-                        _this3.setDataQueue.addOperation(function () {
-                            return new Promise(function (resolver) {
-                                component.setData(data, function () {
-                                    resolver();
-                                });
-                            });
-                        });
-                        _this3.clearDirtyFlags();
                     }
+                    component.setData(newData);
+                    _this4.dirtyFlags = {};
                 }
             });
         }
     };
 
-    UIView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        this.isStyleDirty = true;
-        this.isHierarchyDirty = true;
-        this.invalidate();
-        this.subviews.forEach(function (it) {
-            return it.markAllFlagsDirty();
-        });
-    };
-
-    UIView.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        this.isStyleDirty = false;
-        this.isHierarchyDirty = false;
-        this.isAnimationDirty = false;
-        this.animationProps = {};
-        this.animationValues = {};
+    UIView.prototype.buildData = function buildData() {
+        return {
+            viewID: this.viewID,
+            style: this.buildStyle(),
+            subviews: this.subviews.map(function (it) {
+                return {
+                    clazz: it.clazz,
+                    viewID: it.viewID
+                };
+            }),
+            animation: this.buildAnimation()
+        };
     };
 
     UIView.prototype.buildExtras = function buildExtras() {
@@ -762,20 +711,20 @@ var UIView = function (_EventEmitter_1$Event) {
 
     UIView.prototype.buildStyle = function buildStyle() {
         var styles = "\n            position: absolute;\n            left: " + this._frame.x + "px;\n            top: " + this._frame.y + "px;\n            width: " + this._frame.width + "px;\n            height: " + this._frame.height + "px; \n        ";
-        if (this._backgroundColor !== undefined) {
-            styles += "background-color: " + UIColor_1.UIColor.toStyle(this._backgroundColor) + ";";
+        if (this.backgroundColor !== undefined) {
+            styles += "background-color: " + UIColor_1.UIColor.toStyle(this.backgroundColor) + ";";
         }
-        if (this._alpha < 1.0) {
-            styles += "opacity: " + this._alpha + ";";
+        if (this.alpha < 1.0) {
+            styles += "opacity: " + this.alpha + ";";
         }
-        if (this._hidden) {
+        if (this.hidden) {
             styles += "display: none;";
         }
-        if (this._clipsToBounds) {
+        if (this.clipsToBounds) {
             styles += "overflow: hidden;";
         }
-        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this._transform)) {
-            styles += "transform: " + ('matrix(' + this._transform.a + ', ' + this._transform.b + ', ' + this._transform.c + ', ' + this._transform.d + ', ' + this._transform.tx + ', ' + this._transform.ty + ')') + ";";
+        if (!UIAffineTransform_1.UIAffineTransformIsIdentity(this.transform)) {
+            styles += "transform: " + ('matrix(' + this.transform.a + ', ' + this.transform.b + ', ' + this.transform.c + ', ' + this.transform.d + ', ' + this.transform.tx + ', ' + this.transform.ty + ')') + ";";
         }
         if (this._layer) {
             if (this._layer._cornerRadius > 0) {
@@ -788,8 +737,8 @@ var UIView = function (_EventEmitter_1$Event) {
                 styles += "\n                border-width: " + this._layer.borderWidth.toString() + "px;\n                border-color: " + this._layer.borderColor.toStyle() + ";\n                border-style: solid;\n                box-sizing: border-box;\n                ";
             }
         }
-        if (this._extraStyles) {
-            styles += this._extraStyles;
+        if (this.extraStyles) {
+            styles += this.extraStyles;
         }
         return styles;
     };
@@ -825,7 +774,7 @@ var UIView = function (_EventEmitter_1$Event) {
             animation.step();
             return animation.export();
         } else {
-            return undefined;
+            return emptyAnimation;
         }
     };
 
@@ -845,8 +794,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-                this.invalidateStylesBeforeAnimation();
-                this.isAnimationDirty = true;
+                this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 if (Math.abs(this._frame.x - value.x) > 0.001) {
                     this.animationValues["frame.x"] = value.x;
@@ -867,7 +815,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 this.bounds = { x: 0, y: 0, width: value.width, height: value.height };
                 this.setNeedsLayout(true);
             }
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         },
         get: function get() {
             return this._frame;
@@ -890,13 +838,12 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-                this.invalidateStylesBeforeAnimation();
-                this.isAnimationDirty = true;
+                this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["transform"] = value;
             }
             this._transform = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         }
     }, {
         key: "window",
@@ -928,7 +875,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             this._clipsToBounds = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         }
     }, {
         key: "hidden",
@@ -937,7 +884,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             this._hidden = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         },
         get: function get() {
             return this._hidden;
@@ -952,7 +899,6 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             this._contentMode = value;
-            this.invalidateStyle();
         }
     }, {
         key: "tintColor",
@@ -978,13 +924,12 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-                this.invalidateStylesBeforeAnimation();
-                this.isAnimationDirty = true;
+                this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["alpha"] = value;
             }
             this._alpha = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         },
         get: function get() {
             return this._alpha;
@@ -1001,13 +946,12 @@ var UIView = function (_EventEmitter_1$Event) {
                 }
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
-                this.invalidateStylesBeforeAnimation();
-                this.isAnimationDirty = true;
+                this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["backgroundColor"] = value;
             }
             this._backgroundColor = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         },
         get: function get() {
             return this._backgroundColor;
@@ -1019,7 +963,7 @@ var UIView = function (_EventEmitter_1$Event) {
         },
         set: function set(value) {
             this._extraStyles = value;
-            this.invalidateStyle();
+            this.markFlagDirty("style");
         }
     }, {
         key: "userInteractionEnabled",
@@ -1064,15 +1008,15 @@ var UIWindow = function (_UIView) {
     function UIWindow() {
         _classCallCheck(this, UIWindow);
 
-        var _this4 = _possibleConstructorReturn(this, _UIView.apply(this, arguments));
+        var _this5 = _possibleConstructorReturn(this, _UIView.apply(this, arguments));
 
-        _this4.clazz = "UIWindow";
+        _this5.clazz = "UIWindow";
         // touches
-        _this4.currentTouchesID = [];
-        _this4.touches = {};
-        _this4.upCount = new Map();
-        _this4.upTimestamp = new Map();
-        return _this4;
+        _this5.currentTouchesID = [];
+        _this5.touches = {};
+        _this5.upCount = new Map();
+        _this5.upTimestamp = new Map();
+        return _this5;
     }
 
     UIWindow.prototype.attach = function attach(dataOwner, dataField) {
@@ -1091,8 +1035,8 @@ var UIWindow = function (_UIView) {
             clazz: this.clazz,
             viewID: this.viewID
         }, _dataOwner$setData));
-        this.invalidateStyle();
-        this.invalidateHierarchy();
+        this.markFlagDirty("style");
+        this.markFlagDirty("subviews");
     };
 
     UIWindow.prototype.layoutSubviews = function layoutSubviews() {
@@ -1103,23 +1047,23 @@ var UIWindow = function (_UIView) {
     };
 
     UIWindow.prototype.handleTouchStart = function handleTouchStart(e) {
-        var _this5 = this;
+        var _this6 = this;
 
         var changedTouches = this.standardlizeTouches(e);
 
         var _loop = function _loop(index) {
             var pointer = changedTouches[index];
-            var pointerIdentifier = _this5.standardlizeTouchIdentifier(pointer);
-            _this5.currentTouchesID.push(pointerIdentifier);
+            var pointerIdentifier = _this6.standardlizeTouchIdentifier(pointer);
+            _this6.currentTouchesID.push(pointerIdentifier);
             var point = { x: pointer.pageX, y: pointer.pageY };
-            var target = _this5.hitTest(point);
+            var target = _this6.hitTest(point);
             if (target) {
                 var touch = new UITouch_1.UITouch();
-                _this5.touches[pointerIdentifier] = touch;
+                _this6.touches[pointerIdentifier] = touch;
                 touch.identifier = pointerIdentifier;
                 touch.phase = UITouch_1.UITouchPhase.began;
                 touch.tapCount = function () {
-                    for (var _iterator = _this5.upCount, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                    for (var _iterator = _this6.upCount, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
                         var _ref2;
 
                         if (_isArray) {
@@ -1135,7 +1079,7 @@ var UIWindow = function (_UIView) {
                         var key = _ref[0];
                         var value = _ref[1];
 
-                        var timestamp = _this5.upTimestamp.get(key) || 0.0;
+                        var timestamp = _this6.upTimestamp.get(key) || 0.0;
                         if (e.timeStamp / 1000 - timestamp < 1.0 && Math.abs(key.x - point.x) < 44.0 && Math.abs(key.y - point.y) < 44.0) {
                             return value + 1;
                         }
@@ -1143,7 +1087,7 @@ var UIWindow = function (_UIView) {
                     return 1;
                 }();
                 touch.timestamp = e.timeStamp / 1000;
-                touch.window = _this5;
+                touch.window = _this6;
                 touch.windowPoint = point;
                 touch.view = target;
                 if (touch.identifier == 0) {
@@ -1402,57 +1346,7 @@ exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
 };
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var OperationQueue = function () {
-    function OperationQueue() {
-        _classCallCheck(this, OperationQueue);
-
-        this.locked = false;
-        this.operations = [];
-    }
-
-    OperationQueue.prototype.addOperation = function addOperation(operation) {
-        this.operations.push(operation);
-        this.run();
-    };
-
-    OperationQueue.prototype.reset = function reset() {
-        this.operations = [];
-    };
-
-    OperationQueue.prototype.run = function run() {
-        var _this = this;
-
-        if (this.locked) {
-            return;
-        }
-        if (this.operations.length > 0) {
-            this.locked = true;
-            this.operations[0]().then(function () {
-                _this.operations.shift();
-                _this.locked = false;
-                _this.run();
-            }).catch(function (error) {
-                console.error(error);
-            });
-        }
-    };
-
-    return OperationQueue;
-}();
-
-exports.OperationQueue = OperationQueue;
-
-/***/ }),
+/* 7 */,
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2338,65 +2232,37 @@ var UILabel = function (_UIView_1$UIView) {
         _this._textColor = undefined;
         _this._textAlignment = UIEnums_1.UITextAlignment.left;
         _this._numberOfLines = 1;
-        // invalidate
-        _this.isTextDirty = true;
-        _this.isTextStyleDirty = true;
         return _this;
     }
 
-    UILabel.prototype.invalidateText = function invalidateText() {
-        this.isTextDirty = true;
-        this.invalidate();
-    };
-
-    UILabel.prototype.invalidateTextStyle = function invalidateTextStyle() {
-        this.isTextStyleDirty = true;
-        this.invalidate();
-    };
-
+    // invalidate
     UILabel.prototype.buildExtras = function buildExtras() {
         var _this2 = this;
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this.isTextDirty) {
-            if (this._attributedText) {
-                data.richText = this._attributedText.toHTMLText();
-            } else {
-                data.text = this._text !== undefined ? this._text : "";
+        if (this._attributedText) {
+            data.richText = this._attributedText.toHTMLText();
+        } else {
+            data.text = this._text !== undefined ? this._text : "";
+        }
+        data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
+            switch (_this2._textAlignment) {
+                case UIEnums_1.UITextAlignment.left:
+                    return "left";
+                case UIEnums_1.UITextAlignment.center:
+                    return "center";
+                case UIEnums_1.UITextAlignment.right:
+                    return "right";
             }
-        }
-        if (this.isTextStyleDirty) {
-            data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
-                switch (_this2._textAlignment) {
-                    case UIEnums_1.UITextAlignment.left:
-                        return "left";
-                    case UIEnums_1.UITextAlignment.center:
-                        return "center";
-                    case UIEnums_1.UITextAlignment.right:
-                        return "right";
-                }
-                return "left";
-            }() + ";\n            " + function () {
-                if (_this2._numberOfLines === 1) {
-                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
-                } else {
-                    return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
-                }
-            }() + "\n        }";
-        }
+            return "left";
+        }() + ";\n            " + function () {
+            if (_this2._numberOfLines === 1) {
+                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
+            } else {
+                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
+            }
+        }() + "\n        }";
         return data;
-    };
-
-    UILabel.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isTextDirty = true;
-        this.isTextStyleDirty = true;
-    };
-
-    UILabel.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isTextDirty = false;
-        this.isTextStyleDirty = false;
     };
 
     _createClass(UILabel, [{
@@ -2409,7 +2275,8 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._text = value;
-            this.invalidateText();
+            this.markFlagDirty("text");
+            this.markFlagDirty("richText");
         }
     }, {
         key: "attributedText",
@@ -2421,7 +2288,8 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._attributedText = value;
-            this.invalidateText();
+            this.markFlagDirty("text");
+            this.markFlagDirty("richText");
         }
     }, {
         key: "font",
@@ -2433,7 +2301,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._font = value;
-            this.invalidateTextStyle();
+            this.markFlagDirty("textStyle");
         }
     }, {
         key: "textColor",
@@ -2445,7 +2313,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._textColor = value;
-            this.invalidateTextStyle();
+            this.markFlagDirty("textStyle");
         }
     }, {
         key: "textAlignment",
@@ -2457,7 +2325,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._textAlignment = value;
-            this.invalidateTextStyle();
+            this.markFlagDirty("textStyle");
         }
     }, {
         key: "numberOfLines",
@@ -2469,7 +2337,7 @@ var UILabel = function (_UIView_1$UIView) {
                 return;
             }
             this._numberOfLines = value;
-            this.invalidateTextStyle();
+            this.markFlagDirty("textStyle");
         }
     }]);
 
@@ -2507,7 +2375,7 @@ var UIImageView = function (_UIView_1$UIView) {
 
         _this.clazz = "UIImageView";
         _this._image = undefined;
-        _this.isImageDirty = false;
+        _this._contentMode = UIEnums_1.UIViewContentMode.scaleToFill;
         return _this;
     }
 
@@ -2515,33 +2383,19 @@ var UIImageView = function (_UIView_1$UIView) {
         var _this2 = this;
 
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this.isImageDirty) {
-            data.imageSource = this._image !== undefined ? this._image.imageSource : null;
-        }
-        if (this.isStyleDirty) {
-            data.scaleMode = function () {
-                switch (_this2._contentMode) {
-                    case UIEnums_1.UIViewContentMode.scaleToFill:
-                        return "scaleToFill";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFit:
-                        return "aspectFit";
-                    case UIEnums_1.UIViewContentMode.scaleAspectFill:
-                        return "aspectFill";
-                }
-                return "scaleToFill";
-            }();
-        }
+        data.imageSource = this._image !== undefined ? this._image.imageSource : null;
+        data.scaleMode = function () {
+            switch (_this2._contentMode) {
+                case UIEnums_1.UIViewContentMode.scaleToFill:
+                    return "scaleToFill";
+                case UIEnums_1.UIViewContentMode.scaleAspectFit:
+                    return "aspectFit";
+                case UIEnums_1.UIViewContentMode.scaleAspectFill:
+                    return "aspectFill";
+            }
+            return "scaleToFill";
+        }();
         return data;
-    };
-
-    UIImageView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isImageDirty = true;
-    };
-
-    UIImageView.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isImageDirty = false;
     };
 
     _createClass(UIImageView, [{
@@ -2554,8 +2408,19 @@ var UIImageView = function (_UIView_1$UIView) {
                 return;
             }
             this._image = value;
-            this.isImageDirty = true;
-            this.invalidate();
+            this.markFlagDirty("imageSource");
+        }
+    }, {
+        key: "contentMode",
+        get: function get() {
+            return this._contentMode;
+        },
+        set: function set(value) {
+            if (this._contentMode === value) {
+                return;
+            }
+            this._contentMode = value;
+            this.markFlagDirty("scaleMode");
         }
     }]);
 
@@ -2698,16 +2563,6 @@ var UIViewController = function (_EventEmitter_1$Event) {
             return this._view.superview;
         }
         return undefined;
-    };
-
-    UIViewController.prototype.invalidate = function invalidate() {
-        var dirty = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-        var force = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-        var nextResponder = this.nextResponder();
-        if (nextResponder !== undefined) {
-            nextResponder.invalidate(true, force);
-        }
     };
 
     _createClass(UIViewController, [{
@@ -4343,10 +4198,6 @@ var UIButton = function (_UIView_1$UIView) {
         // private statedAttributedTitles: { [key: number]: UIAttributedString } = {}
         _this.statedTitleColors = {};
         _this.statedImages = {};
-        _this.isTextDirty = true;
-        _this.isImageDirty = true;
-        _this.isHighlightDirty = true;
-        _this.isLayoutDirty = true;
         _this.titleLabel.font = new UIFont_1.UIFont(17.0);
         _this.setupTouches();
         return _this;
@@ -4378,7 +4229,7 @@ var UIButton = function (_UIView_1$UIView) {
 
     UIButton.prototype.setTitleFont = function setTitleFont(font) {
         this.titleLabel.font = font;
-        this.invalidateText();
+        this.markFlagDirty("textStyle");
     };
 
     UIButton.prototype.setImage = function setImage(image, state) {
@@ -4451,18 +4302,19 @@ var UIButton = function (_UIView_1$UIView) {
     UIButton.prototype.reloadContents = function reloadContents() {
         if (this.titleLabel.text !== this.titleForState(this.currentState())) {
             this.titleLabel.text = this.titleForState(this.currentState());
-            this.invalidateText();
+            this.markFlagDirty("text");
         }
         if (this.titleLabel.textColor !== this.titleColorForState(this.currentState())) {
             this.titleLabel.textColor = this.titleColorForState(this.currentState());
-            this.invalidateText();
+            this.markFlagDirty("textStyle");
         }
         if (this.imageView.image !== this.imageForState(this.currentState())) {
             this.imageView.image = this.imageForState(this.currentState());
-            this.invalidateImgae();
+            this.markFlagDirty("imageSource");
         }
         if (!this.isCustom) {
             this.contentAlpha = this.highlighted ? 0.3 : 1.0;
+            this.markFlagDirty("contentAlphaAnimation");
         }
     };
 
@@ -4519,83 +4371,33 @@ var UIButton = function (_UIView_1$UIView) {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
     };
 
-    UIButton.prototype.invalidateText = function invalidateText() {
-        this.isTextDirty = true;
-        this.invalidate();
-    };
-
-    UIButton.prototype.invalidateImgae = function invalidateImgae() {
-        this.isImageDirty = true;
-        this.invalidate();
-    };
-
-    UIButton.prototype.invalidateHighlight = function invalidateHighlight() {
-        this.isHighlightDirty = true;
-        this.invalidate();
-    };
-
-    UIButton.prototype.invalidateLayout = function invalidateLayout() {
-        this.isLayoutDirty = true;
-        this.invalidate();
-    };
-
     UIButton.prototype.buildExtras = function buildExtras() {
-        var _this3 = this;
-
         var data = _UIView_1$UIView.prototype.buildExtras.call(this);
-        if (this.isTextDirty) {
-            data.text = this.titleLabel.text || "";
-            data.textStyle = "\n            color: " + (this.titleLabel.textColor !== undefined ? UIColor_1.UIColor.toStyle(this.titleLabel.textColor) : "black") + ";\n            font-size: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.pointSize : 14) + "px;\n            font-family: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontName : "") + "; \n            font-weight: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            font-style: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            ";
-            data.textHeight = this.bounds.height;
+        data.text = this.titleLabel.text || "";
+        data.textStyle = "\n            color: " + (this.titleLabel.textColor !== undefined ? UIColor_1.UIColor.toStyle(this.titleLabel.textColor) : "black") + ";\n            font-size: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.pointSize : 14) + "px;\n            font-family: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontName : "") + "; \n            font-weight: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            font-style: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            ";
+        data.textHeight = this.bounds.height;
+        data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null;
+        if (this.dirtyFlags["contentAlphaAnimation"]) {
+            data.contentAlphaAnimation = wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step().export();
         }
-        if (this.isImageDirty) {
-            data.imageSource = this.imageView.image ? this.imageView.image.imageSource : null;
-        }
-        if (this.isHighlightDirty) {
-            if (this.isTextDirty) {
-                setTimeout(function () {
-                    _this3.invalidateHighlight();
-                }, 0);
-            } else {
-                data.contentAlphaAnimation = wx.createAnimation({ duration: 100, timingFunction: "linear" }).opacity(this.contentAlpha).step().export();
-            }
-        }
-        if (this.isLayoutDirty) {
-            data.imageMargin = {
-                top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.imageEdgeInsets.right + this.contentEdgeInsets.right
-            };
-            data.titleMargin = {
-                top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
-                left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
-                bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
-                right: this.titleEdgeInsets.right + this.contentEdgeInsets.right
-            };
-        }
+        data.imageMargin = {
+            top: this.imageEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.imageEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.imageEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.imageEdgeInsets.right + this.contentEdgeInsets.right
+        };
+        data.titleMargin = {
+            top: this.titleEdgeInsets.top + this.contentEdgeInsets.top,
+            left: this.titleEdgeInsets.left + this.contentEdgeInsets.left,
+            bottom: this.titleEdgeInsets.bottom + this.contentEdgeInsets.bottom,
+            right: this.titleEdgeInsets.right + this.contentEdgeInsets.right
+        };
         return data;
-    };
-
-    UIButton.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isTextDirty = true;
-        this.isImageDirty = true;
-        this.isHighlightDirty = false;
-        this.isLayoutDirty = true;
-    };
-
-    UIButton.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isTextDirty = false;
-        this.isImageDirty = false;
-        this.isHighlightDirty = false;
-        this.isLayoutDirty = false;
     };
 
     UIButton.prototype.layoutSubviews = function layoutSubviews() {
         _UIView_1$UIView.prototype.layoutSubviews.call(this);
-        this.invalidateText();
+        this.markFlagDirty("textHeight");
     };
 
     _createClass(UIButton, [{
@@ -4636,7 +4438,7 @@ var UIButton = function (_UIView_1$UIView) {
             }
             this._highlighted = value;
             this.reloadContents();
-            this.invalidateHighlight();
+            this.markFlagDirty("contentAlphaAnimation");
         }
     }, {
         key: "tracking",
@@ -4696,7 +4498,8 @@ var UIButton = function (_UIView_1$UIView) {
                 return;
             }
             this._contentEdgeInsets = value;
-            this.invalidateLayout();
+            this.markFlagDirty("titleMargin");
+            this.markFlagDirty("imageMargin");
         }
     }, {
         key: "titleEdgeInsets",
@@ -4708,7 +4511,7 @@ var UIButton = function (_UIView_1$UIView) {
                 return;
             }
             this._titleEdgeInsets = value;
-            this.invalidateLayout();
+            this.markFlagDirty("titleMargin");
         }
     }, {
         key: "imageEdgeInsets",
@@ -4720,7 +4523,7 @@ var UIButton = function (_UIView_1$UIView) {
                 return;
             }
             this._imageEdgeInsets = value;
-            this.invalidateLayout();
+            this.markFlagDirty("imageMargin");
         }
     }]);
 
@@ -6163,9 +5966,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._scrollsToTop = true;
         _this._endDraggingVelocity = UIPoint_1.UIPointZero;
         // Build Data
-        _this.isContentBoundsDirty = false;
-        _this.isContentOffsetDirty = false;
-        _this.isContentOffsetScrollAnimatedDirty = false;
         _this.isContentOffsetScrollAnimated = false;
         _this._panGesture.enabled = false;
         return _this;
@@ -6235,7 +6035,6 @@ var UIScrollView = function (_UIView_1$UIView) {
                 } else {
                     this.setContentOffset({ x: 0, y: currentPageY }, true);
                 }
-                this.invalidate();
             } else if (this.contentSize.height < this.bounds.height) {
                 if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) {
                     return;
@@ -6249,7 +6048,6 @@ var UIScrollView = function (_UIView_1$UIView) {
                 } else {
                     this.setContentOffset({ x: currentPageX, y: 0 }, true);
                 }
-                this.invalidate();
             }
         }
     };
@@ -6274,8 +6072,7 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.layoutSubviews = function layoutSubviews() {
         _UIView_1$UIView.prototype.layoutSubviews.call(this);
-        this.isContentBoundsDirty = true;
-        this.invalidate();
+        this.markFlagDirty("direction");
     };
 
     UIScrollView.prototype.buildExtras = function buildExtras() {
@@ -6286,55 +6083,30 @@ var UIScrollView = function (_UIView_1$UIView) {
             width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
             height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
         };
-        if (this.isContentOffsetDirty) {
-            if (this.isContentOffsetScrollAnimatedDirty) {
-                data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
-                var isContentBoundsDirty = this.isContentBoundsDirty;
-                setTimeout(function () {
-                    _this2.isContentBoundsDirty = isContentBoundsDirty;
-                    _this2.isContentOffsetDirty = true;
-                    _this2.isContentOffsetScrollAnimatedDirty = false;
-                    _this2.invalidate();
-                }, 0);
-                return data;
-            }
+        if (this.dirtyFlags["contentOffsetX"] || this.dirtyFlags["contentOffsetY"]) {
             data.contentOffsetX = this._contentOffset.x + this._contentInset.left;
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
+            data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
         }
         data.inertia = this._pagingEnabled === true ? false : true;
         data.scrollsToTop = this.scrollsToTop;
-        if (this.isContentBoundsDirty) {
-            data.direction = function () {
-                if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
-                    return "all";
-                } else if (totalContentSize.width > _this2.bounds.width) {
-                    return "horizontal";
-                } else if (totalContentSize.height > _this2.bounds.height) {
-                    return "vertical";
-                } else {
-                    return "none";
-                }
-            }();
-            data.contentSize = totalContentSize;
-            data.contentInset = this._contentInset;
-        }
+        data.direction = function () {
+            if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
+                return "all";
+            } else if (totalContentSize.width > _this2.bounds.width) {
+                return "horizontal";
+            } else if (totalContentSize.height > _this2.bounds.height) {
+                return "vertical";
+            } else {
+                return "none";
+            }
+        }();
+        data.contentSize = totalContentSize;
+        data.contentInset = this._contentInset;
         if (!this._scrollEnabled) {
             data.direction = "none";
         }
         return data;
-    };
-
-    UIScrollView.prototype.markAllFlagsDirty = function markAllFlagsDirty() {
-        _UIView_1$UIView.prototype.markAllFlagsDirty.call(this);
-        this.isContentBoundsDirty = true;
-        this.isContentOffsetDirty = true;
-    };
-
-    UIScrollView.prototype.clearDirtyFlags = function clearDirtyFlags() {
-        _UIView_1$UIView.prototype.clearDirtyFlags.call(this);
-        this.isContentBoundsDirty = false;
-        this.isContentOffsetDirty = false;
-        this.isContentOffsetScrollAnimated = false;
     };
 
     _createClass(UIScrollView, [{
@@ -6344,11 +6116,9 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentOffset = value;
-            this.isContentOffsetDirty = true;
-            this.isContentOffsetScrollAnimatedDirty = true;
-            this.isContentOffsetScrollAnimated = false;
             this.contentOffsetDidChanged();
-            this.invalidate();
+            this.markFlagDirty("contentOffsetX", "contentOffsetY", "scrollWithAnimation");
+            this.isContentOffsetScrollAnimated = false;
         }
     }, {
         key: "contentSize",
@@ -6357,8 +6127,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentSize = value;
-            this.isContentBoundsDirty = true;
-            this.invalidate();
+            this.markFlagDirty("contentSize");
         }
     }, {
         key: "contentInset",
@@ -6370,8 +6139,7 @@ var UIScrollView = function (_UIView_1$UIView) {
             var deltaY = value.top - this._contentInset.top;
             this._contentInset = value;
             this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY };
-            this.isContentBoundsDirty = true;
-            this.invalidate();
+            this.markFlagDirty("contentInset", "contentSize");
         }
     }, {
         key: "bounces",
@@ -6380,7 +6148,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._bounces = value;
-            this.invalidate();
         }
     }, {
         key: "alwaysBounceVertical",
@@ -6389,7 +6156,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._alwaysBounceVertical = value;
-            this.invalidate();
         }
     }, {
         key: "alwaysBounceHorizontal",
@@ -6398,7 +6164,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._alwaysBounceHorizontal = value;
-            this.invalidate();
         }
     }, {
         key: "pagingEnabled",
@@ -6407,7 +6172,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._pagingEnabled = value;
-            this.invalidate();
         }
     }, {
         key: "scrollEnabled",
@@ -6425,7 +6189,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._scrollsToTop = value;
-            this.invalidate();
+            this.markFlagDirty("scrollsToTop");
         }
     }]);
 
@@ -8405,8 +8169,8 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         var _this6 = this;
 
         var boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        var contentOffsetY = this.contentOffset.y - boundsSize.height;
-        var visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height + boundsSize.height * 2 };
+        var contentOffsetY = this.contentOffset.y;
+        var visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -8955,6 +8719,66 @@ var UIIndexPath = function () {
 }();
 
 exports.UIIndexPath = UIIndexPath;
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Ticker = function () {
+    function Ticker() {
+        _classCallCheck(this, Ticker);
+
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+    }
+
+    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
+        this.taskBlocks[taskID] = taskBlock;
+        this.activeTimer();
+    };
+
+    Ticker.prototype.run = function run() {
+        if (Object.keys(this.taskBlocks).length > 0) {
+            for (var key in this.taskBlocks) {
+                try {
+                    this.taskBlocks[key]();
+                } catch (error) {}
+            }
+            this.taskBlocks = {};
+            this.timerHandler = undefined;
+        }
+    };
+
+    Ticker.prototype.activeTimer = function activeTimer() {
+        if (this.timerHandler !== undefined) {
+            return;
+        }
+        this.timerHandler = setTimeout(this.run.bind(this), 0);
+    };
+
+    _createClass(Ticker, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().TickerShared === undefined) {
+                getApp().TickerShared = new Ticker();
+            }
+            return getApp().TickerShared;
+        }
+    }]);
+
+    return Ticker;
+}();
+
+exports.Ticker = Ticker;
 
 /***/ })
 /******/ ]);
