@@ -19,8 +19,6 @@ import { Ticker } from "./helpers/Ticker";
 export class UIView extends EventEmitter {
 
     clazz: string = "UIView"
-    dataOwner: any = undefined
-    dataField: string | undefined = undefined
     viewID: string | undefined = undefined
 
     constructor() {
@@ -71,7 +69,7 @@ export class UIView extends EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height }
             this.setNeedsLayout(true)
         }
-        this.markFlagDirty("style")
+        this.markFlagDirty("frameStyle")
     }
 
     get frame(): UIRect {
@@ -622,11 +620,13 @@ export class UIView extends EventEmitter {
 
     // Component Data Builder
 
-    protected dirtyFlags: { [key: string]: boolean } = {}
+    public dirtyFlags: { [key: string]: boolean } = {}
     protected animationProps: { [key: string]: any } = {}
     protected animationValues: { [key: string]: any } = {}
 
     markFlagDirty(...flags: string[]) {
+        const viewID = this.viewID
+        if (viewID && UIComponentManager.shared.fetchComponent(viewID) === undefined) { return }
         flags.forEach(it => {
             this.dirtyFlags[it] = true
         })
@@ -636,6 +636,7 @@ export class UIView extends EventEmitter {
     invalidate() {
         const viewID = this.viewID
         if (viewID) {
+            if (Ticker.shared.hasTask("setData." + this.clazz + "." + this.viewID)) { return }
             Ticker.shared.addTask("setData." + this.clazz + "." + this.viewID, () => {
                 const component = UIComponentManager.shared.fetchComponent(viewID)
                 if (component) {
@@ -657,6 +658,7 @@ export class UIView extends EventEmitter {
         return {
             viewID: this.viewID,
             style: this.buildStyle(),
+            frameStyle: `transform: translate(${this._frame.x}px, ${this._frame.y}px);width: ${this._frame.width}px;height: ${this._frame.height}px;`,
             subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
@@ -675,10 +677,6 @@ export class UIView extends EventEmitter {
     buildStyle() {
         let styles = `
             position: absolute;
-            left: ${this._frame.x}px;
-            top: ${this._frame.y}px;
-            width: ${this._frame.width}px;
-            height: ${this._frame.height}px; 
         `
         if (this.backgroundColor !== undefined) {
             styles += `background-color: ${UIColor.toStyle(this.backgroundColor)};`
@@ -776,10 +774,8 @@ export class UIWindow extends UIView {
             this.addSubview(rootView)
             this.layoutSubviews()
         }
-        this.dataOwner = dataOwner
-        this.dataField = dataField
-        this.dataOwner.setData({
-            [this.dataField]: {
+        dataOwner.setData({
+            [dataField]: {
                 clazz: this.clazz,
                 viewID: this.viewID,
             }

@@ -24,7 +24,6 @@ export class UIScrollView extends UIView {
 
     set contentOffset(value: UIPoint) {
         this._contentOffset = value
-        this.contentOffsetDidChanged()
         this.markFlagDirty("contentOffsetX", "contentOffsetY", "scrollWithAnimation")
         this.isContentOffsetScrollAnimated = false
     }

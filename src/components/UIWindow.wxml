@@ -1,7 +1,7 @@
-<view style='{{style}}' animation='{{animation}}' data-viewid="{{viewID}}" bindtouchstart="onTouchStarted" bindtouchmove="onTouchMoved" bindtouchend="onTouchEnded" bindtouchcancel="onTouchCancelled">
-  <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+<view style='{{style}}{{frameStyle}}' animation='{{animation}}' data-viewid="{{viewID}}" bindtouchstart="onTouchStarted" bindtouchmove="onTouchMoved" bindtouchend="onTouchEnded" bindtouchcancel="onTouchCancelled">
+  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
     <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
-  </view>
+  </block>
   <rich-text id="_text_measurer"
              nodes="{{measuringRichText}}" 
              style='position:absolute;top:-9999px;line-height:1.0;opacity:0;{{measuringTextStyle}}'>{{measuringText}}</rich-text>

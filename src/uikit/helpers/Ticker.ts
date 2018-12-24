@@ -9,20 +9,25 @@ export class Ticker {
 
     private taskBlocks: { [key: string]: () => void } = {}
 
+    hasTask(taskID: string): boolean {
+        return this.taskBlocks[taskID] !== undefined
+    }
+
     addTask(taskID: string, taskBlock: () => void) {
         this.taskBlocks[taskID] = taskBlock
         this.activeTimer()
     }
 
     run() {
-        if (Object.keys(this.taskBlocks).length > 0) {
-            for (const key in this.taskBlocks) {
+        const currentBlocks = this.taskBlocks
+        this.taskBlocks = {}
+        this.timerHandler = undefined
+        if (Object.keys(currentBlocks).length > 0) {
+            for (const key in currentBlocks) {
                 try {
-                    this.taskBlocks[key]()
+                    currentBlocks[key]()
                 } catch (error) { }
             }
-            this.taskBlocks = {}
-            this.timerHandler = undefined
         }
     }
 
@@ -30,7 +35,7 @@ export class Ticker {
 
     private activeTimer() {
         if (this.timerHandler !== undefined) { return }
-        this.timerHandler = setTimeout(this.run.bind(this), 0)
+        this.timerHandler = setTimeout(this.run.bind(this), 16)
     }
 
 }

@@ -40,6 +40,7 @@ class FooCell extends UITableViewCell {
 
     constructor(context) {
         super(context)
+        this.textLabel.text = "Hello."
         this.textLabel.font = new UIFont(24)
         this.textLabel.frame = UIRectMake(0, 0, 200, 44)
         this.contentView.addSubview(this.textLabel)
@@ -50,16 +51,26 @@ class FooCell extends UITableViewCell {
 class BarViewController extends UIViewController {
 
     scrollView = new UIScrollView
-    redView = new UILabel
+    bView = new UIView
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.redView.text = "Hello, World"
-        this.redView.textAlignment = UITextAlignment.center
-        this.redView.frame = UIRectMake(0, 0, 300, 300)
-        this.scrollView.addSubview(this.redView)
-        this.scrollView.contentSize = { width: 0, height: 9000 }
+        for (let index = 0; index < 100; index++) {
+            const v = new UIView
+            v.backgroundColor = UIColor.gray
+            v.frame = UIRectMake(0, 4000 * index + Math.random() * 200, 200, 200)
+            this.scrollView.addSubview(v)
+        }
+        this.scrollView.contentSize = { width: 0, height: 4000 * 100 }
         this.view.addSubview(this.scrollView)
+        this.bView.backgroundColor = UIColor.yellow
+        this.bView.frame = UIRectMake(0, 0, 44, 44)
+        this.bView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+            const e = new Date().getTime()
+            this.scrollView.setContentOffset({ x: 0, y: this.scrollView.contentOffset.y + 4000 }, false)
+            this.title = (new Date().getTime() - e).toString()
+        }))
+        this.view.addSubview(this.bView)
     }
 
     viewWillLayoutSubviews() {
@@ -72,12 +83,13 @@ class BarViewController extends UIViewController {
 class FooViewController extends UIViewController {
 
     tableView = new UITableView
+    bView = new UIView
 
     viewDidLoad() {
         super.viewDidLoad()
         this.title = "UITableView"
         this.tableView.register((context) => new FooCell(context), "Cell")
-        this.tableView.on("numberOfRows", () => 10000)
+        this.tableView.on("numberOfRows", () => 80)
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
@@ -89,6 +101,17 @@ class FooViewController extends UIViewController {
         })
         this.tableView.reloadData()
         this.view.addSubview(this.tableView)
+        this.bView.backgroundColor = UIColor.yellow
+        this.bView.frame = UIRectMake(0, 0, 44, 44)
+        this.bView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+            const e = new Date().getTime()
+            const targetY = this.tableView.contentOffset.y + 10000
+            // for (let index = 0; index < 10000; index++) {
+                this.tableView.setContentOffset({ x: 0, y: targetY }, false)
+            // }
+            this.title = (new Date().getTime() - e).toString()
+        }))
+        this.view.addSubview(this.bView)
     }
 
     viewWillLayoutSubviews() {
@@ -151,6 +174,7 @@ const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
 const main = tabBarController
+// const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

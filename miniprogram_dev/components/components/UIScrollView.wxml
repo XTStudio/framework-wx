@@ -1,4 +1,4 @@
-<!-- <movable-area style='{{style}}' data-viewID="{{viewID}}">
+<!-- <movable-area style='{{style}}{{frameStyle}}' data-viewID="{{viewID}}">
   <movable-view 
     data-viewID="{{viewID}}" 
     direction="vertical" 
@@ -28,7 +28,7 @@
 
 <scroll-view 
     id="scroll-view"
-    style='{{style}};' 
+    style='{{style}}{{frameStyle}}' 
     scroll-x="{{direction == 'horizontal' || direction == 'all'}}" 
     scroll-y="{{direction == 'vertical' || direction == 'all'}}" 
     scroll-top="{{contentOffsetY}}"

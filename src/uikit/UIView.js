@@ -17,8 +17,6 @@ class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
         super();
         this.clazz = "UIView";
-        this.dataOwner = undefined;
-        this.dataField = undefined;
         this.viewID = undefined;
         this._layer = undefined;
         this._frame = UIRect_1.UIRectZero;
@@ -84,7 +82,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             this.bounds = { x: 0, y: 0, width: value.width, height: value.height };
             this.setNeedsLayout(true);
         }
-        this.markFlagDirty("style");
+        this.markFlagDirty("frameStyle");
     }
     get frame() {
         return this._frame;
@@ -550,6 +548,10 @@ class UIView extends EventEmitter_1.EventEmitter {
         // }
     }
     markFlagDirty(...flags) {
+        const viewID = this.viewID;
+        if (viewID && UIComponentManager_1.UIComponentManager.shared.fetchComponent(viewID) === undefined) {
+            return;
+        }
         flags.forEach(it => {
             this.dirtyFlags[it] = true;
         });
@@ -558,6 +560,9 @@ class UIView extends EventEmitter_1.EventEmitter {
     invalidate() {
         const viewID = this.viewID;
         if (viewID) {
+            if (Ticker_1.Ticker.shared.hasTask("setData." + this.clazz + "." + this.viewID)) {
+                return;
+            }
             Ticker_1.Ticker.shared.addTask("setData." + this.clazz + "." + this.viewID, () => {
                 const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(viewID);
                 if (component) {
@@ -575,7 +580,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
     }
     buildData() {
-        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), subviews: this.subviews.map(it => {
+        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: `transform: translate(${this._frame.x}px, ${this._frame.y}px);width: ${this._frame.width}px;height: ${this._frame.height}px;`, subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID,
@@ -588,10 +593,6 @@ class UIView extends EventEmitter_1.EventEmitter {
     buildStyle() {
         let styles = `
             position: absolute;
-            left: ${this._frame.x}px;
-            top: ${this._frame.y}px;
-            width: ${this._frame.width}px;
-            height: ${this._frame.height}px; 
         `;
         if (this.backgroundColor !== undefined) {
             styles += `background-color: ${UIColor_1.UIColor.toStyle(this.backgroundColor)};`;
@@ -691,10 +692,8 @@ class UIWindow extends UIView {
             this.addSubview(rootView);
             this.layoutSubviews();
         }
-        this.dataOwner = dataOwner;
-        this.dataField = dataField;
-        this.dataOwner.setData({
-            [this.dataField]: {
+        dataOwner.setData({
+            [dataField]: {
                 clazz: this.clazz,
                 viewID: this.viewID,
             }

@@ -43,7 +43,6 @@ class UIScrollView extends UIView_1.UIView {
     }
     set contentOffset(value) {
         this._contentOffset = value;
-        this.contentOffsetDidChanged();
         this.markFlagDirty("contentOffsetX", "contentOffsetY", "scrollWithAnimation");
         this.isContentOffsetScrollAnimated = false;
     }

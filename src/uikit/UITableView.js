@@ -7,6 +7,7 @@ const UIIndexPath_1 = require("./UIIndexPath");
 const UIRect_1 = require("./UIRect");
 const UIAnimator_1 = require("./UIAnimator");
 const UITouch_1 = require("./UITouch");
+const Ticker_1 = require("./helpers/Ticker");
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 class UITableView extends UIScrollView_1.UIScrollView {
     constructor() {
@@ -181,10 +182,15 @@ class UITableView extends UIScrollView_1.UIScrollView {
     didDeselectRow(indexPath) {
     }
     contentOffsetDidChanged() {
-        this._layoutTableView();
-        this._layoutSectionHeaders();
-        this._layoutSectionFooters();
-        this.touchesMoved([]);
+        if (Ticker_1.Ticker.shared.hasTask("contentOffsetDidChanged." + this.viewID)) {
+            return;
+        }
+        Ticker_1.Ticker.shared.addTask("contentOffsetDidChanged." + this.viewID, () => {
+            this._layoutTableView();
+            this._layoutSectionHeaders();
+            this._layoutSectionFooters();
+            this.touchesMoved([]);
+        });
     }
     layoutSubviews() {
         super.layoutSubviews();
@@ -246,8 +252,8 @@ class UITableView extends UIScrollView_1.UIScrollView {
     }
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height };
-        let contentOffsetY = this.contentOffset.y;
-        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height };
+        let contentOffsetY = this.contentOffset.y - boundsSize.height;
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height * 3 };
         var tableHeight = 0.0;
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
@@ -340,52 +346,8 @@ class UITableView extends UIScrollView_1.UIScrollView {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height };
         }
     }
-    _layoutSectionHeaders() {
-        this._sections.forEach((sectionRecord, idx) => {
-            const rect = this._rectForSection(idx);
-            const topY = rect.y;
-            const bottomY = rect.y + rect.height;
-            const boxY = bottomY - sectionRecord.footerHeight;
-            if (this.contentOffset.y >= topY && this.contentOffset.y <= boxY) {
-                if (sectionRecord.headerView) {
-                    if (this.contentOffset.y >= boxY - sectionRecord.headerView.frame.height) {
-                        sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, this.contentOffset.y - (this.contentOffset.y - (boxY - sectionRecord.headerView.frame.height)), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
-                    }
-                    else {
-                        sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, Math.floor(this.contentOffset.y), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
-                    }
-                }
-            }
-            else {
-                if (sectionRecord.headerView) {
-                    sectionRecord.headerView.frame = UIRect_1.UIRectMake(0.0, topY, sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height);
-                }
-            }
-        });
-    }
-    _layoutSectionFooters() {
-        this._sections.forEach((sectionRecord, idx) => {
-            const rect = this._rectForSection(idx);
-            const topY = rect.y;
-            const bottomY = rect.y + rect.height;
-            const boxY = topY + sectionRecord.headerHeight;
-            if (this.contentOffset.y + this.bounds.height >= boxY && this.contentOffset.y + this.bounds.height <= bottomY) {
-                if (sectionRecord.footerView) {
-                    if (sectionRecord.footerView.frame.height > this.contentOffset.y + this.bounds.height - boxY) {
-                        sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, (this.contentOffset.y + this.bounds.height - sectionRecord.footerView.frame.height) - ((this.contentOffset.y + this.bounds.height - boxY) - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
-                    }
-                    else {
-                        sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, Math.ceil(this.contentOffset.y + this.bounds.height - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
-                    }
-                }
-            }
-            else {
-                if (sectionRecord.footerView) {
-                    sectionRecord.footerView.frame = UIRect_1.UIRectMake(0.0, bottomY - sectionRecord.footerView.frame.height, sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height);
-                }
-            }
-        });
-    }
+    _layoutSectionHeaders() { }
+    _layoutSectionFooters() { }
     _rectForSection(section) {
         this._updateSectionsCacheIfNeeded();
         return this._UIRectFromVerticalOffset(this._offsetForSection(section), this._sections[section].sectionHeight());
@@ -409,9 +371,7 @@ class UITableView extends UIScrollView_1.UIScrollView {
             if (indexPath.row < sectionRecord.numberOfRows) {
                 var offset = this._offsetForSection(indexPath.section);
                 offset += sectionRecord.headerHeight;
-                for (let currentRow = 0; currentRow < indexPath.row; currentRow++) {
-                    offset += sectionRecord.rowHeights[currentRow];
-                }
+                offset += sectionRecord.rowOriginYs[indexPath.row];
                 return this._UIRectFromVerticalOffset(offset, sectionRecord.rowHeights[indexPath.row]);
             }
         }
@@ -590,6 +550,7 @@ class UITableViewSection {
         this.footerHeight = 0.0;
         this.numberOfRows = 0;
         this.rowHeights = [];
+        this.rowOriginYs = [];
         this.headerView = undefined;
         this.footerView = undefined;
     }
@@ -599,6 +560,12 @@ class UITableViewSection {
     setNumberOfRows(rows, rowHeights) {
         this.numberOfRows = rows;
         this.rowHeights = rowHeights;
+        this.rowOriginYs = [];
+        let currentY = 0.0;
+        for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+            this.rowOriginYs.push(currentY);
+            currentY += rowHeights[rowIndex];
+        }
     }
 }
 class UITableViewCell extends UIView_1.UIView {

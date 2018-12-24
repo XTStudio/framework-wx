@@ -5,8 +5,9 @@ import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UIIndexPath } from "./UIIndexPath";
 import { UIRectIntersectsRect, UIRect, UIRectZero, UIRectMake } from "./UIRect";
 import { UIAnimator } from "./UIAnimator";
-import { UIPoint } from "./UIPoint";
+import { UIPoint, UIPointEqualToPoint } from "./UIPoint";
 import { UITouch, UITouchPhase } from "./UITouch";
+import { Ticker } from "./helpers/Ticker";
 
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 export class UITableView extends UIScrollView {
@@ -218,10 +219,13 @@ export class UITableView extends UIScrollView {
     }
 
     contentOffsetDidChanged() {
-        this._layoutTableView()
-        this._layoutSectionHeaders()
-        this._layoutSectionFooters()
-        this.touchesMoved([])
+        if (Ticker.shared.hasTask("contentOffsetDidChanged." + this.viewID)) { return }
+        Ticker.shared.addTask("contentOffsetDidChanged." + this.viewID, () => {
+            this._layoutTableView()
+            this._layoutSectionHeaders()
+            this._layoutSectionFooters()
+            this.touchesMoved([])
+        })
     }
 
     layoutSubviews() {
@@ -288,8 +292,8 @@ export class UITableView extends UIScrollView {
 
     _layoutTableView() {
         const boundsSize = { width: this.bounds.width, height: this.bounds.height }
-        let contentOffsetY = this.contentOffset.y
-        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height }
+        let contentOffsetY = this.contentOffset.y - boundsSize.height
+        let visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: boundsSize.height * 3 }
         var tableHeight = 0.0
         if (this.tableHeaderView) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height }
@@ -383,53 +387,9 @@ export class UITableView extends UIScrollView {
         }
     }
 
-    _layoutSectionHeaders() {
-        this._sections.forEach((sectionRecord, idx) => {
-            const rect = this._rectForSection(idx)
-            const topY = rect.y
-            const bottomY = rect.y + rect.height
-            const boxY = bottomY - sectionRecord.footerHeight
-            if (this.contentOffset.y >= topY && this.contentOffset.y <= boxY) {
-                if (sectionRecord.headerView) {
-                    if (this.contentOffset.y >= boxY - sectionRecord.headerView.frame.height) {
-                        sectionRecord.headerView.frame = UIRectMake(0.0, this.contentOffset.y - (this.contentOffset.y - (boxY - sectionRecord.headerView.frame.height)), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height)
-                    }
-                    else {
-                        sectionRecord.headerView.frame = UIRectMake(0.0, Math.floor(this.contentOffset.y), sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height)
-                    }
-                }
-            }
-            else {
-                if (sectionRecord.headerView) {
-                    sectionRecord.headerView.frame = UIRectMake(0.0, topY, sectionRecord.headerView.frame.width, sectionRecord.headerView.frame.height)
-                }
-            }
-        })
-    }
+    _layoutSectionHeaders() { }
 
-    _layoutSectionFooters() {
-        this._sections.forEach((sectionRecord, idx) => {
-            const rect = this._rectForSection(idx)
-            const topY = rect.y
-            const bottomY = rect.y + rect.height
-            const boxY = topY + sectionRecord.headerHeight
-            if (this.contentOffset.y + this.bounds.height >= boxY && this.contentOffset.y + this.bounds.height <= bottomY) {
-                if (sectionRecord.footerView) {
-                    if (sectionRecord.footerView.frame.height > this.contentOffset.y + this.bounds.height - boxY) {
-                        sectionRecord.footerView.frame = UIRectMake(0.0, (this.contentOffset.y + this.bounds.height - sectionRecord.footerView.frame.height) - ((this.contentOffset.y + this.bounds.height - boxY) - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height)
-                    }
-                    else {
-                        sectionRecord.footerView.frame = UIRectMake(0.0, Math.ceil(this.contentOffset.y + this.bounds.height - sectionRecord.footerView.frame.height), sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height)
-                    }
-                }
-            }
-            else {
-                if (sectionRecord.footerView) {
-                    sectionRecord.footerView.frame = UIRectMake(0.0, bottomY - sectionRecord.footerView.frame.height, sectionRecord.footerView.frame.width, sectionRecord.footerView.frame.height)
-                }
-            }
-        })
-    }
+    _layoutSectionFooters() { }
 
     _rectForSection(section: number): UIRect {
         this._updateSectionsCacheIfNeeded()
@@ -457,9 +417,7 @@ export class UITableView extends UIScrollView {
             if (indexPath.row < sectionRecord.numberOfRows) {
                 var offset = this._offsetForSection(indexPath.section)
                 offset += sectionRecord.headerHeight
-                for (let currentRow = 0; currentRow < indexPath.row; currentRow++) {
-                    offset += sectionRecord.rowHeights[currentRow]
-                }
+                offset += sectionRecord.rowOriginYs[indexPath.row]
                 return this._UIRectFromVerticalOffset(offset, sectionRecord.rowHeights[indexPath.row])
             }
         }
@@ -653,6 +611,8 @@ class UITableViewSection {
 
     rowHeights: number[] = []
 
+    rowOriginYs: number[] = []
+
     headerView: UIView | undefined = undefined
 
     footerView: UIView | undefined = undefined
@@ -664,6 +624,12 @@ class UITableViewSection {
     setNumberOfRows(rows: number, rowHeights: number[]) {
         this.numberOfRows = rows
         this.rowHeights = rowHeights
+        this.rowOriginYs = []
+        let currentY = 0.0
+        for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
+            this.rowOriginYs.push(currentY)
+            currentY += rowHeights[rowIndex]
+        }
     }
 
 }
