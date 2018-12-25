@@ -3765,14 +3765,14 @@ var UIScrollView = function (_UIView_1$UIView) {
         if (this.refreshControl && this.refreshControl.enabled && this.contentSize.width <= this.bounds.width) {
             if (isIOS) {
                 if (this.contentOffset.y < -this.contentInset.top) {
-                    var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / 88.0));
+                    var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / (88.0 * 3)));
                     this.refreshControl.animationView.alpha = progress;
                 } else {
                     this.refreshControl.animationView.alpha = 0.0;
                 }
             } else {
                 if (this.contentOffset.y - translation.y < -this.contentInset.top) {
-                    var _progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y - translation.y)) / 88.0));
+                    var _progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y - translation.y)) / (88.0 * 3)));
                     this.refreshControl.animationView.alpha = _progress;
                     this.touchingRefreshOffsetY = translation.y / 3.0;
                     this.markFlagDirty("refreshOffset", "refreshingAnimation");
@@ -3784,8 +3784,10 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.touchesBegan = function touchesBegan(touches) {
         _UIView_1$UIView.prototype.touchesBegan.call(this, touches);
-        this.touchingRefreshControl = this.contentOffset.y <= -this.contentInset.top;
-        this.touchingRefreshControlBeganWindowY = 0;
+        this.touchingRefreshControl = this.contentOffset.y <= -this.contentInset.top + 8.0;
+        if (this.touchingRefreshControl && touches[0] && touches[0].windowPoint) {
+            this.touchingRefreshControlBeganWindowY = touches[0].windowPoint.y;
+        }
     };
 
     UIScrollView.prototype.touchesMoved = function touchesMoved(touches) {
@@ -3803,7 +3805,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         } else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
             this.refreshControl.animationView.alpha = 0.0;
         }
-        this.touchingRefreshControlBeganWindowY = 0.0;
+        this.touchingRefreshOffsetY = 0.0;
         this.markFlagDirty("refreshOffset");
     };
 

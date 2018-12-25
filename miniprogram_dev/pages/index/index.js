@@ -78,15 +78,15 @@ class FooViewController extends UIViewController {
             let refreshControl = new UIRefreshControl
             refreshControl.on("refresh", () => {
                 setTimeout(() => {
-                    refreshControl.endRefreshing()
                     this.tableView.reloadData()
+                    refreshControl.endRefreshing()
                 }, 5000)
             })
             return refreshControl
         })())
         // this.tableView.contentInset = { top: 88, left: 0, bottom: 0, right: 0 }
         this.tableView.register((context) => new FooCell(context), "Cell")
-        this.tableView.on("numberOfRows", () => 100)
+        this.tableView.on("numberOfRows", () => 30)
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
