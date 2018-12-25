@@ -232,6 +232,7 @@ export class UITextField extends UIView {
     private clearButtonView = new UIButton().on("touchUpInside", () => {
         if (this.val("shouldClear") !== false) {
             this.text = ""
+            this.focus()
         }
     })
 

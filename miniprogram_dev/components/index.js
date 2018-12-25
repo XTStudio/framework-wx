@@ -9054,6 +9054,7 @@ var UITextField = function (_UIView_1$UIView) {
         _this.clearButtonView = new UIButton_1.UIButton().on("touchUpInside", function () {
             if (_this.val("shouldClear") !== false) {
                 _this.text = "";
+                _this.focus();
             }
         });
         _this.leftPadding = 0;

@@ -28,6 +28,7 @@ class UITextField extends UIView_1.UIView {
         this.clearButtonView = new UIButton_1.UIButton().on("touchUpInside", () => {
             if (this.val("shouldClear") !== false) {
                 this.text = "";
+                this.focus();
             }
         });
         this.leftPadding = 0;
