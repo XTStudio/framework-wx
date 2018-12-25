@@ -23,7 +23,7 @@ class UITabBar extends UIView_1.UIView {
         this.extraStyles = `
         border-top: solid;
         border-top-width: 1px;
-        border-top-color: #98969b50;
+        border-top-color: rgba(152, 150, 155, 0.5);
         `;
     }
     get hidden() {

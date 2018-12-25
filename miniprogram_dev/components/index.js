@@ -3765,14 +3765,14 @@ var UIScrollView = function (_UIView_1$UIView) {
         if (this.refreshControl && this.refreshControl.enabled && this.contentSize.width <= this.bounds.width) {
             if (isIOS) {
                 if (this.contentOffset.y < -this.contentInset.top) {
-                    var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / (88.0 * 3)));
+                    var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / 88.0));
                     this.refreshControl.animationView.alpha = progress;
                 } else {
                     this.refreshControl.animationView.alpha = 0.0;
                 }
             } else {
                 if (this.contentOffset.y - translation.y < -this.contentInset.top) {
-                    var _progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y - translation.y)) / (88.0 * 3)));
+                    var _progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y - translation.y)) / (88.0 * 2)));
                     this.refreshControl.animationView.alpha = _progress;
                     this.touchingRefreshOffsetY = translation.y / 3.0;
                     this.markFlagDirty("refreshOffset", "refreshingAnimation");
@@ -8037,7 +8037,7 @@ var UITabBar = function (_UIView_1$UIView) {
         _this.barButtons = [];
         _this.barTintColor = UIColor_1.UIColor.white;
         _this.tintColor = UIColor_1.UIColor.black;
-        _this.extraStyles = "\n        border-top: solid;\n        border-top-width: 1px;\n        border-top-color: #98969b50;\n        ";
+        _this.extraStyles = "\n        border-top: solid;\n        border-top-width: 1px;\n        border-top-color: rgba(152, 150, 155, 0.5);\n        ";
         return _this;
     }
 
