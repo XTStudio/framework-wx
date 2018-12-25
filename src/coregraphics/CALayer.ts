@@ -32,8 +32,8 @@ export class CALayer {
     private _hidden: boolean = false
 
     public get hidden(): boolean {
-        if (this._view.get()) {
-            return this._view.get().hidden
+        if (this._view) {
+            return this._view.hidden
         }
         else {
             return this._hidden;
@@ -43,8 +43,8 @@ export class CALayer {
     public set hidden(value: boolean) {
         if (this.hidden === value) { return }
         this._hidden = value;
-        if (this._view.get()) {
-            this._view.get().hidden = value
+        if (this._view) {
+            this._view.hidden = value
         }
         else {
 
@@ -60,8 +60,8 @@ export class CALayer {
     public set cornerRadius(value: number) {
         if (this._cornerRadius === value) { return }
         this._cornerRadius = value;
-        if (this._view.get()) {
-            this._view.get().invalidate()
+        if (this._view) {
+            this._view.invalidate()
         }
         else {
 
@@ -96,8 +96,8 @@ export class CALayer {
     }
 
     private resetBorder() {
-        if (this._view.get()) {
-            this._view.get().invalidate()
+        if (this._view) {
+            this._view.invalidate()
         }
         else {
 
@@ -139,8 +139,8 @@ export class CALayer {
     private _backgroundColor: UIColor | undefined = undefined
 
     public get backgroundColor(): UIColor | undefined {
-        if (this._view.get()) {
-            return this._view.get().backgroundColor
+        if (this._view) {
+            return this._view.backgroundColor
         }
         else {
             return this._backgroundColor;
@@ -153,8 +153,8 @@ export class CALayer {
             if (this.backgroundColor.toStyle() === value.toStyle()) { return }
         }
         this._backgroundColor = value;
-        if (this._view.get()) {
-            this._view.get().backgroundColor = value
+        if (this._view) {
+            this._view.backgroundColor = value
         }
         else {
 
@@ -164,8 +164,8 @@ export class CALayer {
     private _opacity: number = 1.0
 
     public get opacity(): number {
-        if (this._view.get()) {
-            return this._view.get().alpha
+        if (this._view) {
+            return this._view.alpha
         }
         else {
             return this._opacity;
@@ -175,8 +175,8 @@ export class CALayer {
     public set opacity(value: number) {
         if (this.opacity === value) { return }
         this._opacity = value;
-        if (this._view.get()) {
-            this._view.get().alpha = value
+        if (this._view) {
+            this._view.alpha = value
         }
         else {
 
@@ -192,8 +192,8 @@ export class CALayer {
     public set masksToBounds(value: boolean) {
         if (this.masksToBounds === value) { return }
         this._masksToBounds = value;
-        if (this._view.get()) {
-            this._view.get().clipsToBounds = value
+        if (this._view) {
+            this._view.clipsToBounds = value
         }
         else {
 
@@ -252,8 +252,8 @@ export class CALayer {
     }
 
     private resetShadow() {
-        if (this._view.get()) {
-            this._view.get().invalidate()
+        if (this._view) {
+            this._view.invalidate()
         }
     }
 

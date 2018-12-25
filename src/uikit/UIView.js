@@ -61,6 +61,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle();
             this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -101,6 +102,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle();
             this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["transform"] = value;
@@ -312,6 +314,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return;
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle();
             this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["alpha"] = value;
@@ -332,6 +335,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             }
         }
         if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle();
             this.markFlagDirty("animation");
             this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
             this.animationValues["backgroundColor"] = value;
@@ -557,6 +561,22 @@ class UIView extends EventEmitter_1.EventEmitter {
         });
         this.invalidate();
     }
+    flushStyle() {
+        if (this.dirtyFlags["style"] || this.dirtyFlags["frameStyle"]) {
+            if (this.viewID) {
+                const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+                if (component) {
+                    component.setData({
+                        style: this.buildStyle(),
+                        frameStyle: `left: ${this._frame.x}px; top:${this._frame.y};width: ${this._frame.width}px;height: ${this._frame.height}px;`,
+                        animation: exports.emptyAnimation,
+                    });
+                    delete this.dirtyFlags["style"];
+                    delete this.dirtyFlags["frameStyle"];
+                }
+            }
+        }
+    }
     invalidate() {
         const viewID = this.viewID;
         if (viewID) {
@@ -573,6 +593,9 @@ class UIView extends EventEmitter_1.EventEmitter {
                             newData[flag] = data[flag];
                         }
                     }
+                    if (!this.dirtyFlags["animation"] && component.data.animation !== exports.emptyAnimation) {
+                        newData.animation = exports.emptyAnimation;
+                    }
                     component.setData(newData);
                     this.dirtyFlags = {};
                 }
@@ -580,7 +603,7 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
     }
     buildData() {
-        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: `transform: translate(${this._frame.x}px, ${this._frame.y}px);width: ${this._frame.width}px;height: ${this._frame.height}px;`, subviews: this.subviews.map(it => {
+        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: `left:${this._frame.x}px;top:${this._frame.y}px;width: ${this._frame.width}px;height: ${this._frame.height}px;`, subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID,
@@ -671,7 +694,7 @@ class UIView extends EventEmitter_1.EventEmitter {
             return animation.export();
         }
         else {
-            return emptyAnimation;
+            return exports.emptyAnimation;
         }
     }
 }
@@ -888,7 +911,7 @@ class UIWindow extends UIView {
 }
 exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker;
-const emptyAnimation = (() => {
+exports.emptyAnimation = (() => {
     let animation = wx.createAnimation({ duration: 0 });
     animation.step();
     return animation.export();

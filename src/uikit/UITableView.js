@@ -439,75 +439,75 @@ class UITableView extends UIScrollView_1.UIScrollView {
             }
             case UITouch_1.UITouchPhase.moved: {
                 if (this.firstTouchPoint !== undefined) {
-                    if (UIView_1.UIView.recognizedGesture !== undefined) {
-                        this._highlightedRow = undefined;
-                        Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
-                            it.highlighted = false;
-                            it.emit("highlighted", it, true, false);
-                        });
-                        this.firstTouchPoint = undefined;
-                        this.firstTouchCell = undefined;
-                    }
+                    this._highlightedRow = undefined;
+                    Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
+                        it.highlighted = false;
+                        it.emit("highlighted", it, true, false);
+                    });
+                    this.firstTouchPoint = undefined;
+                    this.firstTouchCell = undefined;
                 }
                 break;
             }
             case UITouch_1.UITouchPhase.ended: {
-                if (this.firstTouchCell) {
-                    const cell = this.firstTouchCell;
-                    this._highlightedRow = undefined;
-                    if (!this.allowsMultipleSelection) {
-                        this._selectedRows.forEach((indexPathKey) => {
-                            Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
-                                if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
-                                    it.selected = false;
-                                    it.emit("selected", it, false, false);
-                                    this.emit("didDeselectRow", it.currentIndexPath, it);
-                                }
+                setTimeout(() => {
+                    if (this.firstTouchCell) {
+                        const cell = this.firstTouchCell;
+                        this._highlightedRow = undefined;
+                        if (!this.allowsMultipleSelection) {
+                            this._selectedRows.forEach((indexPathKey) => {
+                                Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
+                                    if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
+                                        it.selected = false;
+                                        it.emit("selected", it, false, false);
+                                        this.emit("didDeselectRow", it.currentIndexPath, it);
+                                    }
+                                });
                             });
+                            this._selectedRows = [];
+                        }
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._highlightedRow = undefined;
+                        Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
+                            it.highlighted = false;
+                            it.emit("highlighted", it, false, false);
                         });
-                        this._selectedRows = [];
-                    }
-                    this.firstTouchPoint = undefined;
-                    this.firstTouchCell = undefined;
-                    this._highlightedRow = undefined;
-                    Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
-                        it.highlighted = false;
-                        it.emit("highlighted", it, false, false);
-                    });
-                    if (cell.currentIndexPath) {
-                        const it = cell.currentIndexPath.mapKey();
-                        const idx = this._selectedRows.indexOf(it);
-                        if (idx >= 0) {
-                            this._selectedRows.splice(idx, 1);
+                        if (cell.currentIndexPath) {
+                            const it = cell.currentIndexPath.mapKey();
+                            const idx = this._selectedRows.indexOf(it);
+                            if (idx >= 0) {
+                                this._selectedRows.splice(idx, 1);
+                            }
+                            else {
+                                this._selectedRows.push(it);
+                            }
+                        }
+                        cell.selected = !cell.selected;
+                        cell.emit("selected", cell, cell.selected, false);
+                        if (cell.selected) {
+                            if (cell.currentIndexPath) {
+                                this.didSelectRow(cell.currentIndexPath);
+                            }
+                            this.emit("didSelectRow", cell.currentIndexPath, cell);
                         }
                         else {
-                            this._selectedRows.push(it);
+                            if (cell.currentIndexPath) {
+                                this.didDeselectRow(cell.currentIndexPath);
+                            }
+                            this.emit("didDeselectRow", cell.currentIndexPath, cell);
                         }
-                    }
-                    cell.selected = !cell.selected;
-                    cell.emit("selected", cell, cell.selected, false);
-                    if (cell.selected) {
-                        if (cell.currentIndexPath) {
-                            this.didSelectRow(cell.currentIndexPath);
-                        }
-                        this.emit("didSelectRow", cell.currentIndexPath, cell);
                     }
                     else {
-                        if (cell.currentIndexPath) {
-                            this.didDeselectRow(cell.currentIndexPath);
-                        }
-                        this.emit("didDeselectRow", cell.currentIndexPath, cell);
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._highlightedRow = undefined;
+                        Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
+                            it.highlighted = false;
+                            it.emit("highlighted", it, false, false);
+                        });
                     }
-                }
-                else {
-                    this.firstTouchPoint = undefined;
-                    this.firstTouchCell = undefined;
-                    this._highlightedRow = undefined;
-                    Object.keys(this._cachedCells).map(it => this._cachedCells[it]).forEach((it) => {
-                        it.highlighted = false;
-                        it.emit("highlighted", it, false, false);
-                    });
-                }
+                }, 50);
                 break;
             }
             case UITouch_1.UITouchPhase.cancelled: {

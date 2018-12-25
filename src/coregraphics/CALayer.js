@@ -39,8 +39,8 @@ class CALayer {
         this._frame = value;
     }
     get hidden() {
-        if (this._view.get()) {
-            return this._view.get().hidden;
+        if (this._view) {
+            return this._view.hidden;
         }
         else {
             return this._hidden;
@@ -51,8 +51,8 @@ class CALayer {
             return;
         }
         this._hidden = value;
-        if (this._view.get()) {
-            this._view.get().hidden = value;
+        if (this._view) {
+            this._view.hidden = value;
         }
         else {
         }
@@ -65,8 +65,8 @@ class CALayer {
             return;
         }
         this._cornerRadius = value;
-        if (this._view.get()) {
-            this._view.get().invalidate();
+        if (this._view) {
+            this._view.invalidate();
         }
         else {
         }
@@ -97,8 +97,8 @@ class CALayer {
         this.resetBorder();
     }
     resetBorder() {
-        if (this._view.get()) {
-            this._view.get().invalidate();
+        if (this._view) {
+            this._view.invalidate();
         }
         else {
         }
@@ -126,8 +126,8 @@ class CALayer {
     createSVGElement() {
     }
     get backgroundColor() {
-        if (this._view.get()) {
-            return this._view.get().backgroundColor;
+        if (this._view) {
+            return this._view.backgroundColor;
         }
         else {
             return this._backgroundColor;
@@ -143,15 +143,15 @@ class CALayer {
             }
         }
         this._backgroundColor = value;
-        if (this._view.get()) {
-            this._view.get().backgroundColor = value;
+        if (this._view) {
+            this._view.backgroundColor = value;
         }
         else {
         }
     }
     get opacity() {
-        if (this._view.get()) {
-            return this._view.get().alpha;
+        if (this._view) {
+            return this._view.alpha;
         }
         else {
             return this._opacity;
@@ -162,8 +162,8 @@ class CALayer {
             return;
         }
         this._opacity = value;
-        if (this._view.get()) {
-            this._view.get().alpha = value;
+        if (this._view) {
+            this._view.alpha = value;
         }
         else {
         }
@@ -176,8 +176,8 @@ class CALayer {
             return;
         }
         this._masksToBounds = value;
-        if (this._view.get()) {
-            this._view.get().clipsToBounds = value;
+        if (this._view) {
+            this._view.clipsToBounds = value;
         }
         else {
         }
@@ -228,8 +228,8 @@ class CALayer {
         this.resetShadow();
     }
     resetShadow() {
-        if (this._view.get()) {
-            this._view.get().invalidate();
+        if (this._view) {
+            this._view.invalidate();
         }
     }
 }

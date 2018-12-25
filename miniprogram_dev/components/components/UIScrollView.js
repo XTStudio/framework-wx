@@ -197,7 +197,7 @@ exports.UIViewManager = UIViewManager;
 
 /***/ }),
 
-/***/ 29:
+/***/ 19:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -295,7 +295,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(4);
 var UIViewManager_1 = __webpack_require__(1);
-var Ticker_1 = __webpack_require__(29);
+var Ticker_1 = __webpack_require__(19);
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
     _inherits(UIScrollViewComponent, _UIView_1$UIViewCompo);

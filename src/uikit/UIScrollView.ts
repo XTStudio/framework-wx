@@ -1,9 +1,11 @@
-import { UIView } from "./UIView";
+import { UIView, emptyAnimation } from "./UIView";
 import { UIPoint, UIPointZero } from "./UIPoint";
 import { UISize, UISizeZero } from "./UISize";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UIRect } from "./UIRect";
 import { UIPanGestureRecognizer } from "./UIPanGestureRecognizer";
+import { UIRefreshControl } from "./UIRefreshControl";
+import { UITouch } from "./UITouch";
 
 export class UIScrollView extends UIView {
 
@@ -52,7 +54,7 @@ export class UIScrollView extends UIView {
         const deltaY = value.top - this._contentInset.top
         this._contentInset = value;
         this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY }
-        this.markFlagDirty("contentInset", "contentSize")
+        this.markFlagDirty("contentInset", "contentSize", "refreshingAnimation")
     }
 
     directionalLockEnabled: boolean = false
@@ -96,17 +98,6 @@ export class UIScrollView extends UIView {
     public set pagingEnabled(value: boolean) {
         this._pagingEnabled = value;
     }
-
-    // private _scrollDisabledTemporary: boolean = false
-
-    // public get scrollDisabledTemporary(): boolean {
-    //     return this._scrollDisabledTemporary;
-    // }
-
-    // public set scrollDisabledTemporary(value: boolean) {
-    //     this._scrollDisabledTemporary = value;
-    //     this.invalidate(true, true)
-    // }
 
     private _scrollEnabled: boolean = true
 
@@ -243,7 +234,85 @@ export class UIScrollView extends UIView {
 
     layoutSubviews() {
         super.layoutSubviews()
+        if (this.refreshControl) {
+            this.refreshControl.animationView.frame = { x: 0.0, y: 0.0, width: this.bounds.width, height: 44.0 }
+        }
         this.markFlagDirty("direction")
+    }
+
+    addSubview(view: UIView) {
+        if (view instanceof UIRefreshControl) {
+            this.refreshControl = view
+            return
+        }
+        // if (view instanceof UIFetchMoreControl) {
+        //     this.fetchMoreControl = view
+        //     return
+        // }
+        super.addSubview(view)
+    }
+
+    // RefreshControl
+
+    private _refreshControl: UIRefreshControl | undefined = undefined
+
+    public get refreshControl(): UIRefreshControl | undefined {
+        return this._refreshControl;
+    }
+
+    public set refreshControl(value: UIRefreshControl | undefined) {
+        this._refreshControl = value;
+        if (value) {
+            this.markFlagDirty("refreshControlAnimationView")
+            value.animationView.frame = { x: 0, y: 0, width: this.bounds.width, height: 44.0 }
+            value.scrollView = this
+        }
+    }
+
+    private touchingRefreshControl = false
+    private touchingRefreshControlPreviousWindowY: number = 0.0
+
+    private createRefreshEffect(translation: UIPoint): number | undefined {
+        if (this.refreshControl && this.refreshControl.enabled && this.contentSize.width <= this.bounds.width) {
+            if (this.contentOffset.y < -this.contentInset.top) {
+                const progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y)) / 88.0))
+                this.refreshControl.animationView.alpha = progress
+                return translation.y / 3.0
+            }
+            else {
+                this.refreshControl.animationView.alpha = 0.0
+            }
+        }
+        return undefined
+    }
+
+    touchesBegan(touches: UITouch[]) {
+        super.touchesBegan(touches)
+        this.touchingRefreshControl = this.contentOffset.y < 44
+        this.touchingRefreshControlPreviousWindowY = 0
+    }
+
+    touchesMoved(touches: UITouch[]) {
+        super.touchesMoved(touches)
+        if (this.refreshControl && this.refreshControl.enabled && this.touchingRefreshControl && touches[0] && touches[0].windowPoint && this.contentOffset.y <= 0.0) {
+            const deltaY = touches[0].windowPoint.y - this.touchingRefreshControlPreviousWindowY
+            this.touchingRefreshControlPreviousWindowY = touches[0].windowPoint.y
+            this.createRefreshEffect({ x: 0, y: deltaY })
+        }
+    }
+
+    touchesEnded(touches: UITouch[]) {
+        super.touchesEnded(touches)
+        if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha >= 1.0) {
+            this.refreshControl.beginRefreshing_callFromScrollView()
+        }
+        else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
+            this.refreshControl.animationView.alpha = 0.0
+        }
+    }
+
+    touchesCancelled(touches: UITouch[]) {
+        super.touchesCancelled(touches)
     }
 
     // Build Data
@@ -278,9 +347,17 @@ export class UIScrollView extends UIView {
             }
         })()
         data.contentSize = totalContentSize
-        data.contentInset = this._contentInset
+        data.contentInset = this.contentInset
         if (!this._scrollEnabled) {
             data.direction = "none"
+        }
+        if (this.refreshControl) {
+            data.refreshControlAnimationView = {
+                clazz: "UIView",
+                viewID: this.refreshControl.animationView.viewID
+            }
+            data.refreshing = this.refreshControl.refreshing ? 44 : 0
+            data.refreshingAnimation = (wx.createAnimation({ timingFunction: "linear", duration: this.dirtyFlags["refreshing"] ? 300 : 0 }).matrix(1.0, 0.0, 0.0, 1.0, 0.0, this.contentInset.top + (this.refreshControl.refreshing ? 44 : 0)).step() as any).export()
         }
         return data
     }

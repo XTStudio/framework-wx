@@ -26,6 +26,7 @@
     </movable-view>
   </movable-area> -->
 
+<factory view="{{refreshControlAnimationView}}"></factory>
 <scroll-view 
     id="scroll-view"
     style='{{style}}{{frameStyle}}' 
@@ -40,8 +41,10 @@
     bindtouchend="onTouchEnded"
     bindtouchcancel="onTouchCancelled"
     data-viewID="{{viewID}}">
-    <view style="transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}})" wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-      <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+    <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}})" animation="{{refreshingAnimation}}">
+      <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+        <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+      </block>
     </view>
     <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>
 </scroll-view>

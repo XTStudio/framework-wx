@@ -32,6 +32,8 @@ const {
     UITableView,
     UITextAlignment,
     UITableViewCell,
+    DispatchQueue,
+    UIRefreshControl,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -50,32 +52,17 @@ class FooCell extends UITableViewCell {
 
 class BarViewController extends UIViewController {
 
-    scrollView = new UIScrollView
-    bView = new UIView
+    slider = new UISlider
 
     viewDidLoad() {
         super.viewDidLoad()
-        for (let index = 0; index < 100; index++) {
-            const v = new UIView
-            v.backgroundColor = UIColor.gray
-            v.frame = UIRectMake(0, 4000 * index + Math.random() * 200, 200, 200)
-            this.scrollView.addSubview(v)
-        }
-        this.scrollView.contentSize = { width: 0, height: 4000 * 100 }
-        this.view.addSubview(this.scrollView)
-        this.bView.backgroundColor = UIColor.yellow
-        this.bView.frame = UIRectMake(0, 0, 44, 44)
-        this.bView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            const e = new Date().getTime()
-            this.scrollView.setContentOffset({ x: 0, y: this.scrollView.contentOffset.y + 4000 }, false)
-            this.title = (new Date().getTime() - e).toString()
-        }))
-        this.view.addSubview(this.bView)
+        this.slider.frame = UIRectMake(44, 44, 300, 44)
+        this.view.addSubview(this.slider)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.scrollView.frame = this.view.bounds
+        // this.scrollView.frame = this.view.bounds
     }
 
 }
@@ -83,11 +70,20 @@ class BarViewController extends UIViewController {
 class FooViewController extends UIViewController {
 
     tableView = new UITableView
-    bView = new UIView
 
     viewDidLoad() {
         super.viewDidLoad()
         this.title = "UITableView"
+        this.tableView.addSubview((() => {
+            let refreshControl = new UIRefreshControl
+            refreshControl.on("refresh", () => {
+                setTimeout(() => {
+                    refreshControl.endRefreshing()
+                }, 3000)
+            })
+            return refreshControl
+        })())
+        // this.tableView.contentInset = { top: 88, left: 0, bottom: 0, right: 0 }
         this.tableView.register((context) => new FooCell(context), "Cell")
         this.tableView.on("numberOfRows", () => 100)
         this.tableView.on("heightForRow", () => 44)
@@ -97,21 +93,15 @@ class FooViewController extends UIViewController {
             return cell
         })
         this.tableView.on("didSelectRow", (indexPath) => {
-            this.tableView.deselectRow(indexPath, true)
+            if (this.navigationController) {
+                this.navigationController.pushViewController(new SecondViewController)
+            }
+            DispatchQueue.main.asyncAfter(0.3, () => {
+                this.tableView.deselectRow(indexPath, true)
+            })
         })
         this.tableView.reloadData()
         this.view.addSubview(this.tableView)
-        this.bView.backgroundColor = UIColor.yellow
-        this.bView.frame = UIRectMake(0, 0, 44, 44)
-        this.bView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-            const e = new Date().getTime()
-            const targetY = this.tableView.contentOffset.y + 10000
-            // for (let index = 0; index < 10000; index++) {
-                this.tableView.setContentOffset({ x: 0, y: targetY }, false)
-            // }
-            this.title = (new Date().getTime() - e).toString()
-        }))
-        this.view.addSubview(this.bView)
     }
 
     viewWillLayoutSubviews() {

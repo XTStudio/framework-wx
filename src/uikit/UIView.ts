@@ -48,6 +48,7 @@ export class UIView extends EventEmitter {
     set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle()
             this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -99,6 +100,7 @@ export class UIView extends EventEmitter {
             return
         }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle()
             this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["transform"] = value;
@@ -351,6 +353,7 @@ export class UIView extends EventEmitter {
     set alpha(value) {
         if (this._alpha === value) { return }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle()
             this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["alpha"] = value;
@@ -371,6 +374,7 @@ export class UIView extends EventEmitter {
             if (this._backgroundColor.toStyle() === value.toStyle()) { return }
         }
         if (UIAnimator.activeAnimator !== undefined) {
+            this.flushStyle()
             this.markFlagDirty("animation")
             this.animationProps = UIAnimator.activeAnimator.animationProps
             this.animationValues["backgroundColor"] = value;
@@ -633,6 +637,23 @@ export class UIView extends EventEmitter {
         this.invalidate()
     }
 
+    flushStyle() {
+        if (this.dirtyFlags["style"] || this.dirtyFlags["frameStyle"]) {
+            if (this.viewID) {
+                const component = UIComponentManager.shared.fetchComponent(this.viewID)
+                if (component) {
+                    component.setData({
+                        style: this.buildStyle(),
+                        frameStyle: `left: ${this._frame.x}px; top:${this._frame.y};width: ${this._frame.width}px;height: ${this._frame.height}px;`,
+                        animation: emptyAnimation,
+                    })
+                    delete this.dirtyFlags["style"]
+                    delete this.dirtyFlags["frameStyle"]
+                }
+            }
+        }
+    }
+
     invalidate() {
         const viewID = this.viewID
         if (viewID) {
@@ -647,6 +668,9 @@ export class UIView extends EventEmitter {
                             newData[flag] = data[flag]
                         }
                     }
+                    if (!this.dirtyFlags["animation"] && component.data.animation !== emptyAnimation) {
+                        newData.animation = emptyAnimation
+                    }
                     component.setData(newData)
                     this.dirtyFlags = {}
                 }
@@ -658,7 +682,7 @@ export class UIView extends EventEmitter {
         return {
             viewID: this.viewID,
             style: this.buildStyle(),
-            frameStyle: `transform: translate(${this._frame.x}px, ${this._frame.y}px);width: ${this._frame.width}px;height: ${this._frame.height}px;`,
+            frameStyle: `left:${this._frame.x}px;top:${this._frame.y}px;width: ${this._frame.width}px;height: ${this._frame.height}px;`,
             subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
@@ -992,7 +1016,7 @@ export class UIWindow extends UIView {
 
 export const sharedVelocityTracker = new VelocityTracker
 
-const emptyAnimation = (() => {
+export const emptyAnimation = (() => {
     let animation = wx.createAnimation({ duration: 0 })
     animation.step()
     return animation.export()

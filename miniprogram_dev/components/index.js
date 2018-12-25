@@ -210,8 +210,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIRect_1 = __webpack_require__(11);
-var UIAffineTransform_1 = __webpack_require__(27);
-var Matrix_1 = __webpack_require__(28);
+var UIAffineTransform_1 = __webpack_require__(28);
+var Matrix_1 = __webpack_require__(29);
 var UIColor_1 = __webpack_require__(5);
 var UITouch_1 = __webpack_require__(8);
 var UIEdgeInsets_1 = __webpack_require__(7);
@@ -221,7 +221,7 @@ var EventEmitter_1 = __webpack_require__(15);
 var UIEnums_1 = __webpack_require__(6);
 var CALayer_1 = __webpack_require__(47);
 var UIComponentManager_1 = __webpack_require__(0);
-var Ticker_1 = __webpack_require__(29);
+var Ticker_1 = __webpack_require__(19);
 
 var UIView = function (_EventEmitter_1$Event) {
     _inherits(UIView, _EventEmitter_1$Event);
@@ -655,6 +655,23 @@ var UIView = function (_EventEmitter_1$Event) {
         this.invalidate();
     };
 
+    UIView.prototype.flushStyle = function flushStyle() {
+        if (this.dirtyFlags["style"] || this.dirtyFlags["frameStyle"]) {
+            if (this.viewID) {
+                var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+                if (component) {
+                    component.setData({
+                        style: this.buildStyle(),
+                        frameStyle: "left: " + this._frame.x + "px; top:" + this._frame.y + ";width: " + this._frame.width + "px;height: " + this._frame.height + "px;",
+                        animation: exports.emptyAnimation
+                    });
+                    delete this.dirtyFlags["style"];
+                    delete this.dirtyFlags["frameStyle"];
+                }
+            }
+        }
+    };
+
     UIView.prototype.invalidate = function invalidate() {
         var _this4 = this;
 
@@ -673,6 +690,9 @@ var UIView = function (_EventEmitter_1$Event) {
                             newData[flag] = data[flag];
                         }
                     }
+                    if (!_this4.dirtyFlags["animation"] && component.data.animation !== exports.emptyAnimation) {
+                        newData.animation = exports.emptyAnimation;
+                    }
                     component.setData(newData);
                     _this4.dirtyFlags = {};
                 }
@@ -681,7 +701,7 @@ var UIView = function (_EventEmitter_1$Event) {
     };
 
     UIView.prototype.buildData = function buildData() {
-        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: "transform: translate(" + this._frame.x + "px, " + this._frame.y + "px);width: " + this._frame.width + "px;height: " + this._frame.height + "px;", subviews: this.subviews.map(function (it) {
+        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: "left:" + this._frame.x + "px;top:" + this._frame.y + "px;width: " + this._frame.width + "px;height: " + this._frame.height + "px;", subviews: this.subviews.map(function (it) {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID
@@ -758,7 +778,7 @@ var UIView = function (_EventEmitter_1$Event) {
             animation.step();
             return animation.export();
         } else {
-            return emptyAnimation;
+            return exports.emptyAnimation;
         }
     };
 
@@ -778,6 +798,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.flushStyle();
                 this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 if (Math.abs(this._frame.x - value.x) > 0.001) {
@@ -822,6 +843,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.flushStyle();
                 this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["transform"] = value;
@@ -908,6 +930,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 return;
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.flushStyle();
                 this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["alpha"] = value;
@@ -930,6 +953,7 @@ var UIView = function (_EventEmitter_1$Event) {
                 }
             }
             if (UIAnimator_1.UIAnimator.activeAnimator !== undefined) {
+                this.flushStyle();
                 this.markFlagDirty("animation");
                 this.animationProps = UIAnimator_1.UIAnimator.activeAnimator.animationProps;
                 this.animationValues["backgroundColor"] = value;
@@ -1240,7 +1264,7 @@ var UIWindow = function (_UIView) {
 
 exports.UIWindow = UIWindow;
 exports.sharedVelocityTracker = new UITouch_1.VelocityTracker();
-var emptyAnimation = function () {
+exports.emptyAnimation = function () {
     var animation = wx.createAnimation({ duration: 0 });
     animation.step();
     return animation.export();
@@ -2117,6 +2141,71 @@ exports.UILongPressGestureRecognizer = UILongPressGestureRecognizer;
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Ticker = function () {
+    function Ticker() {
+        _classCallCheck(this, Ticker);
+
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+    }
+
+    Ticker.prototype.hasTask = function hasTask(taskID) {
+        return this.taskBlocks[taskID] !== undefined;
+    };
+
+    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
+        this.taskBlocks[taskID] = taskBlock;
+        this.activeTimer();
+    };
+
+    Ticker.prototype.run = function run() {
+        var currentBlocks = this.taskBlocks;
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+        if (Object.keys(currentBlocks).length > 0) {
+            for (var key in currentBlocks) {
+                try {
+                    currentBlocks[key]();
+                } catch (error) {}
+            }
+        }
+    };
+
+    Ticker.prototype.activeTimer = function activeTimer() {
+        if (this.timerHandler !== undefined) {
+            return;
+        }
+        this.timerHandler = setTimeout(this.run.bind(this), 16);
+    };
+
+    _createClass(Ticker, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().TickerShared === undefined) {
+                getApp().TickerShared = new Ticker();
+            }
+            return getApp().TickerShared;
+        }
+    }]);
+
+    return Ticker;
+}();
+
+exports.Ticker = Ticker;
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -2196,7 +2285,7 @@ var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2343,7 +2432,7 @@ var UILabel = function (_UIView_1$UIView) {
 exports.UILabel = UILabel;
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2426,7 +2515,7 @@ var UIImageView = function (_UIView_1$UIView) {
 exports.UIImageView = UIImageView;
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2647,7 +2736,7 @@ var UIViewController = function (_EventEmitter_1$Event) {
 exports.UIViewController = UIViewController;
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2702,7 +2791,7 @@ Bundle.js = new Bundle("js");
 exports.Bundle = Bundle;
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2788,7 +2877,7 @@ var MutableURLRequest = function (_URLRequest) {
 exports.MutableURLRequest = MutableURLRequest;
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2812,7 +2901,7 @@ var URLResponse = function URLResponse() {
 exports.URLResponse = URLResponse;
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2845,14 +2934,14 @@ var UUID = function () {
 exports.UUID = UUID;
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Matrix_1 = __webpack_require__(28);
+var Matrix_1 = __webpack_require__(29);
 exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
     return { a: a, b: b, c: c, d: d, tx: tx, ty: ty };
@@ -2912,7 +3001,7 @@ exports.UIAffineTransformIsIdentity = function (transform) {
 };
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3340,71 +3429,6 @@ var Matrix = function () {
 exports.Matrix = Matrix;
 
 /***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var Ticker = function () {
-    function Ticker() {
-        _classCallCheck(this, Ticker);
-
-        this.taskBlocks = {};
-        this.timerHandler = undefined;
-    }
-
-    Ticker.prototype.hasTask = function hasTask(taskID) {
-        return this.taskBlocks[taskID] !== undefined;
-    };
-
-    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
-        this.taskBlocks[taskID] = taskBlock;
-        this.activeTimer();
-    };
-
-    Ticker.prototype.run = function run() {
-        var currentBlocks = this.taskBlocks;
-        this.taskBlocks = {};
-        this.timerHandler = undefined;
-        if (Object.keys(currentBlocks).length > 0) {
-            for (var key in currentBlocks) {
-                try {
-                    currentBlocks[key]();
-                } catch (error) {}
-            }
-        }
-    };
-
-    Ticker.prototype.activeTimer = function activeTimer() {
-        if (this.timerHandler !== undefined) {
-            return;
-        }
-        this.timerHandler = setTimeout(this.run.bind(this), 16);
-    };
-
-    _createClass(Ticker, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().TickerShared === undefined) {
-                getApp().TickerShared = new Ticker();
-            }
-            return getApp().TickerShared;
-        }
-    }]);
-
-    return Ticker;
-}();
-
-exports.Ticker = Ticker;
-
-/***/ }),
 /* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3577,6 +3601,7 @@ var UIPoint_1 = __webpack_require__(14);
 var UISize_1 = __webpack_require__(16);
 var UIEdgeInsets_1 = __webpack_require__(7);
 var UIPanGestureRecognizer_1 = __webpack_require__(30);
+var UIRefreshControl_1 = __webpack_require__(61);
 
 var UIScrollView = function (_UIView_1$UIView) {
     _inherits(UIScrollView, _UIView_1$UIView);
@@ -3596,14 +3621,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._alwaysBounceVertical = false;
         _this._alwaysBounceHorizontal = false;
         _this._pagingEnabled = false;
-        // private _scrollDisabledTemporary: boolean = false
-        // public get scrollDisabledTemporary(): boolean {
-        //     return this._scrollDisabledTemporary;
-        // }
-        // public set scrollDisabledTemporary(value: boolean) {
-        //     this._scrollDisabledTemporary = value;
-        //     this.invalidate(true, true)
-        // }
         _this._scrollEnabled = true;
         _this.showsHorizontalScrollIndicator = true; // todo
         _this.showsVerticalScrollIndicator = true; // todo
@@ -3612,6 +3629,10 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.decelerating = false;
         _this._scrollsToTop = true;
         _this._endDraggingVelocity = UIPoint_1.UIPointZero;
+        // RefreshControl
+        _this._refreshControl = undefined;
+        _this.touchingRefreshControl = false;
+        _this.touchingRefreshControlPreviousWindowY = 0.0;
         // Build Data
         _this.isContentOffsetScrollAnimated = false;
         _this._panGesture.enabled = false;
@@ -3719,7 +3740,63 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.layoutSubviews = function layoutSubviews() {
         _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        if (this.refreshControl) {
+            this.refreshControl.animationView.frame = { x: 0.0, y: 0.0, width: this.bounds.width, height: 44.0 };
+        }
         this.markFlagDirty("direction");
+    };
+
+    UIScrollView.prototype.addSubview = function addSubview(view) {
+        if (view instanceof UIRefreshControl_1.UIRefreshControl) {
+            this.refreshControl = view;
+            return;
+        }
+        // if (view instanceof UIFetchMoreControl) {
+        //     this.fetchMoreControl = view
+        //     return
+        // }
+        _UIView_1$UIView.prototype.addSubview.call(this, view);
+    };
+
+    UIScrollView.prototype.createRefreshEffect = function createRefreshEffect(translation) {
+        if (this.refreshControl && this.refreshControl.enabled && this.contentSize.width <= this.bounds.width) {
+            if (this.contentOffset.y < -this.contentInset.top) {
+                var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / 88.0));
+                this.refreshControl.animationView.alpha = progress;
+                return translation.y / 3.0;
+            } else {
+                this.refreshControl.animationView.alpha = 0.0;
+            }
+        }
+        return undefined;
+    };
+
+    UIScrollView.prototype.touchesBegan = function touchesBegan(touches) {
+        _UIView_1$UIView.prototype.touchesBegan.call(this, touches);
+        this.touchingRefreshControl = this.contentOffset.y < 44;
+        this.touchingRefreshControlPreviousWindowY = 0;
+    };
+
+    UIScrollView.prototype.touchesMoved = function touchesMoved(touches) {
+        _UIView_1$UIView.prototype.touchesMoved.call(this, touches);
+        if (this.refreshControl && this.refreshControl.enabled && this.touchingRefreshControl && touches[0] && touches[0].windowPoint && this.contentOffset.y <= 0.0) {
+            var deltaY = touches[0].windowPoint.y - this.touchingRefreshControlPreviousWindowY;
+            this.touchingRefreshControlPreviousWindowY = touches[0].windowPoint.y;
+            this.createRefreshEffect({ x: 0, y: deltaY });
+        }
+    };
+
+    UIScrollView.prototype.touchesEnded = function touchesEnded(touches) {
+        _UIView_1$UIView.prototype.touchesEnded.call(this, touches);
+        if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha >= 1.0) {
+            this.refreshControl.beginRefreshing_callFromScrollView();
+        } else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
+            this.refreshControl.animationView.alpha = 0.0;
+        }
+    };
+
+    UIScrollView.prototype.touchesCancelled = function touchesCancelled(touches) {
+        _UIView_1$UIView.prototype.touchesCancelled.call(this, touches);
     };
 
     UIScrollView.prototype.buildExtras = function buildExtras() {
@@ -3749,9 +3826,17 @@ var UIScrollView = function (_UIView_1$UIView) {
             }
         }();
         data.contentSize = totalContentSize;
-        data.contentInset = this._contentInset;
+        data.contentInset = this.contentInset;
         if (!this._scrollEnabled) {
             data.direction = "none";
+        }
+        if (this.refreshControl) {
+            data.refreshControlAnimationView = {
+                clazz: "UIView",
+                viewID: this.refreshControl.animationView.viewID
+            };
+            data.refreshing = this.refreshControl.refreshing ? 44 : 0;
+            data.refreshingAnimation = wx.createAnimation({ timingFunction: "linear", duration: this.dirtyFlags["refreshing"] ? 300 : 0 }).matrix(1.0, 0.0, 0.0, 1.0, 0.0, this.contentInset.top + (this.refreshControl.refreshing ? 44 : 0)).step().export();
         }
         return data;
     };
@@ -3785,7 +3870,7 @@ var UIScrollView = function (_UIView_1$UIView) {
             var deltaY = value.top - this._contentInset.top;
             this._contentInset = value;
             this.contentOffset = { x: this.contentOffset.x - deltaX, y: this.contentOffset.y - deltaY };
-            this.markFlagDirty("contentInset", "contentSize");
+            this.markFlagDirty("contentInset", "contentSize", "refreshingAnimation");
         }
     }, {
         key: "bounces",
@@ -3837,6 +3922,19 @@ var UIScrollView = function (_UIView_1$UIView) {
             this._scrollsToTop = value;
             this.markFlagDirty("scrollsToTop");
         }
+    }, {
+        key: "refreshControl",
+        get: function get() {
+            return this._refreshControl;
+        },
+        set: function set(value) {
+            this._refreshControl = value;
+            if (value) {
+                this.markFlagDirty("refreshControlAnimationView");
+                value.animationView.frame = { x: 0, y: 0, width: this.bounds.width, height: 44.0 };
+                value.scrollView = this;
+            }
+        }
     }]);
 
     return UIScrollView;
@@ -3859,21 +3957,21 @@ exports.UIScrollView = UIScrollView;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-Object.assign(module.exports, __webpack_require__(23));
+Object.assign(module.exports, __webpack_require__(24));
 Object.assign(module.exports, __webpack_require__(13));
 Object.assign(module.exports, __webpack_require__(39));
 Object.assign(module.exports, __webpack_require__(40));
 Object.assign(module.exports, __webpack_require__(41));
 Object.assign(module.exports, __webpack_require__(12));
-Object.assign(module.exports, __webpack_require__(24));
 Object.assign(module.exports, __webpack_require__(25));
+Object.assign(module.exports, __webpack_require__(26));
 Object.assign(module.exports, __webpack_require__(42));
 Object.assign(module.exports, __webpack_require__(43));
-Object.assign(module.exports, __webpack_require__(26));
+Object.assign(module.exports, __webpack_require__(27));
 Object.assign(module.exports, __webpack_require__(44));
 Object.assign(module.exports, __webpack_require__(45));
 Object.assign(module.exports, __webpack_require__(48));
-Object.assign(module.exports, __webpack_require__(27));
+Object.assign(module.exports, __webpack_require__(28));
 Object.assign(module.exports, __webpack_require__(9));
 Object.assign(module.exports, __webpack_require__(49));
 Object.assign(module.exports, __webpack_require__(51));
@@ -3885,8 +3983,8 @@ Object.assign(module.exports, __webpack_require__(6));
 Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(10));
 Object.assign(module.exports, __webpack_require__(54));
+Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(21));
-Object.assign(module.exports, __webpack_require__(20));
 Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(55));
 Object.assign(module.exports, __webpack_require__(30));
@@ -3894,19 +3992,20 @@ Object.assign(module.exports, __webpack_require__(57));
 Object.assign(module.exports, __webpack_require__(14));
 Object.assign(module.exports, __webpack_require__(58));
 Object.assign(module.exports, __webpack_require__(11));
+Object.assign(module.exports, __webpack_require__(61));
 Object.assign(module.exports, __webpack_require__(59));
 Object.assign(module.exports, __webpack_require__(60));
 Object.assign(module.exports, __webpack_require__(31));
 Object.assign(module.exports, __webpack_require__(16));
-Object.assign(module.exports, __webpack_require__(61));
 Object.assign(module.exports, __webpack_require__(62));
 Object.assign(module.exports, __webpack_require__(63));
 Object.assign(module.exports, __webpack_require__(64));
-Object.assign(module.exports, __webpack_require__(19));
-Object.assign(module.exports, __webpack_require__(66));
+Object.assign(module.exports, __webpack_require__(65));
+Object.assign(module.exports, __webpack_require__(20));
+Object.assign(module.exports, __webpack_require__(67));
 Object.assign(module.exports, __webpack_require__(8));
 Object.assign(module.exports, __webpack_require__(2));
-Object.assign(module.exports, __webpack_require__(22));
+Object.assign(module.exports, __webpack_require__(23));
 Component({
     properties: {
         view: {
@@ -3984,7 +4083,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Data_1 = __webpack_require__(13);
-var Bundle_1 = __webpack_require__(23);
+var Bundle_1 = __webpack_require__(24);
 var fs = wx.getFileSystemManager();
 
 var FileManager = function () {
@@ -4236,10 +4335,10 @@ exports.Timer = Timer;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var URLRequest_1 = __webpack_require__(24);
+var URLRequest_1 = __webpack_require__(25);
 var URL_1 = __webpack_require__(12);
 var Data_1 = __webpack_require__(13);
-var URLResponse_1 = __webpack_require__(25);
+var URLResponse_1 = __webpack_require__(26);
 
 var URLSession = function () {
     function URLSession() {
@@ -5095,8 +5194,8 @@ var CALayer = function () {
     }
 
     CALayer.prototype.resetBorder = function resetBorder() {
-        if (this._view.get()) {
-            this._view.get().invalidate();
+        if (this._view) {
+            this._view.invalidate();
         } else {}
     };
 
@@ -5125,8 +5224,8 @@ var CALayer = function () {
     CALayer.prototype.createSVGElement = function createSVGElement() {};
 
     CALayer.prototype.resetShadow = function resetShadow() {
-        if (this._view.get()) {
-            this._view.get().invalidate();
+        if (this._view) {
+            this._view.invalidate();
         }
     };
 
@@ -5155,8 +5254,8 @@ var CALayer = function () {
     }, {
         key: "hidden",
         get: function get() {
-            if (this._view.get()) {
-                return this._view.get().hidden;
+            if (this._view) {
+                return this._view.hidden;
             } else {
                 return this._hidden;
             }
@@ -5166,8 +5265,8 @@ var CALayer = function () {
                 return;
             }
             this._hidden = value;
-            if (this._view.get()) {
-                this._view.get().hidden = value;
+            if (this._view) {
+                this._view.hidden = value;
             } else {}
         }
     }, {
@@ -5180,8 +5279,8 @@ var CALayer = function () {
                 return;
             }
             this._cornerRadius = value;
-            if (this._view.get()) {
-                this._view.get().invalidate();
+            if (this._view) {
+                this._view.invalidate();
             } else {}
         }
     }, {
@@ -5216,8 +5315,8 @@ var CALayer = function () {
     }, {
         key: "backgroundColor",
         get: function get() {
-            if (this._view.get()) {
-                return this._view.get().backgroundColor;
+            if (this._view) {
+                return this._view.backgroundColor;
             } else {
                 return this._backgroundColor;
             }
@@ -5232,15 +5331,15 @@ var CALayer = function () {
                 }
             }
             this._backgroundColor = value;
-            if (this._view.get()) {
-                this._view.get().backgroundColor = value;
+            if (this._view) {
+                this._view.backgroundColor = value;
             } else {}
         }
     }, {
         key: "opacity",
         get: function get() {
-            if (this._view.get()) {
-                return this._view.get().alpha;
+            if (this._view) {
+                return this._view.alpha;
             } else {
                 return this._opacity;
             }
@@ -5250,8 +5349,8 @@ var CALayer = function () {
                 return;
             }
             this._opacity = value;
-            if (this._view.get()) {
-                this._view.get().alpha = value;
+            if (this._view) {
+                this._view.alpha = value;
             } else {}
         }
     }, {
@@ -5264,8 +5363,8 @@ var CALayer = function () {
                 return;
             }
             this._masksToBounds = value;
-            if (this._view.get()) {
-                this._view.get().clipsToBounds = value;
+            if (this._view) {
+                this._view.clipsToBounds = value;
             } else {}
         }
     }, {
@@ -5791,10 +5890,10 @@ var UIFont_1 = __webpack_require__(17);
 var UIEnums_1 = __webpack_require__(6);
 var UIColor_1 = __webpack_require__(5);
 var UIEdgeInsets_1 = __webpack_require__(7);
-var UITapGestureRecognizer_1 = __webpack_require__(19);
+var UITapGestureRecognizer_1 = __webpack_require__(20);
 var UILongPressGestureRecognizer_1 = __webpack_require__(18);
-var UILabel_1 = __webpack_require__(20);
-var UIImageView_1 = __webpack_require__(21);
+var UILabel_1 = __webpack_require__(21);
+var UIImageView_1 = __webpack_require__(22);
 
 var UIButton = function (_UIView_1$UIView) {
     _inherits(UIButton, _UIView_1$UIView);
@@ -6225,7 +6324,7 @@ exports.UIConfirm = UIConfirm;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(26);
+var UUID_1 = __webpack_require__(27);
 
 var UIDevice = function UIDevice() {
     _classCallCheck(this, UIDevice);
@@ -6398,7 +6497,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(22);
+var UIViewController_1 = __webpack_require__(23);
 
 var UINavigationController = function (_UIViewController_1$U) {
     _inherits(UINavigationController, _UIViewController_1$U);
@@ -6849,6 +6948,154 @@ exports.UIScreen = UIScreen;
 "use strict";
 
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(2);
+var UIColor_1 = __webpack_require__(5);
+
+var UIRefreshAnimationView = function (_UIView_1$UIView) {
+    _inherits(UIRefreshAnimationView, _UIView_1$UIView);
+
+    function UIRefreshAnimationView() {
+        _classCallCheck(this, UIRefreshAnimationView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.leftDot = new UIView_1.UIView();
+        _this.midDot = new UIView_1.UIView();
+        _this.rightDot = new UIView_1.UIView();
+        _this.currentIdx = 0;
+        _this.leftDot.alpha = 0.5;
+        _this.leftDot.layer.cornerRadius = 4.0;
+        _this.midDot.alpha = 0.5;
+        _this.midDot.layer.cornerRadius = 4.0;
+        _this.rightDot.alpha = 0.5;
+        _this.rightDot.layer.cornerRadius = 4.0;
+        _this.addSubview(_this.leftDot);
+        _this.addSubview(_this.midDot);
+        _this.addSubview(_this.rightDot);
+        return _this;
+    }
+
+    UIRefreshAnimationView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIView_1$UIView.prototype.layoutSubviews.call(this);
+        this.leftDot.frame = { x: this.bounds.width / 2.0 - 4.0 - 20, y: this.bounds.height / 2.0 - 4.0, width: 8.0, height: 8.0 };
+        this.midDot.frame = { x: this.bounds.width / 2.0 - 4.0, y: this.bounds.height / 2.0 - 4.0, width: 8.0, height: 8.0 };
+        this.rightDot.frame = { x: this.bounds.width / 2.0 + 4.0 + 12, y: this.bounds.height / 2.0 - 4.0, width: 8.0, height: 8.0 };
+    };
+
+    UIRefreshAnimationView.prototype.startAnimation = function startAnimation() {
+        var _this2 = this;
+
+        this.stopAnimation();
+        this.currentIdx = 0;
+        this.doAnimation();
+        this.intervalHandler = setInterval(function () {
+            _this2.currentIdx = _this2.currentIdx + 1;
+            if (_this2.currentIdx == 3) {
+                _this2.currentIdx = 0;
+            }
+            _this2.doAnimation();
+        }, 1250 / 3);
+    };
+
+    UIRefreshAnimationView.prototype.doAnimation = function doAnimation() {
+        this.leftDot.alpha = this.currentIdx == 0 ? 1.0 : 0.5;
+        this.midDot.alpha = this.currentIdx == 1 ? 1.0 : 0.5;
+        this.rightDot.alpha = this.currentIdx == 2 ? 1.0 : 0.5;
+    };
+
+    UIRefreshAnimationView.prototype.stopAnimation = function stopAnimation() {
+        this.leftDot.alpha = 0.5;
+        this.midDot.alpha = 0.5;
+        this.rightDot.alpha = 0.5;
+        clearInterval(this.intervalHandler);
+    };
+
+    UIRefreshAnimationView.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
+        this.leftDot.backgroundColor = this.tintColor;
+        this.midDot.backgroundColor = this.tintColor;
+        this.rightDot.backgroundColor = this.tintColor;
+    };
+
+    return UIRefreshAnimationView;
+}(UIView_1.UIView);
+
+var UIRefreshControl = function (_UIView_1$UIView2) {
+    _inherits(UIRefreshControl, _UIView_1$UIView2);
+
+    function UIRefreshControl() {
+        _classCallCheck(this, UIRefreshControl);
+
+        var _this3 = _possibleConstructorReturn(this, _UIView_1$UIView2.call(this));
+
+        _this3.animationView = new UIRefreshAnimationView();
+        _this3.scrollView = undefined;
+        _this3.enabled = true;
+        _this3.refreshing = false;
+        _this3.animationView.alpha = 0.0;
+        _this3.tintColor = UIColor_1.UIColor.gray;
+        return _this3;
+    }
+
+    UIRefreshControl.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView2.prototype.tintColorDidChange.call(this);
+        this.animationView.tintColor = this.tintColor;
+    };
+
+    UIRefreshControl.prototype.beginRefreshing_callFromScrollView = function beginRefreshing_callFromScrollView() {
+        if (this.scrollView === undefined) {
+            return;
+        }
+        this.refreshing = true;
+        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.animationView.startAnimation();
+        this.emit("refresh", this);
+    };
+
+    UIRefreshControl.prototype.beginRefreshing = function beginRefreshing() {
+        var _this4 = this;
+
+        if (this.scrollView === undefined) {
+            return;
+        }
+        this.refreshing = true;
+        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.animationView.startAnimation();
+        setTimeout(function () {
+            _this4.animationView.alpha = 1.0;
+            _this4.emit("refresh", _this4);
+        }, 750);
+    };
+
+    UIRefreshControl.prototype.endRefreshing = function endRefreshing() {
+        if (this.scrollView === undefined) {
+            return;
+        }
+        this.animationView.alpha = 0.0;
+        this.animationView.stopAnimation();
+        this.refreshing = false;
+        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+    };
+
+    return UIRefreshControl;
+}(UIView_1.UIView);
+
+exports.UIRefreshControl = UIRefreshControl;
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7038,7 +7285,7 @@ var UISlider = function (_UIView_1$UIView2) {
 exports.UISlider = UISlider;
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7353,7 +7600,7 @@ var UIStackView = function (_UIView_1$UIView) {
 exports.UIStackView = UIStackView;
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7537,7 +7784,7 @@ var UISwitch = function (_UIView_1$UIView2) {
 exports.UISwitch = UISwitch;
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7552,8 +7799,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(22);
-var UITabBar_1 = __webpack_require__(65);
+var UIViewController_1 = __webpack_require__(23);
+var UITabBar_1 = __webpack_require__(66);
 
 var UITabBarController = function (_UIViewController_1$U) {
     _inherits(UITabBarController, _UIViewController_1$U);
@@ -7726,7 +7973,7 @@ var UITabBarController = function (_UIViewController_1$U) {
 exports.UITabBarController = UITabBarController;
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7743,11 +7990,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(2);
 var UIColor_1 = __webpack_require__(5);
-var UIImageView_1 = __webpack_require__(21);
-var UILabel_1 = __webpack_require__(20);
+var UIImageView_1 = __webpack_require__(22);
+var UILabel_1 = __webpack_require__(21);
 var UIFont_1 = __webpack_require__(17);
 var UIEnums_1 = __webpack_require__(6);
-var UITapGestureRecognizer_1 = __webpack_require__(19);
+var UITapGestureRecognizer_1 = __webpack_require__(20);
 var UIEdgeInsets_1 = __webpack_require__(7);
 
 var UITabBar = function (_UIView_1$UIView) {
@@ -7934,7 +8181,7 @@ var UITabBarButton = function (_UIView_1$UIView2) {
 exports.UITabBarButton = UITabBarButton;
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7952,7 +8199,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(2);
 var UIScrollView_1 = __webpack_require__(31);
 var UIColor_1 = __webpack_require__(5);
-var UIIndexPath_1 = __webpack_require__(67);
+var UIIndexPath_1 = __webpack_require__(68);
 var UIRect_1 = __webpack_require__(11);
 var UIAnimator_1 = __webpack_require__(9);
 var UITouch_1 = __webpack_require__(8);
@@ -8441,81 +8688,81 @@ var UITableView = function (_UIScrollView_1$UIScr) {
             case UITouch_1.UITouchPhase.moved:
                 {
                     if (this.firstTouchPoint !== undefined) {
-                        if (UIView_1.UIView.recognizedGesture !== undefined) {
-                            this._highlightedRow = undefined;
-                            Object.keys(this._cachedCells).map(function (it) {
-                                return _this7._cachedCells[it];
-                            }).forEach(function (it) {
-                                it.highlighted = false;
-                                it.emit("highlighted", it, true, false);
-                            });
-                            this.firstTouchPoint = undefined;
-                            this.firstTouchCell = undefined;
-                        }
+                        this._highlightedRow = undefined;
+                        Object.keys(this._cachedCells).map(function (it) {
+                            return _this7._cachedCells[it];
+                        }).forEach(function (it) {
+                            it.highlighted = false;
+                            it.emit("highlighted", it, true, false);
+                        });
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
                     }
                     break;
                 }
             case UITouch_1.UITouchPhase.ended:
                 {
-                    if (this.firstTouchCell) {
-                        var cell = this.firstTouchCell;
-                        this._highlightedRow = undefined;
-                        if (!this.allowsMultipleSelection) {
-                            this._selectedRows.forEach(function (indexPathKey) {
-                                Object.keys(_this7._cachedCells).map(function (it) {
-                                    return _this7._cachedCells[it];
-                                }).forEach(function (it) {
-                                    if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
-                                        it.selected = false;
-                                        it.emit("selected", it, false, false);
-                                        _this7.emit("didDeselectRow", it.currentIndexPath, it);
-                                    }
+                    setTimeout(function () {
+                        if (_this7.firstTouchCell) {
+                            var cell = _this7.firstTouchCell;
+                            _this7._highlightedRow = undefined;
+                            if (!_this7.allowsMultipleSelection) {
+                                _this7._selectedRows.forEach(function (indexPathKey) {
+                                    Object.keys(_this7._cachedCells).map(function (it) {
+                                        return _this7._cachedCells[it];
+                                    }).forEach(function (it) {
+                                        if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
+                                            it.selected = false;
+                                            it.emit("selected", it, false, false);
+                                            _this7.emit("didDeselectRow", it.currentIndexPath, it);
+                                        }
+                                    });
                                 });
+                                _this7._selectedRows = [];
+                            }
+                            _this7.firstTouchPoint = undefined;
+                            _this7.firstTouchCell = undefined;
+                            _this7._highlightedRow = undefined;
+                            Object.keys(_this7._cachedCells).map(function (it) {
+                                return _this7._cachedCells[it];
+                            }).forEach(function (it) {
+                                it.highlighted = false;
+                                it.emit("highlighted", it, false, false);
                             });
-                            this._selectedRows = [];
-                        }
-                        this.firstTouchPoint = undefined;
-                        this.firstTouchCell = undefined;
-                        this._highlightedRow = undefined;
-                        Object.keys(this._cachedCells).map(function (it) {
-                            return _this7._cachedCells[it];
-                        }).forEach(function (it) {
-                            it.highlighted = false;
-                            it.emit("highlighted", it, false, false);
-                        });
-                        if (cell.currentIndexPath) {
-                            var it = cell.currentIndexPath.mapKey();
-                            var idx = this._selectedRows.indexOf(it);
-                            if (idx >= 0) {
-                                this._selectedRows.splice(idx, 1);
+                            if (cell.currentIndexPath) {
+                                var it = cell.currentIndexPath.mapKey();
+                                var idx = _this7._selectedRows.indexOf(it);
+                                if (idx >= 0) {
+                                    _this7._selectedRows.splice(idx, 1);
+                                } else {
+                                    _this7._selectedRows.push(it);
+                                }
+                            }
+                            cell.selected = !cell.selected;
+                            cell.emit("selected", cell, cell.selected, false);
+                            if (cell.selected) {
+                                if (cell.currentIndexPath) {
+                                    _this7.didSelectRow(cell.currentIndexPath);
+                                }
+                                _this7.emit("didSelectRow", cell.currentIndexPath, cell);
                             } else {
-                                this._selectedRows.push(it);
+                                if (cell.currentIndexPath) {
+                                    _this7.didDeselectRow(cell.currentIndexPath);
+                                }
+                                _this7.emit("didDeselectRow", cell.currentIndexPath, cell);
                             }
-                        }
-                        cell.selected = !cell.selected;
-                        cell.emit("selected", cell, cell.selected, false);
-                        if (cell.selected) {
-                            if (cell.currentIndexPath) {
-                                this.didSelectRow(cell.currentIndexPath);
-                            }
-                            this.emit("didSelectRow", cell.currentIndexPath, cell);
                         } else {
-                            if (cell.currentIndexPath) {
-                                this.didDeselectRow(cell.currentIndexPath);
-                            }
-                            this.emit("didDeselectRow", cell.currentIndexPath, cell);
+                            _this7.firstTouchPoint = undefined;
+                            _this7.firstTouchCell = undefined;
+                            _this7._highlightedRow = undefined;
+                            Object.keys(_this7._cachedCells).map(function (it) {
+                                return _this7._cachedCells[it];
+                            }).forEach(function (it) {
+                                it.highlighted = false;
+                                it.emit("highlighted", it, false, false);
+                            });
                         }
-                    } else {
-                        this.firstTouchPoint = undefined;
-                        this.firstTouchCell = undefined;
-                        this._highlightedRow = undefined;
-                        Object.keys(this._cachedCells).map(function (it) {
-                            return _this7._cachedCells[it];
-                        }).forEach(function (it) {
-                            it.highlighted = false;
-                            it.emit("highlighted", it, false, false);
-                        });
-                    }
+                    }, 50);
                     break;
                 }
             case UITouch_1.UITouchPhase.cancelled:
@@ -8699,7 +8946,7 @@ var UITableViewCell = function (_UIView_1$UIView) {
 exports.UITableViewCell = UITableViewCell;
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
