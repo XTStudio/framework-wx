@@ -498,8 +498,8 @@ var UIView = function (_EventEmitter_1$Event) {
                 currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
             }
             if (current.superview !== undefined && current.superview.clazz === "UIScrollView") {
-                currentPoint.x += -current.superview.contentOffset.x;
-                currentPoint.y += -current.superview.contentOffset.y;
+                currentPoint.x += -current.superview.contentOffset.x + current.superview.adjustInset.left;
+                currentPoint.y += -current.superview.contentOffset.y + current.superview.adjustInset.top;
             }
             currentPoint.x += current.frame.x;
             currentPoint.y += current.frame.y;
@@ -524,8 +524,8 @@ var UIView = function (_EventEmitter_1$Event) {
         var currentPoint = { x: point.x, y: point.y };
         routes.forEach(function (it) {
             if (it.superview !== undefined && it.superview.clazz === "UIScrollView") {
-                currentPoint.x -= -it.superview.contentOffset.x;
-                currentPoint.y -= -it.superview.contentOffset.y;
+                currentPoint.x -= -it.superview.contentOffset.x + it.superview.adjustInset.left;
+                currentPoint.y -= -it.superview.contentOffset.y + it.superview.adjustInset.top;
             }
             currentPoint.x -= it.frame.x;
             currentPoint.y -= it.frame.y;
@@ -3602,6 +3602,7 @@ var UISize_1 = __webpack_require__(16);
 var UIEdgeInsets_1 = __webpack_require__(7);
 var UIPanGestureRecognizer_1 = __webpack_require__(30);
 var UIRefreshControl_1 = __webpack_require__(61);
+var isIOS = wx.getSystemInfoSync().platform === "ios";
 
 var UIScrollView = function (_UIView_1$UIView) {
     _inherits(UIScrollView, _UIView_1$UIView);
@@ -3616,6 +3617,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this._contentOffset = UIPoint_1.UIPointZero;
         _this._contentSize = UISize_1.UISizeZero;
         _this._contentInset = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this.adjustInset = UIEdgeInsets_1.UIEdgeInsetsZero;
         _this.directionalLockEnabled = false;
         _this._bounces = true;
         _this._alwaysBounceVertical = false;
@@ -3632,7 +3634,8 @@ var UIScrollView = function (_UIView_1$UIView) {
         // RefreshControl
         _this._refreshControl = undefined;
         _this.touchingRefreshControl = false;
-        _this.touchingRefreshControlPreviousWindowY = 0.0;
+        _this.touchingRefreshControlBeganWindowY = 0.0;
+        _this.touchingRefreshOffsetY = 0.0;
         // Build Data
         _this.isContentOffsetScrollAnimated = false;
         _this._panGesture.enabled = false;
@@ -3760,12 +3763,20 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.createRefreshEffect = function createRefreshEffect(translation) {
         if (this.refreshControl && this.refreshControl.enabled && this.contentSize.width <= this.bounds.width) {
-            if (this.contentOffset.y < -this.contentInset.top) {
-                var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / 88.0));
-                this.refreshControl.animationView.alpha = progress;
-                return translation.y / 3.0;
+            if (isIOS) {
+                if (this.contentOffset.y < -this.contentInset.top) {
+                    var progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - this.contentOffset.y) / 88.0));
+                    this.refreshControl.animationView.alpha = progress;
+                } else {
+                    this.refreshControl.animationView.alpha = 0.0;
+                }
             } else {
-                this.refreshControl.animationView.alpha = 0.0;
+                if (this.contentOffset.y - translation.y < -this.contentInset.top) {
+                    var _progress = Math.max(0.0, Math.min(1.0, (-this.contentInset.top - (this.contentOffset.y - translation.y)) / 88.0));
+                    this.refreshControl.animationView.alpha = _progress;
+                    this.touchingRefreshOffsetY = translation.y / 3.0;
+                    this.markFlagDirty("refreshOffset", "refreshingAnimation");
+                }
             }
         }
         return undefined;
@@ -3773,16 +3784,15 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.touchesBegan = function touchesBegan(touches) {
         _UIView_1$UIView.prototype.touchesBegan.call(this, touches);
-        this.touchingRefreshControl = this.contentOffset.y < 44;
-        this.touchingRefreshControlPreviousWindowY = 0;
+        this.touchingRefreshControl = this.contentOffset.y <= -this.contentInset.top;
+        this.touchingRefreshControlBeganWindowY = 0;
     };
 
     UIScrollView.prototype.touchesMoved = function touchesMoved(touches) {
         _UIView_1$UIView.prototype.touchesMoved.call(this, touches);
         if (this.refreshControl && this.refreshControl.enabled && this.touchingRefreshControl && touches[0] && touches[0].windowPoint && this.contentOffset.y <= 0.0) {
-            var deltaY = touches[0].windowPoint.y - this.touchingRefreshControlPreviousWindowY;
-            this.touchingRefreshControlPreviousWindowY = touches[0].windowPoint.y;
-            this.createRefreshEffect({ x: 0, y: deltaY });
+            var translateY = touches[0].windowPoint.y - this.touchingRefreshControlBeganWindowY;
+            this.createRefreshEffect({ x: 0, y: translateY });
         }
     };
 
@@ -3793,6 +3803,8 @@ var UIScrollView = function (_UIView_1$UIView) {
         } else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
             this.refreshControl.animationView.alpha = 0.0;
         }
+        this.touchingRefreshControlBeganWindowY = 0.0;
+        this.markFlagDirty("refreshOffset");
     };
 
     UIScrollView.prototype.touchesCancelled = function touchesCancelled(touches) {
@@ -3836,7 +3848,13 @@ var UIScrollView = function (_UIView_1$UIView) {
                 viewID: this.refreshControl.animationView.viewID
             };
             data.refreshing = this.refreshControl.refreshing ? 44 : 0;
-            data.refreshingAnimation = wx.createAnimation({ timingFunction: "linear", duration: this.dirtyFlags["refreshing"] ? 300 : 0 }).matrix(1.0, 0.0, 0.0, 1.0, 0.0, this.contentInset.top + (this.refreshControl.refreshing ? 44 : 0)).step().export();
+            if (isIOS) {
+                data.refreshingAnimation = wx.createAnimation({ timingFunction: "linear", duration: this.dirtyFlags["refreshing"] ? 300 : 0 }).matrix(1.0, 0.0, 0.0, 1.0, 0.0, this.contentInset.top + (this.refreshControl.refreshing ? 44 : 0)).step().export();
+                this.adjustInset = { top: this.refreshControl.refreshing ? 44 : 0, left: 0, bottom: 0, right: 0 };
+            } else {
+                data.refreshOffset = this.refreshControl.refreshing ? 44 : this.touchingRefreshOffsetY;
+                this.adjustInset = { top: this.refreshControl.refreshing ? 44 : 0, left: 0, bottom: 0, right: 0 };
+            }
         }
         return data;
     };
@@ -7054,7 +7072,8 @@ var UIRefreshControl = function (_UIView_1$UIView2) {
             return;
         }
         this.refreshing = true;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
         this.animationView.startAnimation();
         this.emit("refresh", this);
     };
@@ -7066,7 +7085,8 @@ var UIRefreshControl = function (_UIView_1$UIView2) {
             return;
         }
         this.refreshing = true;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
         this.animationView.startAnimation();
         setTimeout(function () {
             _this4.animationView.alpha = 1.0;
@@ -7081,7 +7101,8 @@ var UIRefreshControl = function (_UIView_1$UIView2) {
         this.animationView.alpha = 0.0;
         this.animationView.stopAnimation();
         this.refreshing = false;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
     };
 
     return UIRefreshControl;

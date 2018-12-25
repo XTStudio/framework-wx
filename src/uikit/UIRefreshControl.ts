@@ -91,7 +91,8 @@ export class UIRefreshControl extends UIView {
             return
         }
         this.refreshing = true
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation")
+        this.scrollView.touchingRefreshOffsetY = 0.0
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation")
         this.animationView.startAnimation()
         this.emit("refresh", this)
     }
@@ -101,7 +102,8 @@ export class UIRefreshControl extends UIView {
             return
         }
         this.refreshing = true
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation")
+        this.scrollView.touchingRefreshOffsetY = 0.0
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation")
         this.animationView.startAnimation()
         setTimeout(() => {
             this.animationView.alpha = 1.0
@@ -116,7 +118,8 @@ export class UIRefreshControl extends UIView {
         this.animationView.alpha = 0.0
         this.animationView.stopAnimation()
         this.refreshing = false
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation")
+        this.scrollView.touchingRefreshOffsetY = 0.0
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation")
     }
 
 }

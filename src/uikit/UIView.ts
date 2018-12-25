@@ -452,8 +452,8 @@ export class UIView extends EventEmitter {
                 currentPoint.y = x * matrix2.b + y * matrix2.d + matrix2.ty;
             }
             if (current.superview !== undefined && current.superview.clazz === "UIScrollView") {
-                currentPoint.x += -(current.superview as any).contentOffset.x
-                currentPoint.y += -(current.superview as any).contentOffset.y
+                currentPoint.x += -(current.superview as any).contentOffset.x + (current.superview as any).adjustInset.left
+                currentPoint.y += -(current.superview as any).contentOffset.y + (current.superview as any).adjustInset.top
             }
             currentPoint.x += current.frame.x
             currentPoint.y += current.frame.y
@@ -476,8 +476,8 @@ export class UIView extends EventEmitter {
         let currentPoint = { x: point.x, y: point.y }
         routes.forEach((it) => {
             if (it.superview !== undefined && it.superview.clazz === "UIScrollView") {
-                currentPoint.x -= -(it.superview as any).contentOffset.x
-                currentPoint.y -= -(it.superview as any).contentOffset.y
+                currentPoint.x -= -(it.superview as any).contentOffset.x + (it.superview as any).adjustInset.left
+                currentPoint.y -= -(it.superview as any).contentOffset.y + (it.superview as any).adjustInset.top
             }
             currentPoint.x -= it.frame.x
             currentPoint.y -= it.frame.y

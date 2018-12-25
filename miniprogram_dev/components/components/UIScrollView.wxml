@@ -41,7 +41,7 @@
     bindtouchend="onTouchEnded"
     bindtouchcancel="onTouchCancelled"
     data-viewID="{{viewID}}">
-    <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}})" animation="{{refreshingAnimation}}">
+    <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top + refreshOffset}})" animation="{{refreshingAnimation}}">
       <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
         <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
       </block>

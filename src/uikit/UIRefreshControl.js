@@ -74,7 +74,8 @@ class UIRefreshControl extends UIView_1.UIView {
             return;
         }
         this.refreshing = true;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
         this.animationView.startAnimation();
         this.emit("refresh", this);
     }
@@ -83,7 +84,8 @@ class UIRefreshControl extends UIView_1.UIView {
             return;
         }
         this.refreshing = true;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
         this.animationView.startAnimation();
         setTimeout(() => {
             this.animationView.alpha = 1.0;
@@ -97,7 +99,8 @@ class UIRefreshControl extends UIView_1.UIView {
         this.animationView.alpha = 0.0;
         this.animationView.stopAnimation();
         this.refreshing = false;
-        this.scrollView.markFlagDirty("refreshing", "refreshingAnimation");
+        this.scrollView.touchingRefreshOffsetY = 0.0;
+        this.scrollView.markFlagDirty("refreshOffset", "refreshing", "refreshingAnimation");
     }
 }
 exports.UIRefreshControl = UIRefreshControl;

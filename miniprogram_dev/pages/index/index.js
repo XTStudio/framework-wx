@@ -79,7 +79,8 @@ class FooViewController extends UIViewController {
             refreshControl.on("refresh", () => {
                 setTimeout(() => {
                     refreshControl.endRefreshing()
-                }, 3000)
+                    this.tableView.reloadData()
+                }, 5000)
             })
             return refreshControl
         })())
@@ -89,7 +90,7 @@ class FooViewController extends UIViewController {
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
-            cell.textLabel.text = indexPath.row.toString()
+            cell.textLabel.text = Math.random().toString()
             return cell
         })
         this.tableView.on("didSelectRow", (indexPath) => {
