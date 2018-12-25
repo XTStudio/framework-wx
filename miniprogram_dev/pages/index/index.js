@@ -38,6 +38,7 @@ const {
     UIKeyboardType,
     UIReturnKeyType,
     UITextFieldViewMode,
+    UIFetchMoreControl,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -48,7 +49,7 @@ class FooCell extends UITableViewCell {
         super(context)
         this.textLabel.text = "Hello."
         this.textLabel.font = new UIFont(24)
-        this.textLabel.frame = UIRectMake(0, 0, 200, 44)
+        this.textLabel.frame = UIRectMake(15, 0, 200, 44)
         this.contentView.addSubview(this.textLabel)
     }
 
@@ -115,6 +116,7 @@ class BarViewController extends UIViewController {
 class FooViewController extends UIViewController {
 
     tableView = new UITableView
+    numRows = 30
 
     viewDidLoad() {
         super.viewDidLoad()
@@ -129,9 +131,20 @@ class FooViewController extends UIViewController {
             })
             return refreshControl
         })())
+        this.tableView.addSubview((() => {
+            let fetchMoreControl = new UIFetchMoreControl
+            fetchMoreControl.on("fetch", () => {
+                this.numRows += 30
+                const e = new Date().getTime()
+                this.tableView.reloadData()
+                this.title = (new Date().getTime() - e).toString()
+                fetchMoreControl.endFetching()
+            })
+            return fetchMoreControl
+        })())
         // this.tableView.contentInset = { top: 88, left: 0, bottom: 0, right: 0 }
         this.tableView.register((context) => new FooCell(context), "Cell")
-        this.tableView.on("numberOfRows", () => 30)
+        this.tableView.on("numberOfRows", () => this.numRows)
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
@@ -209,8 +222,8 @@ tabBarController.setViewControllers([
 const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
-// const main = tabBarController
-const main = new BarViewController
+const main = tabBarController
+// const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

@@ -22,6 +22,7 @@ Object.assign(module.exports, require('./uikit/UIConfirm'));
 Object.assign(module.exports, require('./uikit/UIDevice'));
 Object.assign(module.exports, require('./uikit/UIEdgeInsets'));
 Object.assign(module.exports, require('./uikit/UIEnums'));
+Object.assign(module.exports, require('./uikit/UIFetchMoreControl'));
 Object.assign(module.exports, require('./uikit/UIFont'));
 Object.assign(module.exports, require('./uikit/UIGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UIImage'));

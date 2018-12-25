@@ -23,7 +23,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
         this._cachedCells = {};
         this._selectedRows = [];
         this._highlightedRow = undefined;
-        this._needsReload = false;
         this._sections = [];
         this.firstTouchPoint = undefined;
         this.firstTouchCell = undefined;
@@ -73,6 +72,12 @@ class UITableView extends UIScrollView_1.UIScrollView {
         return cell;
     }
     reloadData() {
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this._updateSectionsCache();
+            this._setContentSize();
+            this._layoutTableView();
+            return;
+        }
         Object.keys(this._cachedCells).forEach(it => {
             this._cachedCells[it].removeFromSuperview();
         });
@@ -81,7 +86,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
         this._cachedCells = {};
         this._updateSectionsCache();
         this._setContentSize();
-        this._needsReload = false;
         this._layoutTableView();
     }
     selectRow(indexPath, animated) {
@@ -242,9 +246,7 @@ class UITableView extends UIScrollView_1.UIScrollView {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
             tableHeight += this.tableHeaderView.frame.height;
         }
-        const availableCells = this._cachedCells;
         const numberOfSections = this._sections.length;
-        this._cachedCells = {};
         for (let section = 0; section < numberOfSections; section++) {
             const sectionRect = this._rectForSection(section);
             tableHeight += sectionRect.height;
@@ -287,11 +289,17 @@ class UITableView extends UIScrollView_1.UIScrollView {
                     const indexPath = new UIIndexPath_1.UIIndexPath(row, section);
                     const rowRect = this._rectForRowAtIndexPath(indexPath);
                     if (UIRect_1.UIRectIntersectsRect(rowRect, visibleBounds) && rowRect.height > 0) {
-                        var cell = availableCells[indexPath.mapKey()] || this.cellForRow(indexPath);
+                        var cell = this._cachedCells[indexPath.mapKey()] || this.cellForRow(indexPath);
+                        if (this.fetchMoreControl &&
+                            this.fetchMoreControl.fetching &&
+                            cell.currentIndexPath &&
+                            cell.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                            cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
+                            continue;
+                        }
                         cell.currentIndexPath = indexPath;
                         cell.currentSectionRecord = sectionRecord;
                         this._cachedCells[indexPath.mapKey()] = cell;
-                        delete availableCells[indexPath.mapKey()];
                         cell.highlighted = this._highlightedRow == indexPath.mapKey();
                         cell.emit("highlighted", cell, cell.highlighted, false);
                         cell.selected = this._selectedRows.indexOf(indexPath.mapKey()) >= 0;
@@ -301,7 +309,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
                         if (cell.superview == undefined) {
                             this.addSubview(cell);
                         }
-                        cell.hidden = false;
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
                     }
                     else if (renderCount > 100) {
@@ -310,21 +317,6 @@ class UITableView extends UIScrollView_1.UIScrollView {
                 }
             }
         }
-        Object.keys(availableCells).forEach(key => {
-            const cell = availableCells[key];
-            if (cell.reuseIdentifier) {
-                this._reusableCells.push(cell);
-            }
-            else {
-                cell.hidden = true;
-            }
-        });
-        const allCachedCells = Object.keys(this._cachedCells).map(it => this._cachedCells[it]);
-        this._reusableCells.forEach(cell => {
-            if (UIRect_1.UIRectIntersectsRect(cell.frame, visibleBounds) && allCachedCells.indexOf(cell) < 0) {
-                cell.hidden = true;
-            }
-        });
         if (this.tableFooterView) {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height };
         }
@@ -554,7 +546,6 @@ class UITableViewCell extends UIView_1.UIView {
         super();
         this.selectionView = new UIView_1.UIView();
         this.contentView = new UIView_1.UIView();
-        // separatorElement = document.createElement("div")
         this.reuseIdentifier = undefined;
         this.hasSelectionStyle = true;
         this._selected = false;
@@ -562,6 +553,7 @@ class UITableViewCell extends UIView_1.UIView {
         this.currentIndexPath = undefined;
         this.currentSectionRecord = undefined;
         this.restoringContentViewBackgroundColor = undefined;
+        this.separatorStyle = undefined;
         this.selectionView.alpha = 0.0;
         this.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
         this.contentView.backgroundColor = UIColor_1.UIColor.white;
@@ -602,25 +594,34 @@ class UITableViewCell extends UIView_1.UIView {
         }
     }
     setSeparator(hidden, color, insets) {
-        // if (hidden || color === undefined) {
-        //     this.separatorElement.style.display = "none"
-        // }
-        // else {
-        //     this.separatorElement.style.display = null
-        //     this.separatorElement.style.position = "absolute"
-        //     this.separatorElement.style.borderTopStyle = "solid"
-        //     this.separatorElement.style.width = "100%"
-        //     this.separatorElement.style.borderTopWidth = "1px"
-        //     this.separatorElement.style.borderTopColor = color.toStyle()
-        //     this.separatorElement.style.marginLeft = insets.left.toString() + "px"
-        //     this.separatorElement.style.marginRight = insets.right.toString() + "px"
-        // }
+        if (hidden || color === undefined) {
+            this.separatorStyle = undefined;
+        }
+        else {
+            this.separatorStyle = `
+            position: absolute;
+            left: ${insets.left}px;
+            right: ${insets.right}px;
+            bottom: 1rpx;
+            border-bottom-width: 1rpx;
+            border-bottom-color: ${color.toStyle()};
+            border-bottom-style: solid;
+            `;
+        }
+        this.markFlagDirty("hasDecorView", "decorStyle");
+    }
+    buildData() {
+        let data = super.buildData();
+        data.hasDecorView = this.separatorStyle !== undefined;
+        if (this.separatorStyle) {
+            data.decorStyle = this.separatorStyle;
+        }
+        return data;
     }
     layoutSubviews() {
         super.layoutSubviews();
         this.selectionView.frame = this.bounds;
         this.contentView.frame = this.bounds;
-        // this.separatorElement.style.marginTop = (Math.floor((this.bounds.height - 1.0))).toString() + "px"
     }
 }
 exports.UITableViewCell = UITableViewCell;

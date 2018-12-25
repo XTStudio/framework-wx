@@ -368,6 +368,12 @@ var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
                 if (view) {
                     view._touchStarted = false;
                 }
+            },
+            onScrollToLower: function onScrollToLower(e) {
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
+                if (view) {
+                    view.createFetchMoreEffect();
+                }
             }
         };
         return _this;

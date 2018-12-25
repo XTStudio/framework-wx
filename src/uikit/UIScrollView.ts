@@ -6,6 +6,7 @@ import { UIRect } from "./UIRect";
 import { UIPanGestureRecognizer } from "./UIPanGestureRecognizer";
 import { UIRefreshControl } from "./UIRefreshControl";
 import { UITouch } from "./UITouch";
+import { UIFetchMoreControl } from "./UIFetchMoreControl";
 
 const isIOS = wx.getSystemInfoSync().platform === "ios"
 
@@ -249,10 +250,10 @@ export class UIScrollView extends UIView {
             this.refreshControl = view
             return
         }
-        // if (view instanceof UIFetchMoreControl) {
-        //     this.fetchMoreControl = view
-        //     return
-        // }
+        if (view instanceof UIFetchMoreControl) {
+            this.fetchMoreControl = view
+            return
+        }
         super.addSubview(view)
     }
 
@@ -324,7 +325,7 @@ export class UIScrollView extends UIView {
             this.refreshControl.beginRefreshing_callFromScrollView()
         }
         else if (this.refreshControl !== undefined && this.refreshControl.animationView.alpha > 0.0) {
-            this.refreshControl.animationView.alpha = 0.0            
+            this.refreshControl.animationView.alpha = 0.0
         }
         this.touchingRefreshOffsetY = 0.0
         this.markFlagDirty("refreshOffset")
@@ -332,6 +333,34 @@ export class UIScrollView extends UIView {
 
     touchesCancelled(touches: UITouch[]) {
         super.touchesCancelled(touches)
+    }
+
+    // FetchMoreControl
+
+    private _fetchMoreControl: UIFetchMoreControl | undefined = undefined
+
+    public get fetchMoreControl(): UIFetchMoreControl | undefined {
+        return this._fetchMoreControl;
+    }
+
+    public set fetchMoreControl(value: UIFetchMoreControl | undefined) {
+        this._fetchMoreControl = value;
+        if (value) {
+            value.scrollView = this
+        }
+    }
+
+    public createFetchMoreEffect(): boolean {
+        if (this.fetchMoreControl && this.fetchMoreControl.enabled && this.contentSize.width <= this.bounds.width) {
+            if (this.fetchMoreControl.fetching) {
+                return true
+            }
+            else {
+                this.fetchMoreControl.beginFetching()
+                return true
+            }
+        }
+        return false
     }
 
     // Build Data

@@ -970,6 +970,9 @@ var UIView = function (_EventEmitter_1$Event) {
             return this._extraStyles;
         },
         set: function set(value) {
+            if (this._extraStyles === value) {
+                return;
+            }
             this._extraStyles = value;
             this.markFlagDirty("style");
         }
@@ -4292,6 +4295,7 @@ var UISize_1 = __webpack_require__(16);
 var UIEdgeInsets_1 = __webpack_require__(7);
 var UIPanGestureRecognizer_1 = __webpack_require__(32);
 var UIRefreshControl_1 = __webpack_require__(33);
+var UIFetchMoreControl_1 = __webpack_require__(71);
 var isIOS = wx.getSystemInfoSync().platform === "ios";
 
 var UIScrollView = function (_UIView_1$UIView) {
@@ -4326,6 +4330,8 @@ var UIScrollView = function (_UIView_1$UIView) {
         _this.touchingRefreshControl = false;
         _this.touchingRefreshControlBeganWindowY = 0.0;
         _this.touchingRefreshOffsetY = 0.0;
+        // FetchMoreControl
+        _this._fetchMoreControl = undefined;
         // Build Data
         _this.isContentOffsetScrollAnimated = false;
         _this._panGesture.enabled = false;
@@ -4444,10 +4450,10 @@ var UIScrollView = function (_UIView_1$UIView) {
             this.refreshControl = view;
             return;
         }
-        // if (view instanceof UIFetchMoreControl) {
-        //     this.fetchMoreControl = view
-        //     return
-        // }
+        if (view instanceof UIFetchMoreControl_1.UIFetchMoreControl) {
+            this.fetchMoreControl = view;
+            return;
+        }
         _UIView_1$UIView.prototype.addSubview.call(this, view);
     };
 
@@ -4501,6 +4507,18 @@ var UIScrollView = function (_UIView_1$UIView) {
 
     UIScrollView.prototype.touchesCancelled = function touchesCancelled(touches) {
         _UIView_1$UIView.prototype.touchesCancelled.call(this, touches);
+    };
+
+    UIScrollView.prototype.createFetchMoreEffect = function createFetchMoreEffect() {
+        if (this.fetchMoreControl && this.fetchMoreControl.enabled && this.contentSize.width <= this.bounds.width) {
+            if (this.fetchMoreControl.fetching) {
+                return true;
+            } else {
+                this.fetchMoreControl.beginFetching();
+                return true;
+            }
+        }
+        return false;
     };
 
     UIScrollView.prototype.buildExtras = function buildExtras() {
@@ -4645,6 +4663,17 @@ var UIScrollView = function (_UIView_1$UIView) {
                 value.scrollView = this;
             }
         }
+    }, {
+        key: "fetchMoreControl",
+        get: function get() {
+            return this._fetchMoreControl;
+        },
+        set: function set(value) {
+            this._fetchMoreControl = value;
+            if (value) {
+                value.scrollView = this;
+            }
+        }
     }]);
 
     return UIScrollView;
@@ -4691,6 +4720,7 @@ Object.assign(module.exports, __webpack_require__(55));
 Object.assign(module.exports, __webpack_require__(56));
 Object.assign(module.exports, __webpack_require__(7));
 Object.assign(module.exports, __webpack_require__(6));
+Object.assign(module.exports, __webpack_require__(71));
 Object.assign(module.exports, __webpack_require__(17));
 Object.assign(module.exports, __webpack_require__(10));
 Object.assign(module.exports, __webpack_require__(31));
@@ -8045,7 +8075,7 @@ var UITabBar = function (_UIView_1$UIView) {
         _this.barButtons = [];
         _this.barTintColor = UIColor_1.UIColor.white;
         _this.tintColor = UIColor_1.UIColor.black;
-        _this.extraStyles = "\n        border-top: solid;\n        border-top-width: 1px;\n        border-top-color: rgba(152, 150, 155, 0.5);\n        ";
+        _this.extraStyles = "\n        border-top: solid;\n        border-top-width: 1rpx;\n        border-top-color: rgba(152, 150, 155, 0.5);\n        ";
         return _this;
     }
 
@@ -8256,7 +8286,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         _this._cachedCells = {};
         _this._selectedRows = [];
         _this._highlightedRow = undefined;
-        _this._needsReload = false;
         _this._sections = [];
         _this.firstTouchPoint = undefined;
         _this.firstTouchCell = undefined;
@@ -8284,6 +8313,12 @@ var UITableView = function (_UIScrollView_1$UIScr) {
     UITableView.prototype.reloadData = function reloadData() {
         var _this2 = this;
 
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this._updateSectionsCache();
+            this._setContentSize();
+            this._layoutTableView();
+            return;
+        }
         Object.keys(this._cachedCells).forEach(function (it) {
             _this2._cachedCells[it].removeFromSuperview();
         });
@@ -8294,7 +8329,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
         this._cachedCells = {};
         this._updateSectionsCache();
         this._setContentSize();
-        this._needsReload = false;
         this._layoutTableView();
     };
 
@@ -8497,8 +8531,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
     };
 
     UITableView.prototype._layoutTableView = function _layoutTableView() {
-        var _this6 = this;
-
         var boundsSize = { width: this.bounds.width, height: this.bounds.height };
         var contentOffsetY = 0.0;
         var visibleBounds = { x: 0.0, y: contentOffsetY, width: boundsSize.width, height: this.contentSize.height };
@@ -8507,9 +8539,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height };
             tableHeight += this.tableHeaderView.frame.height;
         }
-        var availableCells = this._cachedCells;
         var numberOfSections = this._sections.length;
-        this._cachedCells = {};
         for (var section = 0; section < numberOfSections; section++) {
             var sectionRect = this._rectForSection(section);
             tableHeight += sectionRect.height;
@@ -8550,11 +8580,14 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                     var _indexPath = new UIIndexPath_1.UIIndexPath(row, section);
                     var _rowRect = this._rectForRowAtIndexPath(_indexPath);
                     if (UIRect_1.UIRectIntersectsRect(_rowRect, visibleBounds) && _rowRect.height > 0) {
-                        var cell = availableCells[_indexPath.mapKey()] || this.cellForRow(_indexPath);
+                        var cell = this._cachedCells[_indexPath.mapKey()] || this.cellForRow(_indexPath);
+                        if (this.fetchMoreControl && this.fetchMoreControl.fetching && cell.currentIndexPath && cell.currentIndexPath.mapKey() === _indexPath.mapKey()) {
+                            cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
+                            continue;
+                        }
                         cell.currentIndexPath = _indexPath;
                         cell.currentSectionRecord = _sectionRecord;
                         this._cachedCells[_indexPath.mapKey()] = cell;
-                        delete availableCells[_indexPath.mapKey()];
                         cell.highlighted = this._highlightedRow == _indexPath.mapKey();
                         cell.emit("highlighted", cell, cell.highlighted, false);
                         cell.selected = this._selectedRows.indexOf(_indexPath.mapKey()) >= 0;
@@ -8564,7 +8597,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                         if (cell.superview == undefined) {
                             this.addSubview(cell);
                         }
-                        cell.hidden = false;
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset);
                     } else if (renderCount > 100) {
                         break;
@@ -8572,22 +8604,6 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                 }
             }
         }
-        Object.keys(availableCells).forEach(function (key) {
-            var cell = availableCells[key];
-            if (cell.reuseIdentifier) {
-                _this6._reusableCells.push(cell);
-            } else {
-                cell.hidden = true;
-            }
-        });
-        var allCachedCells = Object.keys(this._cachedCells).map(function (it) {
-            return _this6._cachedCells[it];
-        });
-        this._reusableCells.forEach(function (cell) {
-            if (UIRect_1.UIRectIntersectsRect(cell.frame, visibleBounds) && allCachedCells.indexOf(cell) < 0) {
-                cell.hidden = true;
-            }
-        });
         if (this.tableFooterView) {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height };
         }
@@ -8677,7 +8693,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
     };
 
     UITableView.prototype.handleTouch = function handleTouch(phase, currentTouch) {
-        var _this7 = this;
+        var _this6 = this;
 
         if (!this.allowsSelection) {
             return;
@@ -8702,11 +8718,11 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                             if (hitTestView instanceof UITableViewCell) {
                                 this.firstTouchCell = hitTestView;
                                 setTimeout(function () {
-                                    if (!(hitTestView instanceof UITableViewCell) || _this7.firstTouchPoint === undefined) {
+                                    if (!(hitTestView instanceof UITableViewCell) || _this6.firstTouchPoint === undefined) {
                                         return;
                                     }
                                     if (hitTestView.currentIndexPath) {
-                                        _this7._highlightedRow = hitTestView.currentIndexPath.mapKey();
+                                        _this6._highlightedRow = hitTestView.currentIndexPath.mapKey();
                                     }
                                     hitTestView.highlighted = true;
                                     hitTestView.emit("highlighted", hitTestView, true, false);
@@ -8721,7 +8737,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                     if (this.firstTouchPoint !== undefined) {
                         this._highlightedRow = undefined;
                         Object.keys(this._cachedCells).map(function (it) {
-                            return _this7._cachedCells[it];
+                            return _this6._cachedCells[it];
                         }).forEach(function (it) {
                             it.highlighted = false;
                             it.emit("highlighted", it, true, false);
@@ -8734,60 +8750,60 @@ var UITableView = function (_UIScrollView_1$UIScr) {
             case UITouch_1.UITouchPhase.ended:
                 {
                     setTimeout(function () {
-                        if (_this7.firstTouchCell) {
-                            var cell = _this7.firstTouchCell;
-                            _this7._highlightedRow = undefined;
-                            if (!_this7.allowsMultipleSelection) {
-                                _this7._selectedRows.forEach(function (indexPathKey) {
-                                    Object.keys(_this7._cachedCells).map(function (it) {
-                                        return _this7._cachedCells[it];
+                        if (_this6.firstTouchCell) {
+                            var cell = _this6.firstTouchCell;
+                            _this6._highlightedRow = undefined;
+                            if (!_this6.allowsMultipleSelection) {
+                                _this6._selectedRows.forEach(function (indexPathKey) {
+                                    Object.keys(_this6._cachedCells).map(function (it) {
+                                        return _this6._cachedCells[it];
                                     }).forEach(function (it) {
                                         if (it.currentIndexPath && it.currentIndexPath.mapKey() === indexPathKey) {
                                             it.selected = false;
                                             it.emit("selected", it, false, false);
-                                            _this7.emit("didDeselectRow", it.currentIndexPath, it);
+                                            _this6.emit("didDeselectRow", it.currentIndexPath, it);
                                         }
                                     });
                                 });
-                                _this7._selectedRows = [];
+                                _this6._selectedRows = [];
                             }
-                            _this7.firstTouchPoint = undefined;
-                            _this7.firstTouchCell = undefined;
-                            _this7._highlightedRow = undefined;
-                            Object.keys(_this7._cachedCells).map(function (it) {
-                                return _this7._cachedCells[it];
+                            _this6.firstTouchPoint = undefined;
+                            _this6.firstTouchCell = undefined;
+                            _this6._highlightedRow = undefined;
+                            Object.keys(_this6._cachedCells).map(function (it) {
+                                return _this6._cachedCells[it];
                             }).forEach(function (it) {
                                 it.highlighted = false;
                                 it.emit("highlighted", it, false, false);
                             });
                             if (cell.currentIndexPath) {
                                 var it = cell.currentIndexPath.mapKey();
-                                var idx = _this7._selectedRows.indexOf(it);
+                                var idx = _this6._selectedRows.indexOf(it);
                                 if (idx >= 0) {
-                                    _this7._selectedRows.splice(idx, 1);
+                                    _this6._selectedRows.splice(idx, 1);
                                 } else {
-                                    _this7._selectedRows.push(it);
+                                    _this6._selectedRows.push(it);
                                 }
                             }
                             cell.selected = !cell.selected;
                             cell.emit("selected", cell, cell.selected, false);
                             if (cell.selected) {
                                 if (cell.currentIndexPath) {
-                                    _this7.didSelectRow(cell.currentIndexPath);
+                                    _this6.didSelectRow(cell.currentIndexPath);
                                 }
-                                _this7.emit("didSelectRow", cell.currentIndexPath, cell);
+                                _this6.emit("didSelectRow", cell.currentIndexPath, cell);
                             } else {
                                 if (cell.currentIndexPath) {
-                                    _this7.didDeselectRow(cell.currentIndexPath);
+                                    _this6.didDeselectRow(cell.currentIndexPath);
                                 }
-                                _this7.emit("didDeselectRow", cell.currentIndexPath, cell);
+                                _this6.emit("didDeselectRow", cell.currentIndexPath, cell);
                             }
                         } else {
-                            _this7.firstTouchPoint = undefined;
-                            _this7.firstTouchCell = undefined;
-                            _this7._highlightedRow = undefined;
-                            Object.keys(_this7._cachedCells).map(function (it) {
-                                return _this7._cachedCells[it];
+                            _this6.firstTouchPoint = undefined;
+                            _this6.firstTouchCell = undefined;
+                            _this6._highlightedRow = undefined;
+                            Object.keys(_this6._cachedCells).map(function (it) {
+                                return _this6._cachedCells[it];
                             }).forEach(function (it) {
                                 it.highlighted = false;
                                 it.emit("highlighted", it, false, false);
@@ -8802,7 +8818,7 @@ var UITableView = function (_UIScrollView_1$UIScr) {
                     this.firstTouchCell = undefined;
                     this._highlightedRow = undefined;
                     Object.keys(this._cachedCells).map(function (it) {
-                        return _this7._cachedCells[it];
+                        return _this6._cachedCells[it];
                     }).forEach(function (it) {
                         it.highlighted = false;
                         it.emit("highlighted", it, false, false);
@@ -8889,25 +8905,25 @@ var UITableViewCell = function (_UIView_1$UIView) {
     function UITableViewCell() {
         _classCallCheck(this, UITableViewCell);
 
-        var _this8 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+        var _this7 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
 
-        _this8.selectionView = new UIView_1.UIView();
-        _this8.contentView = new UIView_1.UIView();
-        // separatorElement = document.createElement("div")
-        _this8.reuseIdentifier = undefined;
-        _this8.hasSelectionStyle = true;
-        _this8._selected = false;
-        _this8._highlighted = false;
-        _this8.currentIndexPath = undefined;
-        _this8.currentSectionRecord = undefined;
-        _this8.restoringContentViewBackgroundColor = undefined;
-        _this8.selectionView.alpha = 0.0;
-        _this8.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
-        _this8.contentView.backgroundColor = UIColor_1.UIColor.white;
-        _this8.addSubview(_this8.selectionView);
-        _this8.addSubview(_this8.contentView);
+        _this7.selectionView = new UIView_1.UIView();
+        _this7.contentView = new UIView_1.UIView();
+        _this7.reuseIdentifier = undefined;
+        _this7.hasSelectionStyle = true;
+        _this7._selected = false;
+        _this7._highlighted = false;
+        _this7.currentIndexPath = undefined;
+        _this7.currentSectionRecord = undefined;
+        _this7.restoringContentViewBackgroundColor = undefined;
+        _this7.separatorStyle = undefined;
+        _this7.selectionView.alpha = 0.0;
+        _this7.selectionView.backgroundColor = new UIColor_1.UIColor(0xd0 / 255.0, 0xd0 / 255.0, 0xd0 / 255.0, 1.0);
+        _this7.contentView.backgroundColor = UIColor_1.UIColor.white;
+        _this7.addSubview(_this7.selectionView);
+        _this7.addSubview(_this7.contentView);
         // this.domElement.appendChild(this.separatorElement)
-        return _this8;
+        return _this7;
     }
 
     UITableViewCell.prototype.onStateChanged = function onStateChanged() {
@@ -8929,26 +8945,27 @@ var UITableViewCell = function (_UIView_1$UIView) {
     };
 
     UITableViewCell.prototype.setSeparator = function setSeparator(hidden, color, insets) {
-        // if (hidden || color === undefined) {
-        //     this.separatorElement.style.display = "none"
-        // }
-        // else {
-        //     this.separatorElement.style.display = null
-        //     this.separatorElement.style.position = "absolute"
-        //     this.separatorElement.style.borderTopStyle = "solid"
-        //     this.separatorElement.style.width = "100%"
-        //     this.separatorElement.style.borderTopWidth = "1px"
-        //     this.separatorElement.style.borderTopColor = color.toStyle()
-        //     this.separatorElement.style.marginLeft = insets.left.toString() + "px"
-        //     this.separatorElement.style.marginRight = insets.right.toString() + "px"
-        // }
+        if (hidden || color === undefined) {
+            this.separatorStyle = undefined;
+        } else {
+            this.separatorStyle = "\n            position: absolute;\n            left: " + insets.left + "px;\n            right: " + insets.right + "px;\n            bottom: 1rpx;\n            border-bottom-width: 1rpx;\n            border-bottom-color: " + color.toStyle() + ";\n            border-bottom-style: solid;\n            ";
+        }
+        this.markFlagDirty("hasDecorView", "decorStyle");
+    };
+
+    UITableViewCell.prototype.buildData = function buildData() {
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
+        data.hasDecorView = this.separatorStyle !== undefined;
+        if (this.separatorStyle) {
+            data.decorStyle = this.separatorStyle;
+        }
+        return data;
     };
 
     UITableViewCell.prototype.layoutSubviews = function layoutSubviews() {
         _UIView_1$UIView.prototype.layoutSubviews.call(this);
         this.selectionView.frame = this.bounds;
         this.contentView.frame = this.bounds;
-        // this.separatorElement.style.marginTop = (Math.floor((this.bounds.height - 1.0))).toString() + "px"
     };
 
     _createClass(UITableViewCell, [{
@@ -9054,8 +9071,8 @@ var UITextField = function (_UIView_1$UIView) {
         _this.clearButtonView = new UIButton_1.UIButton().on("touchUpInside", function () {
             if (_this.val("shouldClear") !== false) {
                 _this.text = "";
-                _this.focus();
             }
+            _this.focus();
         });
         _this.leftPadding = 0;
         _this.rightPadding = 0;
@@ -9366,6 +9383,66 @@ var UITextField = function (_UIView_1$UIView) {
 }(UIView_1.UIView);
 
 exports.UITextField = UITextField;
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(2);
+var UIColor_1 = __webpack_require__(5);
+
+var UIFetchMoreControl = function (_UIView_1$UIView) {
+    _inherits(UIFetchMoreControl, _UIView_1$UIView);
+
+    function UIFetchMoreControl() {
+        _classCallCheck(this, UIFetchMoreControl);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.scrollView = undefined;
+        _this.enabled = true;
+        _this.fetching = false;
+        _this.tintColor = UIColor_1.UIColor.gray;
+        return _this;
+    }
+
+    UIFetchMoreControl.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
+    };
+
+    UIFetchMoreControl.prototype.beginFetching = function beginFetching() {
+        var _this2 = this;
+
+        this.fetching = true;
+        setTimeout(function () {
+            _this2.emit("fetch", _this2);
+        }, 250);
+    };
+
+    UIFetchMoreControl.prototype.endFetching = function endFetching() {
+        if (this.scrollView) {
+            var it = this.scrollView;
+            if (it.contentOffset.y > it.contentSize.height + it.contentInset.bottom - it.bounds.height) {
+                it.setContentOffset({ x: 0.0, y: it.contentSize.height + it.contentInset.bottom - it.bounds.height }, true);
+            }
+        }
+        this.fetching = false;
+    };
+
+    return UIFetchMoreControl;
+}(UIView_1.UIView);
+
+exports.UIFetchMoreControl = UIFetchMoreControl;
 
 /***/ })
 /******/ ]);

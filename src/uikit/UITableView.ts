@@ -75,6 +75,12 @@ export class UITableView extends UIScrollView {
     }
 
     reloadData() {
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this._updateSectionsCache()
+            this._setContentSize()
+            this._layoutTableView()
+            return
+        }
         Object.keys(this._cachedCells).forEach(it => {
             this._cachedCells[it].removeFromSuperview()
         })
@@ -83,7 +89,6 @@ export class UITableView extends UIScrollView {
         this._cachedCells = {}
         this._updateSectionsCache()
         this._setContentSize()
-        this._needsReload = false
         this._layoutTableView()
     }
 
@@ -202,8 +207,6 @@ export class UITableView extends UIScrollView {
 
     private _highlightedRow: string | undefined = undefined
 
-    private _needsReload = false
-
     private _sections: UITableViewSection[] = []
 
     constructor() {
@@ -284,9 +287,7 @@ export class UITableView extends UIScrollView {
             this.tableHeaderView.frame = { x: 0.0, y: 0.0, width: boundsSize.width, height: this.tableHeaderView.frame.height }
             tableHeight += this.tableHeaderView.frame.height
         }
-        const availableCells = this._cachedCells
         const numberOfSections = this._sections.length
-        this._cachedCells = {}
         for (let section = 0; section < numberOfSections; section++) {
             const sectionRect = this._rectForSection(section)
             tableHeight += sectionRect.height
@@ -329,11 +330,17 @@ export class UITableView extends UIScrollView {
                     const indexPath = new UIIndexPath(row, section)
                     const rowRect = this._rectForRowAtIndexPath(indexPath)
                     if (UIRectIntersectsRect(rowRect, visibleBounds) && rowRect.height > 0) {
-                        var cell = availableCells[indexPath.mapKey()] || this.cellForRow(indexPath)
+                        var cell = this._cachedCells[indexPath.mapKey()] || this.cellForRow(indexPath)
+                        if (this.fetchMoreControl &&
+                            this.fetchMoreControl.fetching &&
+                            cell.currentIndexPath &&
+                            cell.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                            cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset)
+                            continue
+                        }
                         cell.currentIndexPath = indexPath
                         cell.currentSectionRecord = sectionRecord
                         this._cachedCells[indexPath.mapKey()] = cell
-                        delete availableCells[indexPath.mapKey()]
                         cell.highlighted = this._highlightedRow == indexPath.mapKey()
                         cell.emit("highlighted", cell, cell.highlighted, false)
                         cell.selected = this._selectedRows.indexOf(indexPath.mapKey()) >= 0
@@ -343,7 +350,6 @@ export class UITableView extends UIScrollView {
                         if (cell.superview == undefined) {
                             this.addSubview(cell)
                         }
-                        cell.hidden = false
                         cell.setSeparator(row === numberOfRows - 1, this.separatorColor, this.separatorInset)
                     }
                     else if (renderCount > 100) {
@@ -352,21 +358,6 @@ export class UITableView extends UIScrollView {
                 }
             }
         }
-        Object.keys(availableCells).forEach(key => {
-            const cell = availableCells[key]
-            if (cell.reuseIdentifier) {
-                this._reusableCells.push(cell)
-            }
-            else {
-                cell.hidden = true
-            }
-        })
-        const allCachedCells = Object.keys(this._cachedCells).map(it => this._cachedCells[it])
-        this._reusableCells.forEach(cell => {
-            if (UIRectIntersectsRect(cell.frame, visibleBounds) && allCachedCells.indexOf(cell) < 0) {
-                cell.hidden = true
-            }
-        })
         if (this.tableFooterView) {
             this.tableFooterView.frame = { x: 0.0, y: tableHeight, width: boundsSize.width, height: this.tableFooterView.frame.height }
         }
@@ -621,8 +612,6 @@ export class UITableViewCell extends UIView {
 
     contentView: UIView = new UIView()
 
-    // separatorElement = document.createElement("div")
-
     reuseIdentifier: string | undefined = undefined
 
     hasSelectionStyle: boolean = true
@@ -684,27 +673,39 @@ export class UITableViewCell extends UIView {
         }
     }
 
+    private separatorStyle: string | undefined = undefined
+
     setSeparator(hidden: boolean, color: UIColor | undefined, insets: UIEdgeInsets) {
-        // if (hidden || color === undefined) {
-        //     this.separatorElement.style.display = "none"
-        // }
-        // else {
-        //     this.separatorElement.style.display = null
-        //     this.separatorElement.style.position = "absolute"
-        //     this.separatorElement.style.borderTopStyle = "solid"
-        //     this.separatorElement.style.width = "100%"
-        //     this.separatorElement.style.borderTopWidth = "1px"
-        //     this.separatorElement.style.borderTopColor = color.toStyle()
-        //     this.separatorElement.style.marginLeft = insets.left.toString() + "px"
-        //     this.separatorElement.style.marginRight = insets.right.toString() + "px"
-        // }
+        if (hidden || color === undefined) {
+            this.separatorStyle = undefined
+        }
+        else {
+            this.separatorStyle = `
+            position: absolute;
+            left: ${insets.left}px;
+            right: ${insets.right}px;
+            bottom: 1rpx;
+            border-bottom-width: 1rpx;
+            border-bottom-color: ${color.toStyle()};
+            border-bottom-style: solid;
+            `
+        }
+        this.markFlagDirty("hasDecorView", "decorStyle")
+    }
+
+    buildData() {
+        let data = super.buildData()
+        data.hasDecorView = this.separatorStyle !== undefined
+        if (this.separatorStyle) {
+            data.decorStyle = this.separatorStyle
+        }
+        return data
     }
 
     layoutSubviews() {
         super.layoutSubviews()
         this.selectionView.frame = this.bounds
         this.contentView.frame = this.bounds
-        // this.separatorElement.style.marginTop = (Math.floor((this.bounds.height - 1.0))).toString() + "px"
     }
 
 }

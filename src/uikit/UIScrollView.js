@@ -6,6 +6,7 @@ const UISize_1 = require("./UISize");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const UIPanGestureRecognizer_1 = require("./UIPanGestureRecognizer");
 const UIRefreshControl_1 = require("./UIRefreshControl");
+const UIFetchMoreControl_1 = require("./UIFetchMoreControl");
 const isIOS = wx.getSystemInfoSync().platform === "ios";
 class UIScrollView extends UIView_1.UIView {
     constructor() {
@@ -34,6 +35,8 @@ class UIScrollView extends UIView_1.UIView {
         this.touchingRefreshControl = false;
         this.touchingRefreshControlBeganWindowY = 0.0;
         this.touchingRefreshOffsetY = 0.0;
+        // FetchMoreControl
+        this._fetchMoreControl = undefined;
         // Build Data
         this.isContentOffsetScrollAnimated = false;
         this._panGesture.enabled = false;
@@ -206,10 +209,10 @@ class UIScrollView extends UIView_1.UIView {
             this.refreshControl = view;
             return;
         }
-        // if (view instanceof UIFetchMoreControl) {
-        //     this.fetchMoreControl = view
-        //     return
-        // }
+        if (view instanceof UIFetchMoreControl_1.UIFetchMoreControl) {
+            this.fetchMoreControl = view;
+            return;
+        }
         super.addSubview(view);
     }
     get refreshControl() {
@@ -272,6 +275,27 @@ class UIScrollView extends UIView_1.UIView {
     }
     touchesCancelled(touches) {
         super.touchesCancelled(touches);
+    }
+    get fetchMoreControl() {
+        return this._fetchMoreControl;
+    }
+    set fetchMoreControl(value) {
+        this._fetchMoreControl = value;
+        if (value) {
+            value.scrollView = this;
+        }
+    }
+    createFetchMoreEffect() {
+        if (this.fetchMoreControl && this.fetchMoreControl.enabled && this.contentSize.width <= this.bounds.width) {
+            if (this.fetchMoreControl.fetching) {
+                return true;
+            }
+            else {
+                this.fetchMoreControl.beginFetching();
+                return true;
+            }
+        }
+        return false;
     }
     buildExtras() {
         let data = super.buildExtras();

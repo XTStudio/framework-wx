@@ -394,6 +394,7 @@ export class UIView extends EventEmitter {
     }
 
     public set extraStyles(value: string | undefined) {
+        if (this._extraStyles === value) { return }
         this._extraStyles = value;
         this.markFlagDirty("style")
     }

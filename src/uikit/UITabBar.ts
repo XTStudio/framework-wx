@@ -52,7 +52,7 @@ export class UITabBar extends UIView {
         this.tintColor = UIColor.black
         this.extraStyles = `
         border-top: solid;
-        border-top-width: 1px;
+        border-top-width: 1rpx;
         border-top-color: rgba(152, 150, 155, 0.5);
         `
     }

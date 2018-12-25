@@ -350,6 +350,9 @@ class UIView extends EventEmitter_1.EventEmitter {
         return this._extraStyles;
     }
     set extraStyles(value) {
+        if (this._extraStyles === value) {
+            return;
+        }
         this._extraStyles = value;
         this.markFlagDirty("style");
     }

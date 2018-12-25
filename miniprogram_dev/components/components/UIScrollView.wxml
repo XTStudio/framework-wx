@@ -40,6 +40,8 @@
     bindtouchstart="onTouchStarted"
     bindtouchend="onTouchEnded"
     bindtouchcancel="onTouchCancelled"
+    lower-threshold="200"
+    bindscrolltolower="onScrollToLower"
     data-viewID="{{viewID}}">
     <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top + refreshOffset}})" animation="{{refreshingAnimation}}">
       <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">

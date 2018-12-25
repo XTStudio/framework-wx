@@ -84,6 +84,12 @@ export class UIScrollViewComponent extends UIViewComponent {
                 view._touchStarted = false
             }
         },
+        onScrollToLower: function (e: any) {
+            const view = UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid)
+            if (view) {
+                view.createFetchMoreEffect()
+            }
+        }
     }
 
 }
