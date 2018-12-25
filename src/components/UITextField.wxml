@@ -1,0 +1,17 @@
+<view style='{{style}}{{frameStyle}}' animation='{{animation}}'>
+  <input style='height: 100%; padding-left: {{leftPadding}}px; padding-right: {{rightPadding}}px;{{textStyle}};'
+         value='{{text}}'
+         placeholder='{{placeholder}}'
+         password='{{secureTextEntry}}'
+         type='{{keyboardType}}'
+         confirm-type='{{returnKeyType}}'
+         bindinput='onChange'
+         bindfocus='onFocus'
+         focus='{{requireFocus}}'
+         bindblur='onBlur'
+         confirm-hold='false'
+         bindconfirm='onReturn'></input>
+  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  </block>
+</view>

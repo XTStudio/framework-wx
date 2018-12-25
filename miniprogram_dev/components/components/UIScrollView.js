@@ -82,12 +82,66 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 32);
+/******/ 	return __webpack_require__(__webpack_require__.s = 35);
 /******/ })
 /************************************************************************/
 /******/ ({
 
 /***/ 0:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UUID_1 = __webpack_require__(3);
+
+var UIViewManager = function () {
+    function UIViewManager() {
+        _classCallCheck(this, UIViewManager);
+
+        this.views = {};
+    }
+
+    UIViewManager.prototype.addView = function addView(view) {
+        view.viewID = UUID_1.randomUUID();
+        this.views[view.viewID] = view;
+    };
+
+    UIViewManager.prototype.fetchView = function fetchView(viewID) {
+        return this.views[viewID];
+    };
+
+    UIViewManager.prototype.fetchViews = function fetchViews() {
+        var _this = this;
+
+        return Object.keys(this.views).map(function (it) {
+            return _this.views[it];
+        });
+    };
+
+    _createClass(UIViewManager, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().UIViewManagerManagerShared === undefined) {
+                getApp().UIViewManagerManagerShared = new UIViewManager();
+            }
+            return getApp().UIViewManagerManagerShared;
+        }
+    }]);
+
+    return UIViewManager;
+}();
+
+exports.UIViewManager = UIViewManager;
+
+/***/ }),
+
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -140,60 +194,6 @@ var UIComponentManager = function () {
 }();
 
 exports.UIComponentManager = UIComponentManager;
-
-/***/ }),
-
-/***/ 1:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(3);
-
-var UIViewManager = function () {
-    function UIViewManager() {
-        _classCallCheck(this, UIViewManager);
-
-        this.views = {};
-    }
-
-    UIViewManager.prototype.addView = function addView(view) {
-        view.viewID = UUID_1.randomUUID();
-        this.views[view.viewID] = view;
-    };
-
-    UIViewManager.prototype.fetchView = function fetchView(viewID) {
-        return this.views[viewID];
-    };
-
-    UIViewManager.prototype.fetchViews = function fetchViews() {
-        var _this = this;
-
-        return Object.keys(this.views).map(function (it) {
-            return _this.views[it];
-        });
-    };
-
-    _createClass(UIViewManager, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().UIViewManagerManagerShared === undefined) {
-                getApp().UIViewManagerManagerShared = new UIViewManager();
-            }
-            return getApp().UIViewManagerManagerShared;
-        }
-    }]);
-
-    return UIViewManager;
-}();
-
-exports.UIViewManager = UIViewManager;
 
 /***/ }),
 
@@ -280,7 +280,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 32:
+/***/ 35:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -294,7 +294,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(4);
-var UIViewManager_1 = __webpack_require__(1);
+var UIViewManager_1 = __webpack_require__(0);
 var Ticker_1 = __webpack_require__(19);
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
@@ -390,8 +390,8 @@ Component(new UIScrollViewComponent());
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(0);
-var UIViewManager_1 = __webpack_require__(1);
+var UIComponentManager_1 = __webpack_require__(1);
+var UIViewManager_1 = __webpack_require__(0);
 // xt-framework/uiview.js
 var isDevtools = wx.getSystemInfoSync().platform === "devtools";
 

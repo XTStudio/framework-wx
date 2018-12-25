@@ -339,6 +339,13 @@ class UIButton extends UIView_1.UIView {
         };
         return data;
     }
+    buildStyle() {
+        let style = super.buildStyle();
+        style += `
+        line-height: ${this.frame.height}px;
+        `;
+        return style;
+    }
     layoutSubviews() {
         super.layoutSubviews();
         this.markFlagDirty("textHeight");

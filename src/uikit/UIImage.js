@@ -26,10 +26,10 @@ class UIImage extends EventEmitter_1.EventEmitter {
         this.size = UISize_1.UISizeZero;
         this.scale = 1.0;
         if (options.base64) {
-            this.imageSource = "data:image;base64," + options.base64;
+            this.imageSource = "data:image/png;base64," + options.base64;
         }
         else if (options.data) {
-            this.imageSource = "data:image;base64," + options.data.base64EncodedString();
+            this.imageSource = "data:image/png;base64," + options.data.base64EncodedString();
         }
         else if (options.name) {
             this.imageSource = `/assets/images/${options.name}@2x.png`;

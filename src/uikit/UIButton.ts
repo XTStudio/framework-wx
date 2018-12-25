@@ -366,6 +366,14 @@ export class UIButton extends UIView {
         return data
     }
 
+    buildStyle() {
+        let style = super.buildStyle()
+        style += `
+        line-height: ${this.frame.height}px;
+        `
+        return style
+    }
+
     layoutSubviews() {
         super.layoutSubviews()
         this.markFlagDirty("textHeight")

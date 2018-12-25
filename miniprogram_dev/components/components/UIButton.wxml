@@ -1,15 +1,15 @@
-<button plain="true" 
-        style='line-height: unset; {{style}}; {{frameStyle}}; text-align: center; overflow: hidden;' 
+<view plain="true" 
+        style='border-width:0px; text-align: center; overflow: hidden;{{style}};{{frameStyle}};' 
         animation='{{animation}}'>
   <image wx:if="{{imageSource}}" 
          src="{{imageSource}}" 
          mode="aspectFit" 
-         style="width: {{imageWidth}}px; height: {{imageHeight}}px; margin: 0px {{imageMargin.right}}px 0px {{imageMargin.left}}px;" 
+         style="width: {{imageWidth}}px; height: {{imageHeight}}px; margin: {{(textHeight - imageWidth) / 2}}px {{imageMargin.right}}px 0px {{imageMargin.left}}px;" 
          animation='{{contentAlphaAnimation}}' 
          bindload="onImageLoaded"></image>
-  <text style='line-height: {{textHeight}}px; {{textStyle}}; margin: 0px {{titleMargin.right}}px 0px {{titleMargin.left}}px;' 
+  <text style='position: absolute; line-height: {{textHeight}}px; {{textStyle}}; margin: 0px {{titleMargin.right}}px 0px {{titleMargin.left}}px;' 
         animation='{{contentAlphaAnimation}}'>{{text}}</text>
   <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
     <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
   </block>
-</button>
+</view>

@@ -5,3 +5,4 @@
 <uiimageview wx:if="{{clazz == 'UIImageView'}}" viewID="{{viewID}}"></uiimageview>
 <uibutton wx:if="{{clazz == 'UIButton'}}" viewID="{{viewID}}"></uibutton>
 <uiactivityindicatorview wx:if="{{clazz == 'UIActivityIndicatorView'}}" viewID="{{viewID}}"></uiactivityindicatorview>
+<uitextfield wx:if="{{clazz == 'UITextField'}}" viewID="{{viewID}}"></uitextfield>

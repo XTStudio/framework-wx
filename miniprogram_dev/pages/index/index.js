@@ -34,6 +34,10 @@ const {
     UITableViewCell,
     DispatchQueue,
     UIRefreshControl,
+    UITextField,
+    UIKeyboardType,
+    UIReturnKeyType,
+    UITextFieldViewMode,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -52,17 +56,58 @@ class FooCell extends UITableViewCell {
 
 class BarViewController extends UIViewController {
 
-    slider = new UISlider
+    scrollView = new UIScrollView
+    redView = new UIView
+    textField = new UITextField
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.slider.frame = UIRectMake(44, 44, 300, 44)
-        this.view.addSubview(this.slider)
+        this.textField.backgroundColor = new UIColor(245.0 / 255.0, 245.0 / 255.0, 245.0 / 255.0, 1.0)
+        this.textField.frame = UIRectMake(44, 44, 300, 44)
+        // this.textField.text = "Hello."
+        this.textField.placeholder = "Input username here."
+        // this.textField.textColor = UIColor.red
+        // this.textField.textAlignment = UITextAlignment.center
+        this.textField.clearButtonMode = UITextFieldViewMode.whileEditing
+        // this.textField.keyboardType = UIKeyboardType.numberPad
+        this.textField.returnKeyType = UIReturnKeyType.send
+        this.textField.on("shouldChange", (sender, range, text) => {
+            if (text === "!") { return false }
+            return true
+        })
+        this.textField.on("shouldReturn", () => {
+            this.title = this.textField.text
+            this.textField.blur()
+        })
+        {
+            let leftView = new UIView
+            leftView.frame = UIRectMake(0, 0, 44, 44)
+            leftView.backgroundColor = UIColor.red
+            this.textField.leftView = leftView
+            this.textField.leftViewMode = UITextFieldViewMode.never
+        }
+        this.textField.font = new UIFont(14)
+        {
+            this.redView.backgroundColor = UIColor.red
+            this.redView.frame = UIRectMake(0, 0, 44, 44)
+            this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                if (this.textField.text === "1") {
+                    this.textField.blur()
+                }
+                else {
+                    this.textField.focus()
+                }
+            }))
+            this.scrollView.addSubview(this.redView)
+        }
+        this.scrollView.addSubview(this.textField)
+        this.scrollView.contentSize = { width: 0, height: 2000 }
+        this.view.addSubview(this.scrollView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        // this.scrollView.frame = this.view.bounds
+        this.scrollView.frame = this.view.bounds
     }
 
 }
@@ -90,7 +135,7 @@ class FooViewController extends UIViewController {
         this.tableView.on("heightForRow", () => 44)
         this.tableView.on("cellForRow", (indexPath) => {
             const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
-            cell.textLabel.text = Math.random().toString()
+            cell.textLabel.text = indexPath.row.toString()
             return cell
         })
         this.tableView.on("didSelectRow", (indexPath) => {
@@ -164,8 +209,8 @@ tabBarController.setViewControllers([
 const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
-const main = tabBarController
-// const main = new BarViewController
+// const main = tabBarController
+const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

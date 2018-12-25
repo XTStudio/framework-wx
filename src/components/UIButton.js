@@ -8,7 +8,7 @@ class UIButtonComponent extends UIView_1.UIViewComponent {
             onImageLoaded: function (e) {
                 this.setData({
                     imageWidth: e.detail.width / 2,
-                    imageHeight: e.detail.width / 2,
+                    imageHeight: e.detail.height / 2,
                 });
             }
         };

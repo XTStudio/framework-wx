@@ -82,11 +82,12 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 41);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -139,7 +140,8 @@ var UIViewManager = function () {
 exports.UIViewManager = UIViewManager;
 
 /***/ }),
-/* 1 */
+
+/***/ 1:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -194,8 +196,8 @@ var UIComponentManager = function () {
 exports.UIComponentManager = UIComponentManager;
 
 /***/ }),
-/* 2 */,
-/* 3 */
+
+/***/ 3:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -211,7 +213,8 @@ exports.randomUUID = function () {
 };
 
 /***/ }),
-/* 4 */
+
+/***/ 4:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -265,5 +268,82 @@ var UIViewComponent = function UIViewComponent() {
 exports.UIViewComponent = UIViewComponent;
 Component(new UIViewComponent());
 
+/***/ }),
+
+/***/ 41:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+var UIViewManager_1 = __webpack_require__(0);
+
+var UITextFieldComponent = function (_UIView_1$UIViewCompo) {
+    _inherits(UITextFieldComponent, _UIView_1$UIViewCompo);
+
+    function UITextFieldComponent() {
+        _classCallCheck(this, UITextFieldComponent);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+
+        _this.methods = {
+            onChange: function onChange(e) {
+                var self = this;
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                if (view) {
+                    var oldText = view._text;
+                    var newText = e.detail.value.substr(0, e.detail.cursor);
+                    if (e.detail.cursor == newText.length && view.val("shouldChange", this, { location: 0, length: 0 }, function () {
+                        if (newText.length > oldText.length) {
+                            return newText.substr(oldText.length, newText.length);
+                        }
+                        return "";
+                    }()) === false) {
+                        return view._text;
+                    }
+                    view._text = e.detail.value;
+                    view.textDidChanged();
+                }
+            },
+            onFocus: function onFocus() {
+                var self = this;
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                if (view) {
+                    view.editing = true;
+                }
+            },
+            onBlur: function onBlur() {
+                var self = this;
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                if (view) {
+                    view.editing = false;
+                }
+            },
+            onReturn: function onReturn() {
+                var self = this;
+                var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                if (view) {
+                    view.onReturn();
+                }
+            }
+        };
+        return _this;
+    }
+
+    return UITextFieldComponent;
+}(UIView_1.UIViewComponent);
+
+exports.UITextFieldComponent = UITextFieldComponent;
+Component(new UITextFieldComponent());
+
 /***/ })
-/******/ ]);
+
+/******/ });
