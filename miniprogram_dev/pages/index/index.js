@@ -39,6 +39,7 @@ const {
     UIReturnKeyType,
     UITextFieldViewMode,
     UIFetchMoreControl,
+    UITextView,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -59,49 +60,43 @@ class BarViewController extends UIViewController {
 
     scrollView = new UIScrollView
     redView = new UIView
-    textField = new UITextField
+    textView = new UITextView
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.textField.backgroundColor = new UIColor(245.0 / 255.0, 245.0 / 255.0, 245.0 / 255.0, 1.0)
-        this.textField.frame = UIRectMake(44, 44, 300, 44)
+        this.textView.backgroundColor = new UIColor(245.0 / 255.0, 245.0 / 255.0, 245.0 / 255.0, 1.0)
+        this.textView.frame = UIRectMake(44, 44, 300, 300)
         // this.textField.text = "Hello."
-        this.textField.placeholder = "Input username here."
+        // this.textView.placeholder = "Input username here."
         // this.textField.textColor = UIColor.red
         // this.textField.textAlignment = UITextAlignment.center
-        this.textField.clearButtonMode = UITextFieldViewMode.whileEditing
+        // this.textView.clearButtonMode = UITextFieldViewMode.whileEditing
         // this.textField.keyboardType = UIKeyboardType.numberPad
-        this.textField.returnKeyType = UIReturnKeyType.send
-        this.textField.on("shouldChange", (sender, range, text) => {
+        this.textView.returnKeyType = UIReturnKeyType.send
+        this.textView.text = "Hello, World!fkljdhslkjfhkdsahfkjsh"
+        this.textView.on("shouldChange", (sender, range, text) => {
             if (text === "!") { return false }
             return true
         })
-        this.textField.on("shouldReturn", () => {
-            this.title = this.textField.text
-            this.textField.blur()
+        this.textView.on("shouldReturn", () => {
+            this.title = this.textView.text
+            this.textView.blur()
         })
-        {
-            let leftView = new UIView
-            leftView.frame = UIRectMake(0, 0, 44, 44)
-            leftView.backgroundColor = UIColor.red
-            this.textField.leftView = leftView
-            this.textField.leftViewMode = UITextFieldViewMode.never
-        }
-        this.textField.font = new UIFont(14)
+        this.textView.font = new UIFont(14)
         {
             this.redView.backgroundColor = UIColor.red
             this.redView.frame = UIRectMake(0, 0, 44, 44)
             this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                if (this.textField.text === "1") {
-                    this.textField.blur()
+                if (this.textView.text === "1") {
+                    this.textView.blur()
                 }
                 else {
-                    this.textField.focus()
+                    this.textView.focus()
                 }
             }))
             this.scrollView.addSubview(this.redView)
         }
-        this.scrollView.addSubview(this.textField)
+        this.scrollView.addSubview(this.textView)
         this.scrollView.contentSize = { width: 0, height: 2000 }
         this.view.addSubview(this.scrollView)
     }
@@ -223,8 +218,8 @@ tabBarController.setViewControllers([
 const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
-const main = tabBarController
-// const main = new BarViewController
+// const main = tabBarController
+const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

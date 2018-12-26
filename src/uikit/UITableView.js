@@ -602,7 +602,7 @@ class UITableViewCell extends UIView_1.UIView {
             position: absolute;
             left: ${insets.left}px;
             right: ${insets.right}px;
-            bottom: 1rpx;
+            bottom: 0rpx;
             border-bottom-width: 1rpx;
             border-bottom-color: ${color.toStyle()};
             border-bottom-style: solid;

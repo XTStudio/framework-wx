@@ -4745,6 +4745,7 @@ Object.assign(module.exports, __webpack_require__(66));
 Object.assign(module.exports, __webpack_require__(20));
 Object.assign(module.exports, __webpack_require__(68));
 Object.assign(module.exports, __webpack_require__(70));
+Object.assign(module.exports, __webpack_require__(72));
 Object.assign(module.exports, __webpack_require__(8));
 Object.assign(module.exports, __webpack_require__(2));
 Object.assign(module.exports, __webpack_require__(23));
@@ -8948,7 +8949,7 @@ var UITableViewCell = function (_UIView_1$UIView) {
         if (hidden || color === undefined) {
             this.separatorStyle = undefined;
         } else {
-            this.separatorStyle = "\n            position: absolute;\n            left: " + insets.left + "px;\n            right: " + insets.right + "px;\n            bottom: 1rpx;\n            border-bottom-width: 1rpx;\n            border-bottom-color: " + color.toStyle() + ";\n            border-bottom-style: solid;\n            ";
+            this.separatorStyle = "\n            position: absolute;\n            left: " + insets.left + "px;\n            right: " + insets.right + "px;\n            bottom: 0rpx;\n            border-bottom-width: 1rpx;\n            border-bottom-color: " + color.toStyle() + ";\n            border-bottom-style: solid;\n            ";
         }
         this.markFlagDirty("hasDecorView", "decorStyle");
     };
@@ -9443,6 +9444,209 @@ var UIFetchMoreControl = function (_UIView_1$UIView) {
 }(UIView_1.UIView);
 
 exports.UIFetchMoreControl = UIFetchMoreControl;
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(2);
+var UIColor_1 = __webpack_require__(5);
+var UIEnums_1 = __webpack_require__(6);
+
+var UITextView = function (_UIView_1$UIView) {
+    _inherits(UITextView, _UIView_1$UIView);
+
+    function UITextView() {
+        _classCallCheck(this, UITextView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this.clazz = "UITextField";
+        _this._text = "";
+        _this._textColor = undefined;
+        _this._font = undefined;
+        _this._textAlignment = UIEnums_1.UITextAlignment.left;
+        _this._editable = true;
+        _this._editing = false;
+        _this._keyboardType = UIEnums_1.UIKeyboardType.default;
+        _this._returnKeyType = UIEnums_1.UIReturnKeyType.default;
+        _this._secureTextEntry = false;
+        return _this;
+    }
+
+    UITextView.prototype.textDidChanged = function textDidChanged() {};
+
+    UITextView.prototype.focus = function focus() {
+        if (this.val("shouldBeginEditing", this) === false) {
+            return;
+        }
+        this.editing = true;
+        this.markFlagDirty("requireFocus");
+    };
+
+    UITextView.prototype.blur = function blur() {
+        if (this.val("shouldEndEditing", this) === false) {
+            return;
+        }
+        this.editing = false;
+        this.markFlagDirty("requireFocus");
+    };
+
+    UITextView.prototype.buildData = function buildData() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
+        data.isTextView = true;
+        data.text = this.text;
+        data.textStyle = "\n        color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n        font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n        font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n        font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n        font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n        text-align: " + function () {
+            switch (_this2._textAlignment) {
+                case UIEnums_1.UITextAlignment.left:
+                    return "left";
+                case UIEnums_1.UITextAlignment.center:
+                    return "center";
+                case UIEnums_1.UITextAlignment.right:
+                    return "right";
+            }
+            return "left";
+        }() + ";\n        ";
+        data.requireFocus = this.editing;
+        data.secureTextEntry = this.secureTextEntry;
+        data.keyboardType = function () {
+            switch (_this2.keyboardType) {
+                case UIEnums_1.UIKeyboardType.numberPad:
+                    return "number";
+                case UIEnums_1.UIKeyboardType.decimalPad:
+                    return "digit";
+            }
+            return "text";
+        }();
+        data.returnKeyType = function () {
+            switch (_this2.returnKeyType) {
+                case UIEnums_1.UIReturnKeyType.default:
+                    return "done";
+                case UIEnums_1.UIReturnKeyType.done:
+                    return "done";
+                case UIEnums_1.UIReturnKeyType.go:
+                    return "go";
+                case UIEnums_1.UIReturnKeyType.next:
+                    return "next";
+                case UIEnums_1.UIReturnKeyType.send:
+                    return "send";
+            }
+            return "done";
+        };
+        return data;
+    };
+
+    _createClass(UITextView, [{
+        key: "text",
+        get: function get() {
+            return this._text;
+        },
+        set: function set(value) {
+            this._text = value;
+            this.markFlagDirty("text");
+        }
+    }, {
+        key: "textColor",
+        get: function get() {
+            return this._textColor;
+        },
+        set: function set(value) {
+            this._textColor = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "font",
+        get: function get() {
+            return this._font;
+        },
+        set: function set(value) {
+            this._font = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "textAlignment",
+        get: function get() {
+            return this._textAlignment;
+        },
+        set: function set(value) {
+            this._textAlignment = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "editable",
+        get: function get() {
+            return this._editable;
+        },
+        set: function set(value) {
+            this._editable = value;
+        }
+    }, {
+        key: "editing",
+        get: function get() {
+            return this._editing;
+        },
+        set: function set(value) {
+            if (value && this.val("shouldBeginEditing", this) === false) {
+                this.blur();
+                return;
+            } else if (!value && this.val("shouldEndEditing", this) === false) {
+                this.focus();
+                return;
+            }
+            this._editing = value;
+            if (value) {
+                this.emit("didBeginEditing", this);
+            } else {
+                this.emit("didEndEditing", this);
+            }
+        }
+    }, {
+        key: "keyboardType",
+        get: function get() {
+            return this._keyboardType;
+        },
+        set: function set(value) {
+            this._keyboardType = value;
+            this.markFlagDirty("keyboardType");
+        }
+    }, {
+        key: "returnKeyType",
+        get: function get() {
+            return this._returnKeyType;
+        },
+        set: function set(value) {
+            this._returnKeyType = value;
+            this.markFlagDirty("returnKeyType");
+        }
+    }, {
+        key: "secureTextEntry",
+        get: function get() {
+            return this._secureTextEntry;
+        },
+        set: function set(value) {
+            this._secureTextEntry = value;
+            this.markFlagDirty("secureTextEntry");
+        }
+    }]);
+
+    return UITextView;
+}(UIView_1.UIView);
+
+exports.UITextView = UITextView;
 
 /***/ })
 /******/ ]);
