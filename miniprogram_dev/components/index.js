@@ -701,16 +701,18 @@ var UIView = function (_EventEmitter_1$Event) {
     };
 
     UIView.prototype.buildData = function buildData() {
-        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: "left:" + this._frame.x + "px;top:" + this._frame.y + "px;width: " + this._frame.width + "px;height: " + this._frame.height + "px;", subviews: this.subviews.map(function (it) {
+        return {
+            viewID: this.viewID,
+            style: this.buildStyle(),
+            frameStyle: "left:" + this._frame.x + "px;top:" + this._frame.y + "px;width: " + this._frame.width + "px;height: " + this._frame.height + "px;",
+            subviews: this.subviews.map(function (it) {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID
                 };
-            }), animation: this.buildAnimation() }, this.buildExtras());
-    };
-
-    UIView.prototype.buildExtras = function buildExtras() {
-        return {};
+            }),
+            animation: this.buildAnimation()
+        };
     };
 
     UIView.prototype.buildStyle = function buildStyle() {
@@ -2326,10 +2328,10 @@ var UILabel = function (_UIView_1$UIView) {
     }
 
     // invalidate
-    UILabel.prototype.buildExtras = function buildExtras() {
+    UILabel.prototype.buildData = function buildData() {
         var _this2 = this;
 
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
         if (this.attributedText) {
             data.richText = this.attributedText.toHTMLText();
         } else {
@@ -2467,10 +2469,10 @@ var UIImageView = function (_UIView_1$UIView) {
         return _this;
     }
 
-    UIImageView.prototype.buildExtras = function buildExtras() {
+    UIImageView.prototype.buildData = function buildData() {
         var _this2 = this;
 
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
         data.imageSource = this._image !== undefined ? this._image.imageSource : null;
         data.scaleMode = function () {
             switch (_this2._contentMode) {
@@ -3670,8 +3672,8 @@ var UIButton = function (_UIView_1$UIView) {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
     };
 
-    UIButton.prototype.buildExtras = function buildExtras() {
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+    UIButton.prototype.buildData = function buildData() {
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
         data.text = this.titleLabel.text || "";
         data.textStyle = "\n            color: " + (this.titleLabel.textColor !== undefined ? UIColor_1.UIColor.toStyle(this.titleLabel.textColor) : "black") + ";\n            font-size: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.pointSize : 14) + "px;\n            font-family: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontName : "") + "; \n            font-weight: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            font-style: " + (this.titleLabel.font !== undefined ? this.titleLabel.font.fontStyle : "") + "; \n            ";
         data.textHeight = this.bounds.height;
@@ -4521,10 +4523,10 @@ var UIScrollView = function (_UIView_1$UIView) {
         return false;
     };
 
-    UIScrollView.prototype.buildExtras = function buildExtras() {
+    UIScrollView.prototype.buildData = function buildData() {
         var _this2 = this;
 
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
         var totalContentSize = {
             width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
             height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
@@ -5375,8 +5377,8 @@ var UIActivityIndicatorView = function (_UIView_1$UIView) {
         this.invalidate();
     };
 
-    UIActivityIndicatorView.prototype.buildExtras = function buildExtras() {
-        var data = _UIView_1$UIView.prototype.buildExtras.call(this);
+    UIActivityIndicatorView.prototype.buildData = function buildData() {
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
         data.sizeScale = this.largeStyle ? 3.0 : 1.5;
         data.lineHeight = this.bounds.height;
         data.animating = this.animating;

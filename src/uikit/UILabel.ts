@@ -82,8 +82,8 @@ export class UILabel extends UIView {
 
     // invalidate
 
-    buildExtras() {
-        let data = super.buildExtras()
+    buildData() {
+        let data = super.buildData()
         if (this.attributedText) {
             data.richText = this.attributedText.toHTMLText()
         }

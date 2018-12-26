@@ -691,12 +691,7 @@ export class UIView extends EventEmitter {
                 }
             }),
             animation: this.buildAnimation(),
-            ... this.buildExtras(),
         }
-    }
-
-    buildExtras(): any {
-        return {}
     }
 
     buildStyle() {

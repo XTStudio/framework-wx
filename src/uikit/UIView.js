@@ -606,15 +606,18 @@ class UIView extends EventEmitter_1.EventEmitter {
         }
     }
     buildData() {
-        return Object.assign({ viewID: this.viewID, style: this.buildStyle(), frameStyle: `left:${this._frame.x}px;top:${this._frame.y}px;width: ${this._frame.width}px;height: ${this._frame.height}px;`, subviews: this.subviews.map(it => {
+        return {
+            viewID: this.viewID,
+            style: this.buildStyle(),
+            frameStyle: `left:${this._frame.x}px;top:${this._frame.y}px;width: ${this._frame.width}px;height: ${this._frame.height}px;`,
+            subviews: this.subviews.map(it => {
                 return {
                     clazz: it.clazz,
                     viewID: it.viewID,
                 };
-            }), animation: this.buildAnimation() }, this.buildExtras());
-    }
-    buildExtras() {
-        return {};
+            }),
+            animation: this.buildAnimation(),
+        };
     }
     buildStyle() {
         let styles = `

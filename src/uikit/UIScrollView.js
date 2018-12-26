@@ -297,8 +297,8 @@ class UIScrollView extends UIView_1.UIView {
         }
         return false;
     }
-    buildExtras() {
-        let data = super.buildExtras();
+    buildData() {
+        let data = super.buildData();
         const totalContentSize = {
             width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
             height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom

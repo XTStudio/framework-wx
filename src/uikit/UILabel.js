@@ -75,8 +75,8 @@ class UILabel extends UIView_1.UIView {
         this.markFlagDirty("textStyle");
     }
     // invalidate
-    buildExtras() {
-        let data = super.buildExtras();
+    buildData() {
+        let data = super.buildData();
         if (this.attributedText) {
             data.richText = this.attributedText.toHTMLText();
         }

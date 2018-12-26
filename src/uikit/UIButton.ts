@@ -336,8 +336,8 @@ export class UIButton extends UIView {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0
     }
 
-    buildExtras() {
-        let data = super.buildExtras()
+    buildData() {
+        let data = super.buildData()
         data.text = this.titleLabel.text || ""
         data.textStyle = `
             color: ${this.titleLabel.textColor !== undefined ? UIColor.toStyle(this.titleLabel.textColor) : "black"};

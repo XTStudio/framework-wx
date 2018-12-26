@@ -30,8 +30,8 @@ export class UIImageView extends UIView {
         this.markFlagDirty("scaleMode")
     }
 
-    buildExtras() {
-        let data = super.buildExtras()
+    buildData() {
+        let data = super.buildData()
         data.imageSource = this._image !== undefined ? this._image.imageSource : null
         data.scaleMode = (() => {
             switch (this._contentMode) {

@@ -44,8 +44,8 @@ export class UIActivityIndicatorView extends UIView {
         this.invalidate()
     }
 
-    buildExtras() {
-        let data = super.buildExtras()
+    buildData() {
+        let data = super.buildData()
         data.sizeScale = this.largeStyle ? 3.0 : 1.5
         data.lineHeight = this.bounds.height
         data.animating = this.animating
