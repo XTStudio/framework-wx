@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 38);
+/******/ 	return __webpack_require__(__webpack_require__.s = 44);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -214,84 +214,6 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 38:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(2);
-var UIViewManager_1 = __webpack_require__(0);
-var UIView_1 = __webpack_require__(4);
-
-var UIWindowComponent = function (_UIView_1$UIViewCompo) {
-    _inherits(UIWindowComponent, _UIView_1$UIViewCompo);
-
-    function UIWindowComponent() {
-        _classCallCheck(this, UIWindowComponent);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
-
-        _this.methods = {
-            onTouchStarted: function onTouchStarted(e) {
-                // var q = (wx.createSelectorQuery() as any).in(this)
-                // q.select('#_text_measurer').boundingClientRect(function(e: any){ console.log(e) })
-                // q.exec()
-                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
-                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-                    if (window) {
-                        window.handleTouchStart(e);
-                    }
-                }
-            },
-            onTouchMoved: function onTouchMoved(e) {
-                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
-                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-                    if (window) {
-                        window.handleTouchMove(e);
-                    }
-                }
-            },
-            onTouchEnded: function onTouchEnded(e) {
-                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
-                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-                    if (window) {
-                        window.handleTouchEnd(e);
-                    }
-                }
-            },
-            onTouchCancelled: function onTouchCancelled(e) {
-                if (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.viewid) {
-                    var window = UIViewManager_1.UIViewManager.shared.fetchView(e.currentTarget.dataset.viewid);
-                    if (window) {
-                        window.handleTouchCancel(e);
-                    }
-                }
-            }
-        };
-        _this.pageLifetimes = {
-            show: function show() {
-                UIComponentManager_1.UIComponentManager.keyWindowComponent = this;
-            }
-        };
-        return _this;
-    }
-
-    return UIWindowComponent;
-}(UIView_1.UIViewComponent);
-
-exports.UIWindowComponent = UIWindowComponent;
-Component(new UIWindowComponent());
-
-/***/ }),
-
 /***/ 4:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -355,6 +277,38 @@ var UIViewComponent = function UIViewComponent() {
 
 exports.UIViewComponent = UIViewComponent;
 Component(new UIViewComponent());
+
+/***/ }),
+
+/***/ 44:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(4);
+
+var UIWebViewComponent = function (_UIView_1$UIViewCompo) {
+  _inherits(UIWebViewComponent, _UIView_1$UIViewCompo);
+
+  function UIWebViewComponent() {
+    _classCallCheck(this, UIWebViewComponent);
+
+    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
+  }
+
+  return UIWebViewComponent;
+}(UIView_1.UIViewComponent);
+
+exports.UIWebViewComponent = UIWebViewComponent;
+Component(new UIWebViewComponent());
 
 /***/ })
 

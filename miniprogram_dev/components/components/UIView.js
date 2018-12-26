@@ -139,7 +139,8 @@ var UIViewManager = function () {
 exports.UIViewManager = UIViewManager;
 
 /***/ }),
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -194,7 +195,6 @@ var UIComponentManager = function () {
 exports.UIComponentManager = UIComponentManager;
 
 /***/ }),
-/* 2 */,
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -220,7 +220,7 @@ exports.randomUUID = function () {
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(1);
+var UIComponentManager_1 = __webpack_require__(2);
 var UIViewManager_1 = __webpack_require__(0);
 // xt-framework/uiview.js
 var nextTick = function nextTick(cb) {

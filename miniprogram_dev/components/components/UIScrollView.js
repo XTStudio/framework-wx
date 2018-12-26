@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 35);
+/******/ 	return __webpack_require__(__webpack_require__.s = 37);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -141,7 +141,7 @@ exports.UIViewManager = UIViewManager;
 
 /***/ }),
 
-/***/ 1:
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -197,7 +197,7 @@ exports.UIComponentManager = UIComponentManager;
 
 /***/ }),
 
-/***/ 19:
+/***/ 20:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -280,7 +280,7 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 35:
+/***/ 37:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -295,7 +295,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(4);
 var UIViewManager_1 = __webpack_require__(0);
-var Ticker_1 = __webpack_require__(19);
+var Ticker_1 = __webpack_require__(20);
 
 var UIScrollViewComponent = function (_UIView_1$UIViewCompo) {
     _inherits(UIScrollViewComponent, _UIView_1$UIViewCompo);
@@ -428,7 +428,7 @@ Component(new UIScrollViewComponent());
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(1);
+var UIComponentManager_1 = __webpack_require__(2);
 var UIViewManager_1 = __webpack_require__(0);
 // xt-framework/uiview.js
 var nextTick = function nextTick(cb) {

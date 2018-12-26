@@ -30,6 +30,7 @@ Object.assign(module.exports, require('./uikit/UIImageView'));
 Object.assign(module.exports, require('./uikit/UILabel'));
 Object.assign(module.exports, require('./uikit/UILongPressGestureRecognizer'));
 Object.assign(module.exports, require('./uikit/UINavigationBar'));
+Object.assign(module.exports, require('./uikit/UINavigationBarViewController'));
 Object.assign(module.exports, require('./uikit/UINavigationController'));
 Object.assign(module.exports, require('./uikit/UIPageViewController'));
 Object.assign(module.exports, require('./uikit/UIPanGestureRecognizer'));
@@ -53,6 +54,7 @@ Object.assign(module.exports, require('./uikit/UITextView'));
 Object.assign(module.exports, require('./uikit/UITouch'));
 Object.assign(module.exports, require('./uikit/UIView'));
 Object.assign(module.exports, require('./uikit/UIViewController'));
+Object.assign(module.exports, require('./uikit/UIWebView'));
 Component({
     properties: {
         view: {

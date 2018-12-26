@@ -41,6 +41,8 @@ const {
     UIFetchMoreControl,
     UITextView,
     UIPageViewController,
+    UIWebView,
+    URLRequest,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -59,32 +61,17 @@ class FooCell extends UITableViewCell {
 
 class BarViewController extends UIViewController {
 
-    pageViewController = new UIPageViewController
+    webView = new UIWebView
 
     viewDidLoad() {
         super.viewDidLoad()
-        let items = []
-        for (let index = 0; index < 12; index++) {
-            const viewController = new UIViewController
-            const label = new UILabel
-            label.frame = UIRectMake(0, 0, 300, 300)
-            label.text = index.toString()
-            viewController.view.addSubview(label)
-            viewController.view.backgroundColor = new UIColor(1.0 / (index + 1), Math.random(), Math.random(), 1.0)
-            viewController.view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                viewController.view.backgroundColor = UIColor.yellow
-            }))
-            items.push(viewController)
-        }
-        this.pageViewController.loops = true
-        this.pageViewController.pageItems = items
-        this.addChildViewController(this.pageViewController)
-        this.view.addSubview(this.pageViewController.view)
+        this.webView.loadRequest(new URLRequest("https://api.github.com/"))
+        this.view.addSubview(this.webView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.pageViewController.view.frame = this.view.bounds
+        this.webView.frame = this.view.bounds
     }
 
 }
@@ -207,8 +194,8 @@ tabBarController.setViewControllers([
 const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
-const main = tabBarController
-// const main = new BarViewController
+// const main = tabBarController
+const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

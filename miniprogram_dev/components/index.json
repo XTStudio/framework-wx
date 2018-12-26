@@ -8,6 +8,7 @@
     "uiimageview": "./components/UIImageView",
     "uibutton": "./components/UIButton",
     "uiactivityindicatorview": "./components/UIActivityIndicatorView",
-    "uitextfield": "./components/UITextField"
+    "uitextfield": "./components/UITextField",
+    "uiwebview": "./components/UIWebView"
   }
 }
