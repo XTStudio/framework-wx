@@ -223,7 +223,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIComponentManager_1 = __webpack_require__(1);
 var UIViewManager_1 = __webpack_require__(0);
 // xt-framework/uiview.js
-var isDevtools = wx.getSystemInfoSync().platform === "devtools";
+var nextTick = wx.nextTick || setTimeout;
 
 var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
@@ -232,23 +232,30 @@ var UIViewComponent = function UIViewComponent() {
         viewID: {
             type: String,
             value: undefined,
-            observer: function observer(viewID) {
-                var _this = this;
-
+            observer: function observer(viewID, oldValue) {
                 if (viewID === undefined || viewID === null) {
                     return;
                 }
-                if (this.viewID !== viewID) {
-                    UIComponentManager_1.UIComponentManager.shared.addComponent(this, viewID);
-                    var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                    if (isDevtools) {
-                        // prevent vdSync over 1M size.
-                        wx.nextTick(function () {
-                            _this.setData(newView.buildData());
+                var self = this;
+                UIComponentManager_1.UIComponentManager.shared.addComponent(self, viewID);
+                var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
+                var viewData = newView.buildData();
+                if (viewData.subviews.length > 50) {
+                    self.setData(Object.assign({}, viewData, { subviews: [] }));
+
+                    var _loop = function _loop(index) {
+                        nextTick(function () {
+                            self.setData({
+                                subviews: viewData.subviews.slice(0, index)
+                            });
                         });
-                    } else {
-                        this.setData(newView.buildData());
+                    };
+
+                    for (var index = 0; index <= viewData.subviews.length; index += 50) {
+                        _loop(index);
                     }
+                } else {
+                    self.setData(newView.buildData());
                 }
             }
         }

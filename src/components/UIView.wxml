@@ -1,6 +1,7 @@
 <!--xt-framework/uiview.wxml-->
 <view style='{{style}}{{frameStyle}}' animation='{{animation}}'>
-  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+    <factory view="{{item}}"></factory>
   </block>
+  <view wx:if="{{hasDecorView}}" style="{{decorStyle}}"></view>
 </view>

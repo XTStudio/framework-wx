@@ -11,7 +11,7 @@
          bindblur='onBlur'
          confirm-hold='false'
          bindconfirm='onReturn'></input>
-  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+    <factory view="{{item}}"></factory>
   </block>
 </view>

@@ -1,6 +1,6 @@
 <view style='{{style}}{{frameStyle}}' animation='{{animation}}' data-viewid="{{viewID}}" bindtouchstart="onTouchStarted" bindtouchmove="onTouchMoved" bindtouchend="onTouchEnded" bindtouchcancel="onTouchCancelled">
-  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+    <factory view="{{item}}"></factory>
   </block>
   <rich-text id="_text_measurer"
              nodes="{{measuringRichText}}" 

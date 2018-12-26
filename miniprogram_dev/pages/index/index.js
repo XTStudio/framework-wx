@@ -116,7 +116,7 @@ class BarViewController extends UIViewController {
 class FooViewController extends UIViewController {
 
     tableView = new UITableView
-    numRows = 30
+    numRows = 500
 
     viewDidLoad() {
         super.viewDidLoad()

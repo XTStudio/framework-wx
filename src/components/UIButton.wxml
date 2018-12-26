@@ -9,7 +9,7 @@
          bindload="onImageLoaded"></image>
   <text style='position: absolute; line-height: {{textHeight}}px; {{textStyle}}; margin: 0px {{titleMargin.right}}px 0px {{titleMargin.left}}px;' 
         animation='{{contentAlphaAnimation}}'>{{text}}</text>
-  <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-    <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+  <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+    <factory view="{{item}}"></factory>
   </block>
 </view>

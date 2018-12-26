@@ -12,7 +12,7 @@
     bindtouchend="onTouchEnded"
     bindtouchcancel="onTouchCancelled"
     style="width: 300px; height:2000px;background-color:blue;">
-    <view wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
+    <view wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
       <factory view="{{item}}"></factory>
     </view>
   </movable-view>
@@ -44,8 +44,8 @@
     bindscrolltolower="onScrollToLower"
     data-viewID="{{viewID}}">
     <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top + refreshOffset}})" animation="{{refreshingAnimation}}">
-      <block wx:for="{{subviews}}" wx:key="index" wx:for-item="item">
-        <factory wx:key="{{item.viewID}}" view="{{item}}"></factory>
+      <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+        <factory view="{{item}}"></factory>
       </block>
     </view>
     <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>

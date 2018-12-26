@@ -3,7 +3,7 @@ import { UIViewManager } from "./UIViewManager";
 
 // xt-framework/uiview.js
 
-const isDevtools = wx.getSystemInfoSync().platform === "devtools"
+const nextTick = (wx as any).nextTick || setTimeout
 
 export class UIViewComponent {
 
@@ -11,20 +11,24 @@ export class UIViewComponent {
         viewID: {
             type: String,
             value: undefined,
-            observer: function (viewID: string | undefined) {
+            observer: function (viewID: string | undefined, oldValue: string | undefined) {
                 if (viewID === undefined || viewID === null) { return }
-                if ((this as any).viewID !== viewID) {
-                    UIComponentManager.shared.addComponent(this, viewID)
-                    const newView = UIViewManager.shared.fetchView(viewID);
-                    if (isDevtools) {
-                        // prevent vdSync over 1M size.
-                        (wx as any).nextTick(() => {
-                            (this as any).setData(newView.buildData());
+                const self: any = this
+                UIComponentManager.shared.addComponent(self, viewID)
+                const newView = UIViewManager.shared.fetchView(viewID);
+                const viewData = newView.buildData()
+                if (viewData.subviews.length > 50) {
+                    self.setData({ ...viewData, subviews: [] });
+                    for (let index = 0; index <= viewData.subviews.length; index += 50) {
+                        nextTick(() => {
+                            self.setData({
+                                subviews: viewData.subviews.slice(0, index)
+                            });
                         })
                     }
-                    else {
-                        (this as any).setData(newView.buildData());
-                    }
+                }
+                else {
+                    self.setData(newView.buildData());
                 }
             }
         }
