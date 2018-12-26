@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UIComponentManager_1 = require("./UIComponentManager");
 const UIViewManager_1 = require("./UIViewManager");
 // xt-framework/uiview.js
-const nextTick = wx.nextTick || setTimeout;
+const nextTick = function (cb) {
+    return wx.nextTick !== undefined ? wx.nextTick(cb) : setTimeout(cb, 0);
+};
 class UIViewComponent {
     constructor() {
         this.properties = {
@@ -36,8 +38,9 @@ class UIViewComponent {
         };
         this.lifetimes = {
             detached: function () {
-                if (this.viewID) {
-                    UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
+                const self = this;
+                if (self.properties && self.properties.viewID) {
+                    UIComponentManager_1.UIComponentManager.shared.deleteComponent(self.properties.viewID);
                 }
             }
         };

@@ -116,7 +116,7 @@ class BarViewController extends UIViewController {
 class FooViewController extends UIViewController {
 
     tableView = new UITableView
-    numRows = 500
+    numRows = 50
 
     viewDidLoad() {
         super.viewDidLoad()
@@ -125,6 +125,7 @@ class FooViewController extends UIViewController {
             let refreshControl = new UIRefreshControl
             refreshControl.on("refresh", () => {
                 setTimeout(() => {
+                    this.numRows = 50
                     this.tableView.reloadData()
                     refreshControl.endRefreshing()
                 }, 5000)

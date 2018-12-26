@@ -268,7 +268,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIComponentManager_1 = __webpack_require__(1);
 var UIViewManager_1 = __webpack_require__(0);
 // xt-framework/uiview.js
-var nextTick = wx.nextTick || setTimeout;
+var nextTick = function nextTick(cb) {
+    return wx.nextTick !== undefined ? wx.nextTick(cb) : setTimeout(cb, 0);
+};
 
 var UIViewComponent = function UIViewComponent() {
     _classCallCheck(this, UIViewComponent);
@@ -307,8 +309,9 @@ var UIViewComponent = function UIViewComponent() {
     };
     this.lifetimes = {
         detached: function detached() {
-            if (this.viewID) {
-                UIComponentManager_1.UIComponentManager.shared.deleteComponent(this.viewID);
+            var self = this;
+            if (self.properties && self.properties.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(self.properties.viewID);
             }
         }
     };

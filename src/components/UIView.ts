@@ -3,7 +3,9 @@ import { UIViewManager } from "./UIViewManager";
 
 // xt-framework/uiview.js
 
-const nextTick = (wx as any).nextTick || setTimeout
+const nextTick = function (cb: any) {
+    return (wx as any).nextTick !== undefined ? (wx as any).nextTick(cb) : setTimeout(cb, 0)
+}
 
 export class UIViewComponent {
 
@@ -36,8 +38,9 @@ export class UIViewComponent {
 
     lifetimes = {
         detached: function () {
-            if ((this as any).viewID) {
-                UIComponentManager.shared.deleteComponent((this as any).viewID)
+            const self: any = this
+            if (self.properties && self.properties.viewID) {
+                UIComponentManager.shared.deleteComponent(self.properties.viewID)
             }
         }
     }
