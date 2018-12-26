@@ -4390,35 +4390,6 @@ var UIScrollView = function (_UIView_1$UIView) {
         this.tracking = false;
         this.dragging = false;
         this.emit("didEndDragging", this, decelerate);
-        if (this.pagingEnabled) {
-            if (this.contentSize.width < this.bounds.width) {
-                if (this.contentOffset.y <= 0 || this.contentOffset.y >= this.contentSize.height - this.bounds.height) {
-                    return;
-                }
-                var currentPageY = Math.floor(this.contentOffset.y / this.bounds.height) * this.bounds.height;
-                var nextPageY = Math.ceil(this.contentOffset.y / this.bounds.height) * this.bounds.height;
-                if (this._endDraggingVelocity.y > 200) {
-                    this.setContentOffset({ x: 0, y: currentPageY }, true);
-                } else if (this._endDraggingVelocity.y < -200 || nextPageY - this.contentOffset.y < this.contentOffset.y - currentPageY) {
-                    this.setContentOffset({ x: 0, y: nextPageY }, true);
-                } else {
-                    this.setContentOffset({ x: 0, y: currentPageY }, true);
-                }
-            } else if (this.contentSize.height < this.bounds.height) {
-                if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) {
-                    return;
-                }
-                var currentPageX = Math.floor(this.contentOffset.x / this.bounds.width) * this.bounds.width;
-                var nextPageX = Math.ceil(this.contentOffset.x / this.bounds.width) * this.bounds.width;
-                if (this._endDraggingVelocity.x > 200) {
-                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
-                } else if (this._endDraggingVelocity.x < -200 || nextPageX - this.contentOffset.x < this.contentOffset.x - currentPageX) {
-                    this.setContentOffset({ x: nextPageX, y: 0 }, true);
-                } else {
-                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
-                }
-            }
-        }
     };
 
     UIScrollView.prototype.willBeginDecelerating = function willBeginDecelerating() {
@@ -4536,7 +4507,29 @@ var UIScrollView = function (_UIView_1$UIView) {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
             data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
         }
-        data.inertia = this._pagingEnabled === true ? false : true;
+        data.pagingEnabled = this.pagingEnabled;
+        data.pagingItems = function () {
+            if (!_this2.pagingEnabled) {
+                return [];
+            }
+            if (_this2.contentSize.width > _this2.bounds.width) {
+                var items = [];
+                var count = Math.ceil(_this2.contentSize.width / _this2.bounds.width);
+                for (var index = 0; index < count; index++) {
+                    items.push(0);
+                }
+                return items;
+            } else if (_this2.contentSize.height > _this2.bounds.height) {
+                var _items = [];
+                var _count = Math.ceil(_this2.contentSize.height / _this2.bounds.height);
+                for (var _index = 0; _index < _count; _index++) {
+                    _items.push(1);
+                }
+                return _items;
+            } else {
+                return [0];
+            }
+        }();
         data.scrollsToTop = this.scrollsToTop;
         data.direction = function () {
             if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
@@ -4588,7 +4581,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._contentSize = value;
-            this.markFlagDirty("contentSize");
+            this.markFlagDirty("contentSize", "pagingItems");
         }
     }, {
         key: "contentInset",
@@ -4633,6 +4626,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._pagingEnabled = value;
+            this.markFlagDirty("pagingEnabled", "pagingItems");
         }
     }, {
         key: "scrollEnabled",
@@ -4641,7 +4635,7 @@ var UIScrollView = function (_UIView_1$UIView) {
         },
         set: function set(value) {
             this._scrollEnabled = value;
-            this.invalidate();
+            this.markFlagDirty("direction");
         }
     }, {
         key: "scrollsToTop",

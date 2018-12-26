@@ -59,51 +59,26 @@ class FooCell extends UITableViewCell {
 class BarViewController extends UIViewController {
 
     scrollView = new UIScrollView
-    redView = new UIView
-    textView = new UITextView
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.textView.backgroundColor = new UIColor(245.0 / 255.0, 245.0 / 255.0, 245.0 / 255.0, 1.0)
-        this.textView.frame = UIRectMake(44, 44, 300, 300)
-        // this.textField.text = "Hello."
-        // this.textView.placeholder = "Input username here."
-        // this.textField.textColor = UIColor.red
-        // this.textField.textAlignment = UITextAlignment.center
-        // this.textView.clearButtonMode = UITextFieldViewMode.whileEditing
-        // this.textField.keyboardType = UIKeyboardType.numberPad
-        this.textView.returnKeyType = UIReturnKeyType.send
-        this.textView.text = "Hello, World!fkljdhslkjfhkdsahfkjsh"
-        this.textView.on("shouldChange", (sender, range, text) => {
-            if (text === "!") { return false }
-            return true
-        })
-        this.textView.on("shouldReturn", () => {
-            this.title = this.textView.text
-            this.textView.blur()
-        })
-        this.textView.font = new UIFont(14)
-        {
-            this.redView.backgroundColor = UIColor.red
-            this.redView.frame = UIRectMake(0, 0, 44, 44)
-            this.redView.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                if (this.textView.text === "1") {
-                    this.textView.blur()
-                }
-                else {
-                    this.textView.focus()
-                }
+        for (let index = 0; index < 12; index++) {
+            const view = new UIView
+            view.backgroundColor = new UIColor(1.0 / (index + 1), Math.random(), Math.random(), 1.0)
+            view.frame = UIRectMake(300 * index, 0, 300, 600)
+            view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                view.backgroundColor = UIColor.yellow
             }))
-            this.scrollView.addSubview(this.redView)
+            this.scrollView.addSubview(view)
         }
-        this.scrollView.addSubview(this.textView)
-        this.scrollView.contentSize = { width: 0, height: 2000 }
+        this.scrollView.pagingEnabled = true
+        this.scrollView.contentSize = { width: 300 * 12, height: 0 }
         this.view.addSubview(this.scrollView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.scrollView.frame = this.view.bounds
+        this.scrollView.frame = UIRectMake(0, 0, 300, 600)
     }
 
 }

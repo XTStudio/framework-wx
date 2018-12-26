@@ -55,7 +55,7 @@ class UIScrollView extends UIView_1.UIView {
     }
     set contentSize(value) {
         this._contentSize = value;
-        this.markFlagDirty("contentSize");
+        this.markFlagDirty("contentSize", "pagingItems");
     }
     get contentInset() {
         return this._contentInset;
@@ -90,13 +90,14 @@ class UIScrollView extends UIView_1.UIView {
     }
     set pagingEnabled(value) {
         this._pagingEnabled = value;
+        this.markFlagDirty("pagingEnabled", "pagingItems");
     }
     get scrollEnabled() {
         return this._scrollEnabled;
     }
     set scrollEnabled(value) {
         this._scrollEnabled = value;
-        this.invalidate();
+        this.markFlagDirty("direction");
     }
     setContentOffset(contentOffset, animated = false) {
         this.contentOffset = contentOffset;
@@ -148,40 +149,6 @@ class UIScrollView extends UIView_1.UIView {
         this.tracking = false;
         this.dragging = false;
         this.emit("didEndDragging", this, decelerate);
-        if (this.pagingEnabled) {
-            if (this.contentSize.width < this.bounds.width) {
-                if (this.contentOffset.y <= 0 || this.contentOffset.y >= this.contentSize.height - this.bounds.height) {
-                    return;
-                }
-                const currentPageY = Math.floor(this.contentOffset.y / this.bounds.height) * this.bounds.height;
-                const nextPageY = Math.ceil(this.contentOffset.y / this.bounds.height) * this.bounds.height;
-                if (this._endDraggingVelocity.y > 200) {
-                    this.setContentOffset({ x: 0, y: currentPageY }, true);
-                }
-                else if (this._endDraggingVelocity.y < -200 || nextPageY - this.contentOffset.y < this.contentOffset.y - currentPageY) {
-                    this.setContentOffset({ x: 0, y: nextPageY }, true);
-                }
-                else {
-                    this.setContentOffset({ x: 0, y: currentPageY }, true);
-                }
-            }
-            else if (this.contentSize.height < this.bounds.height) {
-                if (this.contentOffset.x <= 0 || this.contentOffset.x >= this.contentSize.width - this.bounds.width) {
-                    return;
-                }
-                const currentPageX = Math.floor(this.contentOffset.x / this.bounds.width) * this.bounds.width;
-                const nextPageX = Math.ceil(this.contentOffset.x / this.bounds.width) * this.bounds.width;
-                if (this._endDraggingVelocity.x > 200) {
-                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
-                }
-                else if (this._endDraggingVelocity.x < -200 || nextPageX - this.contentOffset.x < this.contentOffset.x - currentPageX) {
-                    this.setContentOffset({ x: nextPageX, y: 0 }, true);
-                }
-                else {
-                    this.setContentOffset({ x: currentPageX, y: 0 }, true);
-                }
-            }
-        }
     }
     willBeginDecelerating() {
         this.emit("willBeginDecelerating", this);
@@ -308,7 +275,31 @@ class UIScrollView extends UIView_1.UIView {
             data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
             data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
         }
-        data.inertia = this._pagingEnabled === true ? false : true;
+        data.pagingEnabled = this.pagingEnabled;
+        data.pagingItems = (() => {
+            if (!this.pagingEnabled) {
+                return [];
+            }
+            if (this.contentSize.width > this.bounds.width) {
+                let items = [];
+                let count = Math.ceil(this.contentSize.width / this.bounds.width);
+                for (let index = 0; index < count; index++) {
+                    items.push(0);
+                }
+                return items;
+            }
+            else if (this.contentSize.height > this.bounds.height) {
+                let items = [];
+                let count = Math.ceil(this.contentSize.height / this.bounds.height);
+                for (let index = 0; index < count; index++) {
+                    items.push(1);
+                }
+                return items;
+            }
+            else {
+                return [0];
+            }
+        })();
         data.scrollsToTop = this.scrollsToTop;
         data.direction = (() => {
             if (totalContentSize.width > this.bounds.width && totalContentSize.height > this.bounds.height) {
