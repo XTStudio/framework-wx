@@ -29,6 +29,7 @@ Object.assign(module.exports, require('./uikit/UIImage'));
 Object.assign(module.exports, require('./uikit/UIImageView'));
 Object.assign(module.exports, require('./uikit/UILabel'));
 Object.assign(module.exports, require('./uikit/UILongPressGestureRecognizer'));
+Object.assign(module.exports, require('./uikit/UINavigationBar'));
 Object.assign(module.exports, require('./uikit/UINavigationController'));
 Object.assign(module.exports, require('./uikit/UIPageViewController'));
 Object.assign(module.exports, require('./uikit/UIPanGestureRecognizer'));

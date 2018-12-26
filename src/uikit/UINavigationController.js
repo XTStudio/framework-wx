@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIViewController_1 = require("./UIViewController");
+const UINavigationBar_1 = require("./UINavigationBar");
+const UIAnimator_1 = require("./UIAnimator");
+const UIColor_1 = require("./UIColor");
 class UINavigationController extends UIViewController_1.UIViewController {
     constructor(rootViewController) {
         super();
         this.rootViewController = rootViewController;
         this.clazz = "UINavigationController";
+        this.navigationBar = new UINavigationBar_1.UINavigationBar;
         this.attachBlock = undefined;
     }
     attach(dataOwner, dataField) {
@@ -21,6 +25,8 @@ class UINavigationController extends UIViewController_1.UIViewController {
         this.attachBlock();
         this.loadViewIfNeed();
         dataOwner.onShow = this._onShow.bind(this);
+        this.updateBrowserTitle();
+        this.updateBrowserBar();
     }
     _onShow() {
         const currentIdx = getCurrentPages().length - 1;
@@ -32,7 +38,9 @@ class UINavigationController extends UIViewController_1.UIViewController {
         if (this.rootViewController) {
             this.pushViewController(this.rootViewController, false);
         }
+        this.navigationBar.navigationController = this;
         super.viewDidLoad();
+        this.updateBrowserBar();
     }
     pushViewController(viewController, animated = true) {
         this.addChildViewController(viewController);
@@ -51,6 +59,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
         }
         this.updateBrowserTitle();
+        this.updateBrowserBar();
     }
     popViewController(animated = true) {
         const fromViewController = this.childViewControllers[this.childViewControllers.length - 1];
@@ -63,6 +72,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         fromViewController.viewDidDisappear(true);
         toViewController.viewDidAppear(true);
         this.updateBrowserTitle();
+        this.updateBrowserBar();
         return fromViewController;
     }
     popToViewController(viewController, animated = true) {
@@ -88,6 +98,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         fromViewControllers.forEach(it => { it.viewDidDisappear(false); });
         toViewController.viewDidAppear(false);
         this.updateBrowserTitle();
+        this.updateBrowserBar();
         return fromViewControllers;
     }
     popToRootViewController(animated = true) {
@@ -104,11 +115,45 @@ class UINavigationController extends UIViewController_1.UIViewController {
         }
     }
     updateBrowserTitle() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return;
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return;
+        }
         if (this.childViewControllers.length > 0) {
             const title = this.childViewControllers[this.childViewControllers.length - 1].title;
             if (title) {
                 wx.setNavigationBarTitle({ title });
             }
+        }
+    }
+    updateBrowserBar() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return;
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return;
+        }
+        if (this.navigationBar.barTintColor) {
+            wx.setNavigationBarColor({
+                backgroundColor: this.navigationBar.barTintColor.toHEXStyle(),
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor_1.UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.timingFunction : undefined,
+                },
+            });
+        }
+        else {
+            wx.setNavigationBarColor({
+                backgroundColor: '#ffffff',
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor_1.UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.timingFunction : undefined,
+                },
+            });
         }
     }
 }

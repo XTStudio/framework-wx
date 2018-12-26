@@ -42,6 +42,22 @@ export class UIColor {
         return 'rgba(' + (this.r * 255).toFixed(0) + ', ' + (this.g * 255).toFixed(0) + ', ' + (this.b * 255).toFixed(0) + ', ' + this.a.toFixed(6) + ')'
     }
 
+    toHEXStyle(): string {
+        let r = Math.round((this.r * 255)).toString(16)
+        if (r.length < 2) {
+            r = '0' + r
+        }
+        let g = Math.round((this.g * 255)).toString(16)
+        if (g.length < 2) {
+            g = '0' + g
+        }
+        let b = Math.round((this.b * 255)).toString(16)
+        if (b.length < 2) {
+            b = '0' + b
+        }
+        return `#${r}${g}${b}`
+    }
+
     static toStyle(color: UIColor): string {
         return 'rgba(' + (color.r * 255).toFixed(0) + ', ' + (color.g * 255).toFixed(0) + ', ' + (color.b * 255).toFixed(0) + ', ' + color.a.toFixed(6) + ')'
     }

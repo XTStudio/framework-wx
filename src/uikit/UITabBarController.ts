@@ -67,6 +67,7 @@ export class UITabBarController extends UIViewController {
         }
         this.emit("onSelectedViewController", this, false)
         this.updateBrowserTitle()
+        this.updateBrowserBar()
     }
 
     public get selectedViewController(): UIViewController {
@@ -94,6 +95,7 @@ export class UITabBarController extends UIViewController {
         this.selectedIndex = 0
         this.viewWillLayoutSubviews()
         this.updateBrowserTitle()
+        this.updateBrowserBar()
     }
 
     tabBar: UITabBar = new UITabBar
@@ -146,6 +148,20 @@ export class UITabBarController extends UIViewController {
             else {
                 wx.setNavigationBarTitle({
                     title: this.selectedViewController.title
+                })
+            }
+        }
+    }
+
+    updateBrowserBar() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                (this.selectedViewController as any).updateBrowserBar()
+            }
+            else {
+                wx.setNavigationBarColor({
+                    backgroundColor: "#ffffff",
+                    frontColor: "#000000",
                 })
             }
         }

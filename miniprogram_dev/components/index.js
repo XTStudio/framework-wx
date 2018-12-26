@@ -1347,6 +1347,22 @@ var UIColor = function () {
         return 'rgba(' + (this.r * 255).toFixed(0) + ', ' + (this.g * 255).toFixed(0) + ', ' + (this.b * 255).toFixed(0) + ', ' + this.a.toFixed(6) + ')';
     };
 
+    UIColor.prototype.toHEXStyle = function toHEXStyle() {
+        var r = Math.round(this.r * 255).toString(16);
+        if (r.length < 2) {
+            r = '0' + r;
+        }
+        var g = Math.round(this.g * 255).toString(16);
+        if (g.length < 2) {
+            g = '0' + g;
+        }
+        var b = Math.round(this.b * 255).toString(16);
+        if (b.length < 2) {
+            b = '0' + b;
+        }
+        return "#" + r + g + b;
+    };
+
     UIColor.toStyle = function toStyle(color) {
         return 'rgba(' + (color.r * 255).toFixed(0) + ', ' + (color.g * 255).toFixed(0) + ', ' + (color.b * 255).toFixed(0) + ', ' + color.a.toFixed(6) + ')';
     };
@@ -2555,6 +2571,7 @@ var UIView_1 = __webpack_require__(2);
 var UIEdgeInsets_1 = __webpack_require__(7);
 var UIColor_1 = __webpack_require__(5);
 var UITabBarItem_1 = __webpack_require__(58);
+var UINavigationBar_1 = __webpack_require__(74);
 
 var UIViewController = function (_EventEmitter_1$Event) {
     _inherits(UIViewController, _EventEmitter_1$Event);
@@ -2570,6 +2587,8 @@ var UIViewController = function (_EventEmitter_1$Event) {
         _this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         _this.parentViewController = undefined;
         _this.childViewControllers = [];
+        _this.navigationItem = new UINavigationBar_1.UINavigationItem();
+        _this.hidesBottomBarWhenPushed = true;
         _this.tabBarItem = new UITabBarItem_1.UITabBarItem();
         return _this;
     }
@@ -2677,8 +2696,6 @@ var UIViewController = function (_EventEmitter_1$Event) {
         },
         set: function set(value) {
             this._title = value;
-            // this.navigationItem.viewController = this
-            // this.navigationItem.setNeedsUpdate()
             if (this.navigationController) {
                 this.navigationController.updateBrowserTitle();
             }
@@ -2712,9 +2729,6 @@ var UIViewController = function (_EventEmitter_1$Event) {
             }
             return undefined;
         }
-        // navigationItem = new UINavigationItem
-        // hidesBottomBarWhenPushed: boolean = false
-
     }, {
         key: "tabBarController",
         get: function get() {
@@ -4748,6 +4762,7 @@ Object.assign(module.exports, __webpack_require__(31));
 Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(21));
 Object.assign(module.exports, __webpack_require__(18));
+Object.assign(module.exports, __webpack_require__(74));
 Object.assign(module.exports, __webpack_require__(57));
 Object.assign(module.exports, __webpack_require__(73));
 Object.assign(module.exports, __webpack_require__(32));
@@ -6730,6 +6745,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIViewController_1 = __webpack_require__(23);
+var UINavigationBar_1 = __webpack_require__(74);
+var UIAnimator_1 = __webpack_require__(9);
+var UIColor_1 = __webpack_require__(5);
 
 var UINavigationController = function (_UIViewController_1$U) {
     _inherits(UINavigationController, _UIViewController_1$U);
@@ -6741,6 +6759,7 @@ var UINavigationController = function (_UIViewController_1$U) {
 
         _this.rootViewController = rootViewController;
         _this.clazz = "UINavigationController";
+        _this.navigationBar = new UINavigationBar_1.UINavigationBar();
         _this.attachBlock = undefined;
         return _this;
     }
@@ -6760,6 +6779,8 @@ var UINavigationController = function (_UIViewController_1$U) {
         this.attachBlock();
         this.loadViewIfNeed();
         dataOwner.onShow = this._onShow.bind(this);
+        this.updateBrowserTitle();
+        this.updateBrowserBar();
     };
 
     UINavigationController.prototype._onShow = function _onShow() {
@@ -6773,7 +6794,9 @@ var UINavigationController = function (_UIViewController_1$U) {
         if (this.rootViewController) {
             this.pushViewController(this.rootViewController, false);
         }
+        this.navigationBar.navigationController = this;
         _UIViewController_1$U.prototype.viewDidLoad.call(this);
+        this.updateBrowserBar();
     };
 
     UINavigationController.prototype.pushViewController = function pushViewController(viewController) {
@@ -6793,6 +6816,7 @@ var UINavigationController = function (_UIViewController_1$U) {
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) });
         }
         this.updateBrowserTitle();
+        this.updateBrowserBar();
     };
 
     UINavigationController.prototype.popViewController = function popViewController() {
@@ -6808,6 +6832,7 @@ var UINavigationController = function (_UIViewController_1$U) {
         fromViewController.viewDidDisappear(true);
         toViewController.viewDidAppear(true);
         this.updateBrowserTitle();
+        this.updateBrowserBar();
         return fromViewController;
     };
 
@@ -6844,6 +6869,7 @@ var UINavigationController = function (_UIViewController_1$U) {
         });
         toViewController.viewDidAppear(false);
         this.updateBrowserTitle();
+        this.updateBrowserBar();
         return fromViewControllers;
     };
 
@@ -6865,11 +6891,45 @@ var UINavigationController = function (_UIViewController_1$U) {
     };
 
     UINavigationController.prototype.updateBrowserTitle = function updateBrowserTitle() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return;
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return;
+        }
         if (this.childViewControllers.length > 0) {
             var title = this.childViewControllers[this.childViewControllers.length - 1].title;
             if (title) {
                 wx.setNavigationBarTitle({ title: title });
             }
+        }
+    };
+
+    UINavigationController.prototype.updateBrowserBar = function updateBrowserBar() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return;
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return;
+        }
+        if (this.navigationBar.barTintColor) {
+            wx.setNavigationBarColor({
+                backgroundColor: this.navigationBar.barTintColor.toHEXStyle(),
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor_1.UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.timingFunction : undefined
+                }
+            });
+        } else {
+            wx.setNavigationBarColor({
+                backgroundColor: '#ffffff',
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor_1.UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator_1.UIAnimator.activeAnimator ? UIAnimator_1.UIAnimator.activeAnimator.animationProps.timingFunction : undefined
+                }
+            });
         }
     };
 
@@ -7939,6 +7999,7 @@ var UITabBarController = function (_UIViewController_1$U) {
         this.selectedIndex = 0;
         this.viewWillLayoutSubviews();
         this.updateBrowserTitle();
+        this.updateBrowserBar();
     };
     // Implementation
 
@@ -7973,6 +8034,19 @@ var UITabBarController = function (_UIViewController_1$U) {
             } else {
                 wx.setNavigationBarTitle({
                     title: this.selectedViewController.title
+                });
+            }
+        }
+    };
+
+    UITabBarController.prototype.updateBrowserBar = function updateBrowserBar() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                this.selectedViewController.updateBrowserBar();
+            } else {
+                wx.setNavigationBarColor({
+                    backgroundColor: "#ffffff",
+                    frontColor: "#000000"
                 });
             }
         }
@@ -8022,6 +8096,7 @@ var UITabBarController = function (_UIViewController_1$U) {
             }
             this.emit("onSelectedViewController", this, false);
             this.updateBrowserTitle();
+            this.updateBrowserBar();
         }
     }, {
         key: "selectedViewController",
@@ -9971,6 +10046,97 @@ var UIPageViewController = function (_UIViewController_1$U) {
 }(UIViewController_1.UIViewController);
 
 exports.UIPageViewController = UIPageViewController;
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(2);
+var UIColor_1 = __webpack_require__(5);
+var EventEmitter_1 = __webpack_require__(15);
+
+var UINavigationItem = function () {
+    function UINavigationItem() {
+        _classCallCheck(this, UINavigationItem);
+
+        this.viewController = undefined;
+        this.navigationBar = undefined;
+        this.leftBarButtonItems = [];
+        this.rightBarButtonItems = [];
+    }
+
+    UINavigationItem.prototype.setNeedsUpdate = function setNeedsUpdate() {};
+
+    return UINavigationItem;
+}();
+
+exports.UINavigationItem = UINavigationItem;
+
+var UIBarButtonItem = function (_EventEmitter_1$Event) {
+    _inherits(UIBarButtonItem, _EventEmitter_1$Event);
+
+    function UIBarButtonItem() {
+        _classCallCheck(this, UIBarButtonItem);
+
+        return _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
+    }
+
+    return UIBarButtonItem;
+}(EventEmitter_1.EventEmitter);
+
+exports.UIBarButtonItem = UIBarButtonItem;
+
+var UINavigationBar = function (_UIView_1$UIView) {
+    _inherits(UINavigationBar, _UIView_1$UIView);
+
+    function UINavigationBar() {
+        _classCallCheck(this, UINavigationBar);
+
+        var _this2 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this2.navigationController = undefined;
+        _this2._barTintColor = undefined;
+        _this2.barTintColor = UIColor_1.UIColor.white;
+        _this2.tintColor = UIColor_1.UIColor.black;
+        return _this2;
+    }
+
+    UINavigationBar.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
+        if (this.navigationController) {
+            this.navigationController.updateBrowserBar();
+        }
+    };
+
+    _createClass(UINavigationBar, [{
+        key: "barTintColor",
+        get: function get() {
+            return this._barTintColor;
+        },
+        set: function set(value) {
+            this._barTintColor = value;
+            if (this.navigationController) {
+                this.navigationController.updateBrowserBar();
+            }
+        }
+    }]);
+
+    return UINavigationBar;
+}(UIView_1.UIView);
+
+exports.UINavigationBar = UINavigationBar;
 
 /***/ })
 /******/ ]);

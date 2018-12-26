@@ -64,6 +64,7 @@ class UITabBarController extends UIViewController_1.UIViewController {
         }
         this.emit("onSelectedViewController", this, false);
         this.updateBrowserTitle();
+        this.updateBrowserBar();
     }
     get selectedViewController() {
         return this.itemControllers[this.selectedIndex];
@@ -88,6 +89,7 @@ class UITabBarController extends UIViewController_1.UIViewController {
         this.selectedIndex = 0;
         this.viewWillLayoutSubviews();
         this.updateBrowserTitle();
+        this.updateBrowserBar();
     }
     // Implementation
     get barFrame() {
@@ -130,6 +132,19 @@ class UITabBarController extends UIViewController_1.UIViewController {
             else {
                 wx.setNavigationBarTitle({
                     title: this.selectedViewController.title
+                });
+            }
+        }
+    }
+    updateBrowserBar() {
+        if (this.selectedViewController) {
+            if (this.selectedViewController.clazz === "UINavigationController") {
+                this.selectedViewController.updateBrowserBar();
+            }
+            else {
+                wx.setNavigationBarColor({
+                    backgroundColor: "#ffffff",
+                    frontColor: "#000000",
                 });
             }
         }

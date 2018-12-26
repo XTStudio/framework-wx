@@ -3,6 +3,7 @@ import { UIView } from "./UIView";
 import { UIEdgeInsets, UIEdgeInsetsZero } from "./UIEdgeInsets";
 import { UIColor } from "./UIColor";
 import { UITabBarItem } from "./UITabBarItem";
+import { UINavigationItem } from "./UINavigationBar";
 
 export class UIViewController extends EventEmitter {
 
@@ -16,8 +17,6 @@ export class UIViewController extends EventEmitter {
 
     public set title(value: string | undefined) {
         this._title = value;
-        // this.navigationItem.viewController = this
-        // this.navigationItem.setNeedsUpdate()
         if (this.navigationController) {
             this.navigationController.updateBrowserTitle()
         }
@@ -132,9 +131,9 @@ export class UIViewController extends EventEmitter {
         return undefined
     }
 
-    // navigationItem = new UINavigationItem
+    navigationItem = new UINavigationItem
 
-    // hidesBottomBarWhenPushed: boolean = false
+    hidesBottomBarWhenPushed: boolean = true
 
     public get tabBarController(): any {
         var current: UIViewController | undefined = this

@@ -182,6 +182,14 @@ tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4
 tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
 
 const firstViewController = new UINavigationController(new FooViewController)
+firstViewController.navigationBar.barTintColor = UIColor.gray
+firstViewController.navigationBar.tintColor = UIColor.white
+setTimeout(() => {
+    UIAnimator.linear(0.3, () => {
+        firstViewController.navigationBar.barTintColor = UIColor.white
+        firstViewController.navigationBar.tintColor = UIColor.black
+    })
+}, 6000)
 firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
 firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
 firstViewController.tabBarItem.title = "首页"
@@ -199,8 +207,8 @@ tabBarController.setViewControllers([
 const window = new UIWindow
 window.backgroundColor = UIColor.gray
 
-// const main = tabBarController
-const main = new BarViewController
+const main = tabBarController
+// const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

@@ -1,8 +1,13 @@
 import { UIViewController } from "./UIViewController";
+import { UINavigationBar } from "./UINavigationBar";
+import { UIAnimator } from "./UIAnimator";
+import { UIColor } from "./UIColor";
 
 export class UINavigationController extends UIViewController {
 
     clazz = "UINavigationController"
+
+    navigationBar = new UINavigationBar
 
     private attachBlock: (() => void) | undefined = undefined
 
@@ -23,6 +28,8 @@ export class UINavigationController extends UIViewController {
         this.attachBlock()
         this.loadViewIfNeed()
         dataOwner.onShow = this._onShow.bind(this)
+        this.updateBrowserTitle()
+        this.updateBrowserBar()
     }
 
     _onShow() {
@@ -36,7 +43,9 @@ export class UINavigationController extends UIViewController {
         if (this.rootViewController) {
             this.pushViewController(this.rootViewController, false)
         }
+        this.navigationBar.navigationController = this
         super.viewDidLoad()
+        this.updateBrowserBar()
     }
 
     pushViewController(viewController: UIViewController, animated: boolean = true) {
@@ -56,6 +65,7 @@ export class UINavigationController extends UIViewController {
             wx.navigateTo({ url: "index?idx=" + (this.childViewControllers.length - 1) })
         }
         this.updateBrowserTitle()
+        this.updateBrowserBar()
     }
 
     popViewController(animated: boolean = true): UIViewController | undefined {
@@ -69,6 +79,7 @@ export class UINavigationController extends UIViewController {
         fromViewController.viewDidDisappear(true)
         toViewController.viewDidAppear(true)
         this.updateBrowserTitle()
+        this.updateBrowserBar()
         return fromViewController
     }
 
@@ -93,6 +104,7 @@ export class UINavigationController extends UIViewController {
         fromViewControllers.forEach(it => { it.viewDidDisappear(false) })
         toViewController.viewDidAppear(false)
         this.updateBrowserTitle()
+        this.updateBrowserBar()
         return fromViewControllers
     }
 
@@ -112,11 +124,46 @@ export class UINavigationController extends UIViewController {
     }
 
     updateBrowserTitle() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return
+        }
         if (this.childViewControllers.length > 0) {
             const title = this.childViewControllers[this.childViewControllers.length - 1].title
             if (title) {
                 wx.setNavigationBarTitle({ title })
             }
+        }
+    }
+
+    updateBrowserBar() {
+        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
+            return
+        }
+        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+            return
+        }
+        if (this.navigationBar.barTintColor) {
+            wx.setNavigationBarColor({
+                backgroundColor: this.navigationBar.barTintColor.toHEXStyle(),
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator.activeAnimator ? UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator.activeAnimator ? UIAnimator.activeAnimator.animationProps.timingFunction : undefined,
+                },
+            })
+        }
+        else {
+            wx.setNavigationBarColor({
+                backgroundColor: '#ffffff',
+                frontColor: this.navigationBar.tintColor.toStyle() === UIColor.white.toStyle() ? '#ffffff' : '#000000',
+                animation: {
+                    duration: UIAnimator.activeAnimator ? UIAnimator.activeAnimator.animationProps.duration : 0.0,
+                    timingFunc: UIAnimator.activeAnimator ? UIAnimator.activeAnimator.animationProps.timingFunction : undefined,
+                },
+            })
         }
     }
 

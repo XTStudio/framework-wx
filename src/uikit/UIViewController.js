@@ -5,6 +5,7 @@ const UIView_1 = require("./UIView");
 const UIEdgeInsets_1 = require("./UIEdgeInsets");
 const UIColor_1 = require("./UIColor");
 const UITabBarItem_1 = require("./UITabBarItem");
+const UINavigationBar_1 = require("./UINavigationBar");
 class UIViewController extends EventEmitter_1.EventEmitter {
     constructor() {
         super(...arguments);
@@ -14,6 +15,8 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         this.safeAreaInsets = UIEdgeInsets_1.UIEdgeInsetsZero;
         this.parentViewController = undefined;
         this.childViewControllers = [];
+        this.navigationItem = new UINavigationBar_1.UINavigationItem;
+        this.hidesBottomBarWhenPushed = true;
         this.tabBarItem = new UITabBarItem_1.UITabBarItem;
     }
     get title() {
@@ -21,8 +24,6 @@ class UIViewController extends EventEmitter_1.EventEmitter {
     }
     set title(value) {
         this._title = value;
-        // this.navigationItem.viewController = this
-        // this.navigationItem.setNeedsUpdate()
         if (this.navigationController) {
             this.navigationController.updateBrowserTitle();
         }
@@ -114,8 +115,6 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         }
         return undefined;
     }
-    // navigationItem = new UINavigationItem
-    // hidesBottomBarWhenPushed: boolean = false
     get tabBarController() {
         var current = this;
         while (current != undefined) {
