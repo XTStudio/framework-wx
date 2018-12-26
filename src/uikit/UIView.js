@@ -605,6 +605,20 @@ class UIView extends EventEmitter_1.EventEmitter {
             });
         }
     }
+    setDataForce(data, callback = undefined) {
+        if (this.viewID) {
+            const component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+            if (component) {
+                component.setData(data, callback);
+            }
+            else {
+                callback && callback();
+            }
+        }
+        else {
+            callback && callback();
+        }
+    }
     buildData() {
         return {
             viewID: this.viewID,

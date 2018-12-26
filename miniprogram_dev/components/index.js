@@ -700,6 +700,21 @@ var UIView = function (_EventEmitter_1$Event) {
         }
     };
 
+    UIView.prototype.setDataForce = function setDataForce(data) {
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+        if (this.viewID) {
+            var component = UIComponentManager_1.UIComponentManager.shared.fetchComponent(this.viewID);
+            if (component) {
+                component.setData(data, callback);
+            } else {
+                callback && callback();
+            }
+        } else {
+            callback && callback();
+        }
+    };
+
     UIView.prototype.buildData = function buildData() {
         return {
             viewID: this.viewID,
@@ -4499,12 +4514,12 @@ var UIScrollView = function (_UIView_1$UIView) {
 
         var data = _UIView_1$UIView.prototype.buildData.call(this);
         var totalContentSize = {
-            width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
-            height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
+            width: this.contentSize.width + this.contentInset.left + this.contentInset.right,
+            height: this.contentSize.height + this.contentInset.top + this.contentInset.bottom
         };
         if (this.dirtyFlags["contentOffsetX"] || this.dirtyFlags["contentOffsetY"]) {
-            data.contentOffsetX = this._contentOffset.x + this._contentInset.left;
-            data.contentOffsetY = this._contentOffset.y + this._contentInset.top;
+            data.contentOffsetX = this.contentOffset.x + this.contentInset.left;
+            data.contentOffsetY = this.contentOffset.y + this.contentInset.top;
             data.scrollWithAnimation = this.isContentOffsetScrollAnimated;
         }
         data.pagingEnabled = this.pagingEnabled;
@@ -4512,16 +4527,16 @@ var UIScrollView = function (_UIView_1$UIView) {
             if (!_this2.pagingEnabled) {
                 return [];
             }
-            if (_this2.contentSize.width > _this2.bounds.width) {
+            if (totalContentSize.width > _this2.bounds.width) {
                 var items = [];
-                var count = Math.ceil(_this2.contentSize.width / _this2.bounds.width);
+                var count = Math.ceil(totalContentSize.width / _this2.bounds.width);
                 for (var index = 0; index < count; index++) {
                     items.push(0);
                 }
                 return items;
-            } else if (_this2.contentSize.height > _this2.bounds.height) {
+            } else if (totalContentSize.height > _this2.bounds.height) {
                 var _items = [];
-                var _count = Math.ceil(_this2.contentSize.height / _this2.bounds.height);
+                var _count = Math.ceil(totalContentSize.height / _this2.bounds.height);
                 for (var _index = 0; _index < _count; _index++) {
                     _items.push(1);
                 }
@@ -4530,6 +4545,16 @@ var UIScrollView = function (_UIView_1$UIView) {
                 return [0];
             }
         }();
+        data.pagingDuration = 300;
+        if (this.dirtyFlags["contentOffsetX"] || this.dirtyFlags["contentOffsetY"]) {
+            if (this.pagingEnabled) {
+                this.setDataForce({ pagingDuration: this.isContentOffsetScrollAnimated ? 300 : 0 });
+                this.setDataForce({
+                    pagingCurrentIndex: totalContentSize.width > this.bounds.width ? Math.round((this.contentOffset.x + this.contentInset.left) / this.bounds.width) : Math.round((this.contentOffset.y + this.contentInset.top) / this.bounds.height)
+                });
+                this.setDataForce({ pagingDuration: 300 });
+            }
+        }
         data.scrollsToTop = this.scrollsToTop;
         data.direction = function () {
             if (totalContentSize.width > _this2.bounds.width && totalContentSize.height > _this2.bounds.height) {
@@ -4724,6 +4749,7 @@ Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(21));
 Object.assign(module.exports, __webpack_require__(18));
 Object.assign(module.exports, __webpack_require__(57));
+Object.assign(module.exports, __webpack_require__(73));
 Object.assign(module.exports, __webpack_require__(32));
 Object.assign(module.exports, __webpack_require__(59));
 Object.assign(module.exports, __webpack_require__(14));
@@ -9643,6 +9669,308 @@ var UITextView = function (_UIView_1$UIView) {
 }(UIView_1.UIView);
 
 exports.UITextView = UITextView;
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIViewController_1 = __webpack_require__(23);
+var UIScrollView_1 = __webpack_require__(34);
+var UIPoint_1 = __webpack_require__(14);
+var UIAnimator_1 = __webpack_require__(9);
+
+var UIPageViewController = function (_UIViewController_1$U) {
+    _inherits(UIPageViewController, _UIViewController_1$U);
+
+    function UIPageViewController() {
+        var isVertical = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+        _classCallCheck(this, UIPageViewController);
+
+        var _this = _possibleConstructorReturn(this, _UIViewController_1$U.call(this));
+
+        _this.isVertical = isVertical;
+        _this.loops = false;
+        _this._pageItems = undefined;
+        _this._currentPage = undefined;
+        // Implementation
+        _this.scrollView = new UIScrollView_1.UIScrollView().on("didScroll", function () {
+            _this.scrollView.subviews.forEach(function (it) {
+                return it.hidden = false;
+            });
+        }).on("didEndScrollingAnimation", function () {
+            _this.changeContents();
+        });
+        return _this;
+    }
+
+    UIPageViewController.prototype.scrollToNextPage = function scrollToNextPage() {
+        var animated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+        if (this.isVertical == true) {
+            if (this.scrollView.contentInset.bottom > 0.0) {
+                this.scrollView.setContentOffset({ x: 0.0, y: this.scrollView.contentInset.bottom }, animated);
+                if (animated == false) {
+                    this.changeContents();
+                }
+            }
+        } else {
+            if (this.scrollView.contentInset.right > 0.0) {
+                this.scrollView.setContentOffset({ x: this.scrollView.contentInset.right, y: 0.0 }, animated);
+                if (animated == false) {
+                    this.changeContents();
+                }
+            }
+        }
+    };
+
+    UIPageViewController.prototype.scrollToPreviousPage = function scrollToPreviousPage() {
+        var animated = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+        if (this.isVertical == true) {
+            if (this.scrollView.contentInset.top > 0.0) {
+                this.scrollView.setContentOffset({ x: 0.0, y: -this.scrollView.contentInset.top }, animated);
+                if (animated == false) {
+                    this.changeContents();
+                }
+            }
+        } else {
+            if (this.scrollView.contentInset.left > 0.0) {
+                this.scrollView.setContentOffset({ x: -this.scrollView.contentInset.left, y: 0.0 }, animated);
+                if (animated == false) {
+                    this.changeContents();
+                }
+            }
+        }
+    };
+
+    UIPageViewController.prototype.beforeViewController = function beforeViewController(currentPage) {
+        if (this.pageItems !== undefined) {
+            var currentIndex = this.pageItems.indexOf(currentPage);
+            if (currentIndex >= 0) {
+                if (currentIndex > 0) {
+                    return this.pageItems[currentIndex - 1];
+                } else if (this.loops && this.pageItems.length > 1) {
+                    return this.pageItems[this.pageItems.length - 1];
+                }
+            } else {
+                return undefined;
+            }
+        }
+        return this.val("beforeViewController", currentPage);
+    };
+
+    UIPageViewController.prototype.afterViewController = function afterViewController(currentPage) {
+        if (this.pageItems !== undefined) {
+            var currentIndex = this.pageItems.indexOf(currentPage);
+            if (currentIndex >= 0) {
+                if (currentIndex + 1 < this.pageItems.length) {
+                    return this.pageItems[currentIndex + 1];
+                } else if (this.loops && this.pageItems.length > 1) {
+                    return this.pageItems[0];
+                }
+            } else {
+                return undefined;
+            }
+        }
+        return this.val("afterViewController", currentPage);
+    };
+
+    UIPageViewController.prototype.didFinishAnimating = function didFinishAnimating(currentPage, previousPage) {
+        this.emit("didFinishAnimating", currentPage, previousPage);
+    };
+
+    UIPageViewController.prototype.viewDidLoad = function viewDidLoad() {
+        this.scrollView.pagingEnabled = true;
+        this.scrollView.bounces = false;
+        this.scrollView.showsHorizontalScrollIndicator = false;
+        this.scrollView.showsVerticalScrollIndicator = false;
+        this.iView.addSubview(this.scrollView);
+        _UIViewController_1$U.prototype.viewDidLoad.call(this);
+    };
+
+    UIPageViewController.prototype.viewWillLayoutSubviews = function viewWillLayoutSubviews() {
+        this.scrollView.frame = this.iView.bounds;
+        this.scrollView.contentSize = { width: this.iView.bounds.width, height: this.iView.bounds.height };
+        this.resetContents();
+        _UIViewController_1$U.prototype.viewWillLayoutSubviews.call(this);
+    };
+
+    UIPageViewController.prototype.changeContents = function changeContents() {
+        if (this.isVertical == true) {
+            if (Math.abs(this.scrollView.contentOffset.y - -this.scrollView.bounds.height) < 4.0) {
+                var currentPage = this.currentPage;
+                if (currentPage === undefined) {
+                    return;
+                }
+                var beforePage = this.beforeViewController(currentPage);
+                if (beforePage === undefined) {
+                    return;
+                }
+                this.currentPage = beforePage;
+                this.resetContents();
+                this.didFinishAnimating(beforePage, currentPage);
+            } else if (Math.abs(this.scrollView.contentOffset.y - this.scrollView.bounds.height) < 4.0) {
+                var _currentPage = this.currentPage;
+                if (_currentPage === undefined) {
+                    return;
+                }
+                var afterPage = this.afterViewController(_currentPage);
+                if (afterPage === undefined) {
+                    return;
+                }
+                this.currentPage = afterPage;
+                this.resetContents();
+                this.didFinishAnimating(afterPage, _currentPage);
+            }
+        } else {
+            if (Math.abs(this.scrollView.contentOffset.x - -this.scrollView.bounds.width) < 4.0) {
+                var _currentPage2 = this.currentPage;
+                if (_currentPage2 === undefined) {
+                    return;
+                }
+                var _beforePage = this.beforeViewController(_currentPage2);
+                if (_beforePage === undefined) {
+                    return;
+                }
+                this.currentPage = _beforePage;
+                this.resetContents();
+                this.didFinishAnimating(_beforePage, _currentPage2);
+            } else if (Math.abs(this.scrollView.contentOffset.x - this.scrollView.bounds.width) < 4.0) {
+                var _currentPage3 = this.currentPage;
+                if (_currentPage3 === undefined) {
+                    return;
+                }
+                var _afterPage = this.afterViewController(_currentPage3);
+                if (_afterPage === undefined) {
+                    return;
+                }
+                this.currentPage = _afterPage;
+                this.resetContents();
+                this.didFinishAnimating(_afterPage, _currentPage3);
+            }
+        }
+    };
+
+    UIPageViewController.prototype.resetContents = function resetContents() {
+        var _this2 = this;
+
+        this.scrollView.alpha = 0.0;
+        this.scrollView.setDataForce({ alpha: 0.0 }, function () {
+            setTimeout(function () {
+                var currentPage = _this2.currentPage;
+                if (currentPage === undefined) {
+                    return;
+                }
+                var beforePage = _this2.beforeViewController(currentPage);
+                var afterPage = _this2.afterViewController(currentPage);
+                _this2.scrollView.subviews.forEach(function (it) {
+                    if (it != currentPage.iView && (beforePage === undefined || it != beforePage.iView) && (afterPage === undefined || it != afterPage.iView)) {
+                        it.removeFromSuperview();
+                    }
+                });
+                currentPage.iView.frame = _this2.iView.bounds;
+                _this2.scrollView.addSubview(currentPage.iView);
+                if (beforePage) {
+                    _this2.addChildViewController(beforePage);
+                    beforePage.iView.alpha = 0.0;
+                    beforePage.iView.setDataForce({ alpha: 0.0 });
+                    _this2.scrollView.addSubview(beforePage.iView);
+                    if (_this2.isVertical == true) {
+                        beforePage.iView.frame = { x: 0.0, y: -_this2.iView.bounds.height, width: _this2.iView.bounds.width, height: _this2.iView.bounds.height };
+                    } else {
+                        beforePage.iView.frame = { x: -_this2.iView.bounds.width, y: 0.0, width: _this2.iView.bounds.width, height: _this2.iView.bounds.height };
+                    }
+                }
+                if (afterPage) {
+                    _this2.addChildViewController(afterPage);
+                    afterPage.iView.alpha = 0.0;
+                    afterPage.iView.setDataForce({ alpha: 0.0 });
+                    _this2.scrollView.addSubview(afterPage.iView);
+                    if (_this2.isVertical == true) {
+                        afterPage.iView.frame = { x: 0.0, y: _this2.iView.bounds.height, width: _this2.iView.bounds.width, height: _this2.iView.bounds.height };
+                    } else {
+                        afterPage.iView.frame = { x: _this2.iView.bounds.width, y: 0.0, width: _this2.iView.bounds.width, height: _this2.iView.bounds.height };
+                    }
+                }
+                if (_this2.isVertical == true) {
+                    _this2.scrollView.contentInset = {
+                        top: beforePage !== undefined ? Math.ceil(_this2.iView.bounds.height) : 0.0,
+                        left: 0.0,
+                        bottom: afterPage !== undefined ? Math.ceil(_this2.iView.bounds.height) : 0.0,
+                        right: 0.0
+                    };
+                } else {
+                    _this2.scrollView.contentInset = {
+                        top: 0.0,
+                        left: beforePage !== undefined ? Math.ceil(_this2.iView.bounds.width) : 0.0,
+                        bottom: 0.0,
+                        right: afterPage !== undefined ? Math.ceil(_this2.iView.bounds.width) : 0.0
+                    };
+                }
+                _this2.scrollView.contentOffset = UIPoint_1.UIPointZero;
+                setTimeout(function () {
+                    UIAnimator_1.UIAnimator.linear(0.30, function () {
+                        currentPage.iView.alpha = 1.0;
+                        _this2.scrollView.alpha = 1.0;
+                    }, undefined);
+                }, 50);
+                _this2.childViewControllers.forEach(function (it) {
+                    if (it !== _this2.currentPage && it !== beforePage && it !== afterPage) {
+                        it.iView.removeFromSuperview();
+                        it.removeFromParentViewController();
+                    }
+                    it.iView.hidden = it !== _this2.currentPage;
+                });
+                _this2.scrollView.markFlagDirty("pagingItems");
+            }, 50);
+        });
+    };
+
+    _createClass(UIPageViewController, [{
+        key: "pageItems",
+        get: function get() {
+            return this._pageItems;
+        },
+        set: function set(value) {
+            this._pageItems = value;
+            if (value && value.length > 0) {
+                this.currentPage = value[0];
+                this.resetContents();
+            }
+        }
+    }, {
+        key: "currentPage",
+        get: function get() {
+            return this._currentPage;
+        },
+        set: function set(value) {
+            this._currentPage = value;
+            if (value) {
+                if (value.parentViewController != this) {
+                    this.addChildViewController(value);
+                }
+            }
+            this.resetContents();
+        }
+    }]);
+
+    return UIPageViewController;
+}(UIViewController_1.UIViewController);
+
+exports.UIPageViewController = UIPageViewController;
 
 /***/ })
 /******/ ]);

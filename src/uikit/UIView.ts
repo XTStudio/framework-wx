@@ -679,6 +679,21 @@ export class UIView extends EventEmitter {
         }
     }
 
+    setDataForce(data: any, callback: any = undefined) {
+        if (this.viewID) {
+            const component = UIComponentManager.shared.fetchComponent(this.viewID)
+            if (component) {
+                component.setData(data, callback)
+            }
+            else {
+                callback && callback()
+            }
+        }
+        else {
+            callback && callback()
+        }
+    }
+
     buildData(): any {
         return {
             viewID: this.viewID,

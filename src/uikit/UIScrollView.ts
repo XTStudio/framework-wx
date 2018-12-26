@@ -7,6 +7,7 @@ import { UIPanGestureRecognizer } from "./UIPanGestureRecognizer";
 import { UIRefreshControl } from "./UIRefreshControl";
 import { UITouch } from "./UITouch";
 import { UIFetchMoreControl } from "./UIFetchMoreControl";
+import { Ticker } from "./helpers/Ticker";
 
 const isIOS = wx.getSystemInfoSync().platform === "ios"
 
@@ -341,12 +342,12 @@ export class UIScrollView extends UIView {
     buildData() {
         let data = super.buildData()
         const totalContentSize = {
-            width: this._contentSize.width + this._contentInset.left + this._contentInset.right,
-            height: this._contentSize.height + this._contentInset.top + this._contentInset.bottom
+            width: this.contentSize.width + this.contentInset.left + this.contentInset.right,
+            height: this.contentSize.height + this.contentInset.top + this.contentInset.bottom
         }
         if (this.dirtyFlags["contentOffsetX"] || this.dirtyFlags["contentOffsetY"]) {
-            data.contentOffsetX = this._contentOffset.x + this._contentInset.left
-            data.contentOffsetY = this._contentOffset.y + this._contentInset.top
+            data.contentOffsetX = this.contentOffset.x + this.contentInset.left
+            data.contentOffsetY = this.contentOffset.y + this.contentInset.top
             data.scrollWithAnimation = this.isContentOffsetScrollAnimated
         }
         data.pagingEnabled = this.pagingEnabled
@@ -354,17 +355,17 @@ export class UIScrollView extends UIView {
             if (!this.pagingEnabled) {
                 return []
             }
-            if (this.contentSize.width > this.bounds.width) {
+            if (totalContentSize.width > this.bounds.width) {
                 let items = []
-                let count = Math.ceil(this.contentSize.width / this.bounds.width)
+                let count = Math.ceil(totalContentSize.width / this.bounds.width)
                 for (let index = 0; index < count; index++) {
                     items.push(0)
                 }
                 return items
             }
-            else if (this.contentSize.height > this.bounds.height) {
+            else if (totalContentSize.height > this.bounds.height) {
                 let items = []
-                let count = Math.ceil(this.contentSize.height / this.bounds.height)
+                let count = Math.ceil(totalContentSize.height / this.bounds.height)
                 for (let index = 0; index < count; index++) {
                     items.push(1)
                 }
@@ -374,6 +375,18 @@ export class UIScrollView extends UIView {
                 return [0]
             }
         })()
+        data.pagingDuration = 300
+        if (this.dirtyFlags["contentOffsetX"] || this.dirtyFlags["contentOffsetY"]) {
+            if (this.pagingEnabled) {
+                this.setDataForce({ pagingDuration: this.isContentOffsetScrollAnimated ? 300 : 0 })
+                this.setDataForce({
+                    pagingCurrentIndex: (totalContentSize.width > this.bounds.width) ?
+                        Math.round((this.contentOffset.x + this.contentInset.left) / this.bounds.width) :
+                        Math.round((this.contentOffset.y + this.contentInset.top) / this.bounds.height)
+                })
+                this.setDataForce({ pagingDuration: 300 })
+            }
+        }
         data.scrollsToTop = this.scrollsToTop
         data.direction = (() => {
             if (totalContentSize.width > this.bounds.width && totalContentSize.height > this.bounds.height) {

@@ -59,12 +59,16 @@ class UIScrollViewComponent extends UIView_1.UIViewComponent {
             onPagingChange: function (e) {
                 const view = UIViewManager_1.UIViewManager.shared.fetchView(this.data.viewID);
                 if (view) {
+                    const totalContentSize = {
+                        width: view.contentSize.width + view.contentInset.left + view.contentInset.right,
+                        height: view.contentSize.height + view.contentInset.top + view.contentInset.bottom
+                    };
                     view._contentOffset = {
-                        x: view.contentSize.width > view.bounds.width ? e.detail.current * view.bounds.width : 0.0,
-                        y: view.contentSize.height > view.bounds.height ? e.detail.current * view.bounds.height : 0.0,
+                        x: (totalContentSize.width > view.bounds.width ? e.detail.current * view.bounds.width : 0.0) - view.contentInset.left,
+                        y: (totalContentSize.height > view.bounds.height ? e.detail.current * view.bounds.height : 0.0) - view.contentInset.top,
                     };
                     view.didScroll();
-                    if (e.type === "animationfinish") {
+                    if (e.type === "animationfinish" && e.detail.source === "touch") {
                         view.didEndScrollingAnimation();
                     }
                 }

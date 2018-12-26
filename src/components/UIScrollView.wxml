@@ -1,31 +1,3 @@
-<!-- <movable-area style='{{style}}{{frameStyle}}' data-viewID="{{viewID}}">
-  <movable-view 
-    data-viewID="{{viewID}}" 
-    direction="vertical" 
-    inertia="{{inertia}}" 
-    out-of-bounds="{{bounces}}" 
-    x="{{contentOffsetX}}"
-    y="{{contentOffsetY}}"
-    animation="{{scrollWithAnimation}}"
-    bindchange="onScroll"
-    bindtouchstart="onTouchStarted"
-    bindtouchend="onTouchEnded"
-    bindtouchcancel="onTouchCancelled"
-    style="width: 300px; height:2000px;background-color:blue;">
-    <view wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
-      <factory view="{{item}}"></factory>
-    </view>
-  </movable-view>
-</movable-area> -->
-
-<!-- <movable-area style="height: 100px; width: 100px; background: red;">
-    <movable-view
-      style="height: 200px; width: 200px; background: blue;"
-      direction="all"
-    >
-    </movable-view>
-  </movable-area> -->
-
 <factory view="{{refreshControlAnimationView}}"></factory>
 <scroll-view 
     id="scroll-view"
@@ -53,6 +25,8 @@
 <swiper wx:if="{{pagingEnabled}}"
         style='{{style}}{{frameStyle}}'
         vertical='{{pagingItems[0] === 1}}'
+        current='{{pagingCurrentIndex}}'
+        duration='{{pagingDuration}}'
         bindtransition='onPagingScroll'
         bindanimationfinish='onPagingChange'
         bindtouchstart="onTouchStarted"
@@ -61,7 +35,7 @@
         <block wx:for="{{pagingItems}}" wx:key="*this">
           <swiper-item></swiper-item>
         </block>
-        <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+        <view style='transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}});' wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
           <factory view="{{item}}"></factory>
-        </block>
+        </view>
 </swiper>

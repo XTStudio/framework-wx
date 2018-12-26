@@ -40,6 +40,7 @@ const {
     UITextFieldViewMode,
     UIFetchMoreControl,
     UITextView,
+    UIPageViewController,
 } = require("../../components/index")
 
 class FooCell extends UITableViewCell {
@@ -58,27 +59,32 @@ class FooCell extends UITableViewCell {
 
 class BarViewController extends UIViewController {
 
-    scrollView = new UIScrollView
+    pageViewController = new UIPageViewController
 
     viewDidLoad() {
         super.viewDidLoad()
+        let items = []
         for (let index = 0; index < 12; index++) {
-            const view = new UIView
-            view.backgroundColor = new UIColor(1.0 / (index + 1), Math.random(), Math.random(), 1.0)
-            view.frame = UIRectMake(300 * index, 0, 300, 600)
-            view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
-                view.backgroundColor = UIColor.yellow
+            const viewController = new UIViewController
+            const label = new UILabel
+            label.frame = UIRectMake(0, 0, 300, 300)
+            label.text = index.toString()
+            viewController.view.addSubview(label)
+            viewController.view.backgroundColor = new UIColor(1.0 / (index + 1), Math.random(), Math.random(), 1.0)
+            viewController.view.addGestureRecognizer(new UITapGestureRecognizer().on("touch", () => {
+                viewController.view.backgroundColor = UIColor.yellow
             }))
-            this.scrollView.addSubview(view)
+            items.push(viewController)
         }
-        this.scrollView.pagingEnabled = true
-        this.scrollView.contentSize = { width: 300 * 12, height: 0 }
-        this.view.addSubview(this.scrollView)
+        this.pageViewController.loops = true
+        this.pageViewController.pageItems = items
+        this.addChildViewController(this.pageViewController)
+        this.view.addSubview(this.pageViewController.view)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.scrollView.frame = UIRectMake(0, 0, 300, 600)
+        this.pageViewController.view.frame = this.view.bounds
     }
 
 }
