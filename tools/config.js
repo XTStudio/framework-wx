@@ -43,14 +43,21 @@ module.exports = {
         ],
         exclude: /node_modules/
       }],
+      rules: [{
+        test: /\.ts$/i,
+        use: [
+          'ts-loader'
+        ],
+        exclude: /node_modules/
+      }],
     },
     resolve: {
       modules: [src, 'node_modules'],
-      extensions: ['.js', '.json'],
+      extensions: ['.ts', '.js', '.json'],
     },
     plugins: [
       new webpack.DefinePlugin({}),
-      new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
+      new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
     ],
     optimization: {
       minimize: false,
