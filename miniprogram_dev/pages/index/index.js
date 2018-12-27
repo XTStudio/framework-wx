@@ -51,6 +51,8 @@ const {
     CALayer,
     UUID,
     CAGradientLayer,
+    CAShapeLayer,
+    UIBezierPath,
 } = require("../../components/index")
 
 class FooCell extends UICollectionViewCell {
@@ -74,22 +76,16 @@ class BarViewController extends UIViewController {
     viewDidLoad() {
         super.viewDidLoad()
         this.view.backgroundColor = UIColor.gray
-        const layer = new CALayer
-        layer.frame = UIRectMake(44, 44, 44, 44)
-        layer.backgroundColor = UIColor.red
-        // layer.borderColor = UIColor.blue
-        // layer.borderWidth = 6
-        layer.cornerRadius = 22
-        // layer.masksToBounds = true
-
-        const bLayer = new CAGradientLayer
-        bLayer.frame = UIRectMake(22, 22, 88, 88)
-        bLayer.colors = [UIColor.red, UIColor.yellow]
-        bLayer.locations = [0, 1]
-        bLayer.startPoint = {x:0, y:0}
-        bLayer.endPoint = {x:0, y:1}
-        layer.addSublayer(bLayer)
-
+        const layer = new CAShapeLayer
+        layer.fillColor = UIColor.clear
+        layer.strokeColor = UIColor.red
+        layer.lineWidth = 4
+        const path = new UIBezierPath
+        path.moveTo({ x: 20, y: 20 })
+        path.addLineTo({ x: 80, y: 20 })
+        path.addLineTo({ x: 80, y: 80 })
+        path.closePath()
+        layer.path = path
         this.view.layer.addSublayer(layer)
     }
 

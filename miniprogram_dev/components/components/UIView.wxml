@@ -1,6 +1,6 @@
 <!--xt-framework/uiview.wxml-->
 <view style='{{style}}{{frameStyle}}' animation='{{animation}}'>
-  <image wx:if='{{renderLayer}}' src='data:image/svg+xml;base64,{{layerSource}}'></image>
+  <image wx:if='{{renderLayer}}' style='position: absolute; width: 100%; height: 100%' src='data:image/svg+xml;base64,{{layerSource}}'></image>
   <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
     <factory view="{{item}}"></factory>
   </block>

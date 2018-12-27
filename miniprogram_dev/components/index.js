@@ -2179,7 +2179,7 @@ class CALayer {
         <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
             ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
-        </svg>`
+        </svg>`.replace(/  /ig, "")
         }).base64EncodedString();
         this.isDirty = false;
         return this.svgCache;
@@ -5804,6 +5804,7 @@ exports.CAGradientLayer = CAGradientLayer;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const CALayer_1 = __webpack_require__(18);
+const UUID_1 = __webpack_require__(3);
 var CAShapeFillRule;
 (function (CAShapeFillRule) {
     CAShapeFillRule[CAShapeFillRule["nonZero"] = 0] = "nonZero";
@@ -5823,8 +5824,132 @@ var CAShapeLineJoin;
 })(CAShapeLineJoin = exports.CAShapeLineJoin || (exports.CAShapeLineJoin = {}));
 class CAShapeLayer extends CALayer_1.CALayer {
     constructor() {
-        super();
-        console.log("微信小程序暂时不支持 CAShapeLayer");
+        super(...arguments);
+        this._path = undefined;
+        this._fillColor = undefined;
+        this._fillRule = CAShapeFillRule.evenOdd;
+        this._lineCap = CAShapeLineCap.butt;
+        this._lineDashPattern = [];
+        this._lineDashPhase = 0.0;
+        this._lineJoin = CAShapeLineJoin.miter;
+        this._lineWidth = 0.0;
+        this._miterLimit = 10.0;
+        this._strokeColor = undefined;
+        this.strokeStart = 0.0; // todo: not support
+        this.strokeEnd = 1.0; // todo: not support
+    }
+    get path() {
+        return this._path;
+    }
+    set path(value) {
+        this._path = value;
+        this.markDirty();
+    }
+    get fillColor() {
+        return this._fillColor;
+    }
+    set fillColor(value) {
+        this._fillColor = value;
+        this.markDirty();
+    }
+    get fillRule() {
+        return this._fillRule;
+    }
+    set fillRule(value) {
+        this._fillRule = value;
+        this.markDirty();
+    }
+    get lineCap() {
+        return this._lineCap;
+    }
+    set lineCap(value) {
+        this._lineCap = value;
+        this.markDirty();
+    }
+    get lineDashPattern() {
+        return this._lineDashPattern;
+    }
+    set lineDashPattern(value) {
+        this._lineDashPattern = value;
+        this.markDirty();
+    }
+    get lineDashPhase() {
+        return this._lineDashPhase;
+    }
+    set lineDashPhase(value) {
+        this._lineDashPhase = value;
+        this.markDirty();
+    }
+    get lineJoin() {
+        return this._lineJoin;
+    }
+    set lineJoin(value) {
+        this._lineJoin = value;
+        this.markDirty();
+    }
+    get lineWidth() {
+        return this._lineWidth;
+    }
+    set lineWidth(value) {
+        this._lineWidth = value;
+        this.markDirty();
+    }
+    get miterLimit() {
+        return this._miterLimit;
+    }
+    set miterLimit(value) {
+        this._miterLimit = value;
+        this.markDirty();
+    }
+    get strokeColor() {
+        return this._strokeColor;
+    }
+    set strokeColor(value) {
+        this._strokeColor = value;
+        this.markDirty();
+    }
+    buildFillRule() {
+        if (this.fillRule == CAShapeFillRule.evenOdd) {
+            return "evenodd";
+        }
+        else if (this.fillRule == CAShapeFillRule.nonZero) {
+            return "nonzero";
+        }
+        else {
+            return "";
+        }
+    }
+    buildLineCap() {
+        switch (this.lineCap) {
+            case CAShapeLineCap.butt:
+                return "butt";
+            case CAShapeLineCap.round:
+                return "round";
+            case CAShapeLineCap.square:
+                return "square";
+        }
+    }
+    buildLineJoin() {
+        switch (this.lineJoin) {
+            case CAShapeLineJoin.miter:
+                return "miter";
+            case CAShapeLineJoin.bevel:
+                return "bevel";
+            case CAShapeLineJoin.round:
+                return "round";
+        }
+    }
+    buildSVGLayer() {
+        if (this.hidden) {
+            return "";
+        }
+        const uuid = UUID_1.randomUUID();
+        return `
+        <g transform="matrix(1,0,0,1,${this.frame.x},${this.frame.y})" style="${this.opacity < 1.0 ? `opacity: ${this.opacity};` : ''}">
+            <path ${this.path ? `d="${this.path.d3Paths.map((it) => { return it.toString(); }).join(" ")}"` : ''} style="fill: ${this.fillColor ? this.fillColor.toStyle() : 'black'}; fill-rule: ${this.buildFillRule()}; stroke-linecap: ${this.buildLineCap()}; stroke-dasharray: ${this.lineDashPattern.join(" ")}; stroke-dashoffset: ${this.lineDashPhase.toString()}; stroke-linejoin: ${this.buildLineJoin()}; stroke-width: ${this.lineWidth}; stroke-miterlimit: ${this.miterLimit}; stroke: ${this.strokeColor ? this.strokeColor.toStyle() : ''};"></path>
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+        </g>
+        `;
     }
 }
 exports.CAShapeLayer = CAShapeLayer;
