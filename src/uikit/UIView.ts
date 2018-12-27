@@ -706,6 +706,8 @@ export class UIView extends EventEmitter {
                 }
             }),
             animation: this.buildAnimation(),
+            renderLayer: this._layer && this._layer.sublayers.length > 0 ? true : false,
+            layerSource: this._layer ? this._layer.buildSVG() : '',
         }
     }
 

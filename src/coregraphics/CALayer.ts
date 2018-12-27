@@ -2,6 +2,8 @@ import { UIRect, UIRectZero, UIRectEqualToRect } from "../uikit/UIRect";
 import { UIColor } from "../uikit/UIColor";
 import { UISize, UISizeEqualToSize } from "../uikit/UISize";
 import { UILabel } from "../uikit/UILabel";
+import { Data } from "../foundation/Data";
+import { randomUUID } from "../uikit/helpers/UUID";
 
 export class CALayer {
 
@@ -27,6 +29,10 @@ export class CALayer {
     public set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         this._frame = value;
+        if (this.view) {
+            this.view.layer.isDirty = true
+            this.view.markFlagDirty("renderLayer", "layerSource")
+        }
     }
 
     private _hidden: boolean = false
@@ -47,7 +53,10 @@ export class CALayer {
             this._view.hidden = value
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -64,7 +73,10 @@ export class CALayer {
             this._view.invalidate()
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -100,12 +112,11 @@ export class CALayer {
             this._view.invalidate()
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
-    }
-
-    private moveBorderElementToFront() {
-
     }
 
     superlayer: CALayer | undefined = undefined
@@ -117,6 +128,10 @@ export class CALayer {
                 this.superlayer.sublayers.splice(idx, 1)
             }
             this.superlayer = undefined
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -128,12 +143,10 @@ export class CALayer {
         }
         this.sublayers.push(layer)
         layer.superlayer = this
-        this.createSVGElement()
-        layer.createSVGElement()
-    }
-
-    protected createSVGElement() {
-
+        if (this.view) {
+            this.view.layer.isDirty = true
+            this.view.markFlagDirty("renderLayer", "layerSource")
+        }
     }
 
     private _backgroundColor: UIColor | undefined = undefined
@@ -157,7 +170,10 @@ export class CALayer {
             this._view.backgroundColor = value
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -179,7 +195,10 @@ export class CALayer {
             this._view.alpha = value
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -196,7 +215,10 @@ export class CALayer {
             this._view.clipsToBounds = value
         }
         else {
-
+            if (this.view) {
+                this.view.layer.isDirty = true
+                this.view.markFlagDirty("renderLayer", "layerSource")
+            }
         }
     }
 
@@ -255,6 +277,42 @@ export class CALayer {
         if (this._view) {
             this._view.invalidate()
         }
+    }
+
+    // SVG Converter
+
+    private isDirty = false
+    private svgCache: string | undefined = undefined
+
+    buildSVG(): string {
+        if (this.svgCache && !this.isDirty) {
+            return this.svgCache
+        }
+        this.svgCache = new Data({
+            utf8String: `<?xml version="1.0" encoding="utf-8"?>
+        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+        </svg>`}).base64EncodedString()
+        this.isDirty = false
+        return this.svgCache
+    }
+
+    buildSVGLayer(): string {
+        if (this.hidden) { return "" }
+        const uuid = randomUUID()
+        return `
+        ${this.masksToBounds ? `<clipPath id="clip.${uuid}"><rect rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect></clipPath>` : ''}
+        <g ${this.masksToBounds ? `clip-path="url(#clip.${uuid})"` : ''} transform="matrix(1,0,0,1,${this.frame.x},${this.frame.y})" style="${this.opacity < 1.0 ? `opacity: ${this.opacity};` : ''}">
+            ${this.backgroundColor ? `
+            <rect fill="${this.backgroundColor.toStyle()}" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ` : ''}
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+            ${this.borderColor && this.borderWidth > 0 ? `
+            <rect fill="transparent" style="stroke-width: ${this.borderWidth}; stroke: ${this.borderColor.toStyle()};" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ` : ''}
+        </g>
+        `
     }
 
 }

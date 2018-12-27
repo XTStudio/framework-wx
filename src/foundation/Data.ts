@@ -78,9 +78,7 @@ export class Data {
     }
 
     base64EncodedString(): string {
-        return window.btoa(new Uint8Array(this._arrayBuffer).reduce(function (data, byte) {
-            return data + String.fromCharCode(byte);
-        }, ''));
+        return wx.arrayBufferToBase64(this._arrayBuffer);
     }
 
     mutable(): MutableData {

@@ -70,33 +70,23 @@ class FooCell extends UICollectionViewCell {
 
 class BarViewController extends UIViewController {
 
-    numItems = 50
-    flowLayout = new UICollectionViewFlowLayout
-    collectionView = new UICollectionView(this.flowLayout)
-
     viewDidLoad() {
         super.viewDidLoad()
-        this.collectionView.addSubview(new UIFetchMoreControl().on("fetch", (sender) => {
-            this.numItems += 50
-            this.collectionView.reloadData()
-            sender.endFetching()
-        }))
-        this.collectionView.register((context) => new FooCell(context), "Cell")
-        this.collectionView.on("numberOfItems", () => this.numItems)
-        this.collectionView.on("cellForItem", (indexPath) => {
-            const cell = this.collectionView.dequeueReusableCell("Cell", indexPath)
-            cell.textLabel.text = indexPath.row.toString()
-            return cell
-        })
-        this.flowLayout.itemSize = { width: 88, height: 88 }
-        this.flowLayout.sectionInset = { top: 8, left: 16, bottom: 8, right: 16 }
-        this.view.addSubview(this.collectionView)
-    }
+        this.view.backgroundColor = UIColor.gray
+        const layer = new CALayer
+        layer.frame = UIRectMake(44, 44, 44, 44)
+        layer.backgroundColor = UIColor.red
+        // layer.borderColor = UIColor.blue
+        // layer.borderWidth = 6
+        layer.cornerRadius = 22
+        // layer.masksToBounds = true
 
-    viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        this.collectionView.frame = this.view.bounds
-        this.collectionView.reloadData()
+        const bLayer = new CALayer
+        bLayer.frame = UIRectMake(22, 22, 44, 44)
+        bLayer.backgroundColor = UIColor.yellow
+        layer.addSublayer(bLayer)
+
+        this.view.layer.addSublayer(layer)
     }
 
 }

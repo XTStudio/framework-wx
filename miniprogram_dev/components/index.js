@@ -755,6 +755,8 @@ class UIView extends EventEmitter_1.EventEmitter {
                 };
             }),
             animation: this.buildAnimation(),
+            renderLayer: this._layer && this._layer.sublayers.length > 0 ? true : false,
+            layerSource: this._layer ? this._layer.buildSVG() : '',
         };
     }
     buildStyle() {
@@ -1885,9 +1887,7 @@ class Data {
         return new Data({ utf8String: this.base64EncodedString() });
     }
     base64EncodedString() {
-        return window.btoa(new Uint8Array(this._arrayBuffer).reduce(function (data, byte) {
-            return data + String.fromCharCode(byte);
-        }, ''));
+        return wx.arrayBufferToBase64(this._arrayBuffer);
     }
     mutable() {
         return new MutableData(this._arrayBuffer);
@@ -1926,6 +1926,8 @@ exports.MutableData = MutableData;
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = __webpack_require__(9);
 const UISize_1 = __webpack_require__(11);
+const Data_1 = __webpack_require__(17);
+const UUID_1 = __webpack_require__(3);
 class CALayer {
     constructor() {
         this._view = undefined;
@@ -1943,6 +1945,9 @@ class CALayer {
         this._shadowOpacity = 0.0;
         this._shadowOffset = { width: 0, height: -3 };
         this._shadowRadius = 3.0;
+        // SVG Converter
+        this.isDirty = false;
+        this.svgCache = undefined;
     }
     get view() {
         if (this.superlayer) {
@@ -1961,6 +1966,10 @@ class CALayer {
             return;
         }
         this._frame = value;
+        if (this.view) {
+            this.view.layer.isDirty = true;
+            this.view.markFlagDirty("renderLayer", "layerSource");
+        }
     }
     get hidden() {
         if (this._view) {
@@ -1979,6 +1988,10 @@ class CALayer {
             this._view.hidden = value;
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     get cornerRadius() {
@@ -1993,6 +2006,10 @@ class CALayer {
             this._view.invalidate();
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     get borderWidth() {
@@ -2025,9 +2042,11 @@ class CALayer {
             this._view.invalidate();
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
-    }
-    moveBorderElementToFront() {
     }
     removeFromSuperlayer() {
         if (this.superlayer) {
@@ -2036,6 +2055,10 @@ class CALayer {
                 this.superlayer.sublayers.splice(idx, 1);
             }
             this.superlayer = undefined;
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     addSublayer(layer) {
@@ -2044,10 +2067,10 @@ class CALayer {
         }
         this.sublayers.push(layer);
         layer.superlayer = this;
-        this.createSVGElement();
-        layer.createSVGElement();
-    }
-    createSVGElement() {
+        if (this.view) {
+            this.view.layer.isDirty = true;
+            this.view.markFlagDirty("renderLayer", "layerSource");
+        }
     }
     get backgroundColor() {
         if (this._view) {
@@ -2071,6 +2094,10 @@ class CALayer {
             this._view.backgroundColor = value;
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     get opacity() {
@@ -2090,6 +2117,10 @@ class CALayer {
             this._view.alpha = value;
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     get masksToBounds() {
@@ -2104,6 +2135,10 @@ class CALayer {
             this._view.clipsToBounds = value;
         }
         else {
+            if (this.view) {
+                this.view.layer.isDirty = true;
+                this.view.markFlagDirty("renderLayer", "layerSource");
+            }
         }
     }
     get shadowColor() {
@@ -2155,6 +2190,38 @@ class CALayer {
         if (this._view) {
             this._view.invalidate();
         }
+    }
+    buildSVG() {
+        if (this.svgCache && !this.isDirty) {
+            return this.svgCache;
+        }
+        this.svgCache = new Data_1.Data({
+            utf8String: `<?xml version="1.0" encoding="utf-8"?>
+        <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+        </svg>`
+        }).base64EncodedString();
+        this.isDirty = false;
+        return this.svgCache;
+    }
+    buildSVGLayer() {
+        if (this.hidden) {
+            return "";
+        }
+        const uuid = UUID_1.randomUUID();
+        return `
+        ${this.masksToBounds ? `<clipPath id="clip.${uuid}"><rect rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect></clipPath>` : ''}
+        <g ${this.masksToBounds ? `clip-path="url(#clip.${uuid})"` : ''} transform="matrix(1,0,0,1,${this.frame.x},${this.frame.y})" style="${this.opacity < 1.0 ? `opacity: ${this.opacity};` : ''}">
+            ${this.backgroundColor ? `
+            <rect fill="${this.backgroundColor.toStyle()}" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ` : ''}
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+            ${this.borderColor && this.borderWidth > 0 ? `
+            <rect fill="transparent" style="stroke-width: ${this.borderWidth}; stroke: ${this.borderColor.toStyle()};" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ` : ''}
+        </g>
+        `;
     }
 }
 exports.CALayer = CALayer;
