@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 38);
+/******/ 	return __webpack_require__(__webpack_require__.s = 40);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -214,7 +214,73 @@ exports.randomUUID = function () {
 
 /***/ }),
 
-/***/ 38:
+/***/ 4:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIComponentManager_1 = __webpack_require__(2);
+var UIViewManager_1 = __webpack_require__(0);
+// xt-framework/uiview.js
+var nextTick = function nextTick(cb) {
+    return wx.nextTick !== undefined ? wx.nextTick(cb) : setTimeout(cb, 0);
+};
+
+var UIViewComponent = function UIViewComponent() {
+    _classCallCheck(this, UIViewComponent);
+
+    this.properties = {
+        viewID: {
+            type: String,
+            value: undefined,
+            observer: function observer(viewID, oldValue) {
+                if (viewID === undefined || viewID === null) {
+                    return;
+                }
+                var self = this;
+                UIComponentManager_1.UIComponentManager.shared.addComponent(self, viewID);
+                var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
+                var viewData = newView.buildData();
+                if (viewData.subviews.length > 50) {
+                    self.setData(Object.assign({}, viewData, { subviews: [] }));
+
+                    var _loop = function _loop(index) {
+                        nextTick(function () {
+                            self.setData({
+                                subviews: viewData.subviews.slice(0, index)
+                            });
+                        });
+                    };
+
+                    for (var index = 0; index <= viewData.subviews.length; index += 50) {
+                        _loop(index);
+                    }
+                } else {
+                    self.setData(newView.buildData());
+                }
+            }
+        }
+    };
+    this.lifetimes = {
+        detached: function detached() {
+            var self = this;
+            if (self.properties && self.properties.viewID) {
+                UIComponentManager_1.UIComponentManager.shared.deleteComponent(self.properties.viewID);
+            }
+        }
+    };
+};
+
+exports.UIViewComponent = UIViewComponent;
+Component(new UIViewComponent());
+
+/***/ }),
+
+/***/ 40:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -289,72 +355,6 @@ var UIWindowComponent = function (_UIView_1$UIViewCompo) {
 
 exports.UIWindowComponent = UIWindowComponent;
 Component(new UIWindowComponent());
-
-/***/ }),
-
-/***/ 4:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIComponentManager_1 = __webpack_require__(2);
-var UIViewManager_1 = __webpack_require__(0);
-// xt-framework/uiview.js
-var nextTick = function nextTick(cb) {
-    return wx.nextTick !== undefined ? wx.nextTick(cb) : setTimeout(cb, 0);
-};
-
-var UIViewComponent = function UIViewComponent() {
-    _classCallCheck(this, UIViewComponent);
-
-    this.properties = {
-        viewID: {
-            type: String,
-            value: undefined,
-            observer: function observer(viewID, oldValue) {
-                if (viewID === undefined || viewID === null) {
-                    return;
-                }
-                var self = this;
-                UIComponentManager_1.UIComponentManager.shared.addComponent(self, viewID);
-                var newView = UIViewManager_1.UIViewManager.shared.fetchView(viewID);
-                var viewData = newView.buildData();
-                if (viewData.subviews.length > 50) {
-                    self.setData(Object.assign({}, viewData, { subviews: [] }));
-
-                    var _loop = function _loop(index) {
-                        nextTick(function () {
-                            self.setData({
-                                subviews: viewData.subviews.slice(0, index)
-                            });
-                        });
-                    };
-
-                    for (var index = 0; index <= viewData.subviews.length; index += 50) {
-                        _loop(index);
-                    }
-                } else {
-                    self.setData(newView.buildData());
-                }
-            }
-        }
-    };
-    this.lifetimes = {
-        detached: function detached() {
-            var self = this;
-            if (self.properties && self.properties.viewID) {
-                UIComponentManager_1.UIComponentManager.shared.deleteComponent(self.properties.viewID);
-            }
-        }
-    };
-};
-
-exports.UIViewComponent = UIViewComponent;
-Component(new UIViewComponent());
 
 /***/ })
 

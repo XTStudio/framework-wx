@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 45);
+/******/ 	return __webpack_require__(__webpack_require__.s = 47);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -154,19 +154,19 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIRect_1 = __webpack_require__(11);
-var UIAffineTransform_1 = __webpack_require__(30);
-var Matrix_1 = __webpack_require__(31);
+var UIRect_1 = __webpack_require__(9);
+var UIAffineTransform_1 = __webpack_require__(22);
+var Matrix_1 = __webpack_require__(32);
 var UIColor_1 = __webpack_require__(5);
-var UITouch_1 = __webpack_require__(9);
+var UITouch_1 = __webpack_require__(10);
 var UIEdgeInsets_1 = __webpack_require__(8);
 var UIAnimator_1 = __webpack_require__(7);
 var UIViewManager_1 = __webpack_require__(0);
-var EventEmitter_1 = __webpack_require__(13);
+var EventEmitter_1 = __webpack_require__(12);
 var UIEnums_1 = __webpack_require__(6);
-var CALayer_1 = __webpack_require__(54);
+var CALayer_1 = __webpack_require__(56);
 var UIComponentManager_1 = __webpack_require__(2);
-var Ticker_1 = __webpack_require__(20);
+var Ticker_1 = __webpack_require__(21);
 
 var UIView = function (_EventEmitter_1$Event) {
     _inherits(UIView, _EventEmitter_1$Event);
@@ -1599,10 +1599,64 @@ exports.UIEdgeInsetsEqualToEdgeInsets = function (rect1, rect2) {
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UIRectZero = { x: 0, y: 0, width: 0, height: 0 };
+exports.UIRectMake = function (x, y, width, height) {
+    return { x: x, y: y, width: width, height: height };
+};
+exports.UIRectEqualToRect = function (a, b) {
+    return Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
+};
+exports.UIRectInset = function (rect, dx, dy) {
+    return {
+        x: rect.x + dx,
+        y: rect.y + dy,
+        width: rect.width - 2 * dx,
+        height: rect.height - 2 * dy
+    };
+};
+exports.UIRectOffset = function (rect, dx, dy) {
+    return {
+        x: rect.x + dx,
+        y: rect.y + dy,
+        width: rect.width,
+        height: rect.height
+    };
+};
+exports.UIRectContainsPoint = function (rect, point) {
+    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.x + rect.height;
+};
+exports.UIRectContainsRect = function (rect1, rect2) {
+    return exports.UIRectContainsPoint(rect1, { x: rect2.x, y: rect2.y }) && exports.UIRectContainsPoint(rect1, { x: rect2.x + rect2.width, y: rect2.y }) && exports.UIRectContainsPoint(rect1, { x: rect2.x, y: rect2.y + rect2.height }) && exports.UIRectContainsPoint(rect1, { x: rect2.x + rect2.width, y: rect2.y + rect2.height });
+};
+exports.UIRectIntersectsRect = function (a, b) {
+    if (a.x + a.width - 0.1 <= b.x || b.x + b.width - 0.1 <= a.x || a.y + a.height - 0.1 <= b.y || b.y + b.height - 0.1 <= a.y) {
+        return false;
+    }
+    return true;
+};
+exports.UIRectUnion = function (r1, r2) {
+    var x = Math.min(r1.x, r2.x);
+    var y = Math.min(r1.y, r2.y);
+    var width = Math.max(r1.x + r1.width, r2.x + r2.width);
+    var height = Math.max(r1.y + r1.height, r2.y + r2.height);
+    return { x: x, y: y, width: width, height: height };
+};
+exports.UIRectIsEmpty = function (rect) {
+    return rect.width == 0.0 || rect.height == 0.0;
+};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIPoint_1 = __webpack_require__(12);
+var UIPoint_1 = __webpack_require__(11);
 var UITouchPhase;
 (function (UITouchPhase) {
     UITouchPhase[UITouchPhase["began"] = 0] = "began";
@@ -1692,7 +1746,50 @@ var VelocityTracker = function () {
 exports.VelocityTracker = VelocityTracker;
 
 /***/ }),
-/* 10 */
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UIPointZero = { x: 0, y: 0 };
+exports.UIPointMake = function (x, y) {
+    return { x: x, y: y };
+};
+exports.UIPointEqualToPoint = function (point1, point2) {
+    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
+};
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var EventEmitterIMP = __webpack_require__(55);
+exports.EventEmitter = EventEmitterIMP.EventEmitter;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UISizeZero = { width: 0, height: 0 };
+exports.UISizeMake = function (width, height) {
+    return { width: width, height: height };
+};
+exports.UISizeEqualToSize = function (a, b) {
+    return Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
+};
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1705,8 +1802,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIPoint_1 = __webpack_require__(12);
-var EventEmitter_1 = __webpack_require__(13);
+var UIPoint_1 = __webpack_require__(11);
+var EventEmitter_1 = __webpack_require__(12);
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
     UIGestureRecognizerState[UIGestureRecognizerState["possible"] = 0] = "possible";
@@ -1766,88 +1863,7 @@ var UIGestureRecognizer = function (_EventEmitter_1$Event) {
 exports.UIGestureRecognizer = UIGestureRecognizer;
 
 /***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UIRectZero = { x: 0, y: 0, width: 0, height: 0 };
-exports.UIRectMake = function (x, y, width, height) {
-    return { x: x, y: y, width: width, height: height };
-};
-exports.UIRectEqualToRect = function (a, b) {
-    return Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001 && Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
-};
-exports.UIRectInset = function (rect, dx, dy) {
-    return {
-        x: rect.x + dx,
-        y: rect.y + dy,
-        width: rect.width - 2 * dx,
-        height: rect.height - 2 * dy
-    };
-};
-exports.UIRectOffset = function (rect, dx, dy) {
-    return {
-        x: rect.x + dx,
-        y: rect.y + dy,
-        width: rect.width,
-        height: rect.height
-    };
-};
-exports.UIRectContainsPoint = function (rect, point) {
-    return point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.x + rect.height;
-};
-exports.UIRectContainsRect = function (rect1, rect2) {
-    return exports.UIRectContainsPoint(rect1, { x: rect2.x, y: rect2.y }) && exports.UIRectContainsPoint(rect1, { x: rect2.x + rect2.width, y: rect2.y }) && exports.UIRectContainsPoint(rect1, { x: rect2.x, y: rect2.y + rect2.height }) && exports.UIRectContainsPoint(rect1, { x: rect2.x + rect2.width, y: rect2.y + rect2.height });
-};
-exports.UIRectIntersectsRect = function (a, b) {
-    if (a.x + a.width - 0.1 <= b.x || b.x + b.width - 0.1 <= a.x || a.y + a.height - 0.1 <= b.y || b.y + b.height - 0.1 <= a.y) {
-        return false;
-    }
-    return true;
-};
-exports.UIRectUnion = function (r1, r2) {
-    var x = Math.min(r1.x, r2.x);
-    var y = Math.min(r1.y, r2.y);
-    var width = Math.max(r1.x + r1.width, r2.x + r2.width);
-    var height = Math.max(r1.y + r1.height, r2.y + r2.height);
-    return { x: x, y: y, width: width, height: height };
-};
-exports.UIRectIsEmpty = function (rect) {
-    return rect.width == 0.0 || rect.height == 0.0;
-};
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UIPointZero = { x: 0, y: 0 };
-exports.UIPointMake = function (x, y) {
-    return { x: x, y: y };
-};
-exports.UIPointEqualToPoint = function (point1, point2) {
-    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
-};
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var EventEmitterIMP = __webpack_require__(53);
-exports.EventEmitter = EventEmitterIMP.EventEmitter;
-
-/***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1862,12 +1878,12 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var EventEmitter_1 = __webpack_require__(13);
+var EventEmitter_1 = __webpack_require__(12);
 var UIView_1 = __webpack_require__(1);
 var UIEdgeInsets_1 = __webpack_require__(8);
 var UIColor_1 = __webpack_require__(5);
-var UITabBarItem_1 = __webpack_require__(61);
-var UINavigationBar_1 = __webpack_require__(24);
+var UITabBarItem_1 = __webpack_require__(64);
+var UINavigationBar_1 = __webpack_require__(27);
 
 var UIViewController = function (_EventEmitter_1$Event) {
     _inherits(UIViewController, _EventEmitter_1$Event);
@@ -2066,7 +2082,7 @@ var UIViewController = function (_EventEmitter_1$Event) {
 exports.UIViewController = UIViewController;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2111,7 +2127,7 @@ var URL = function () {
 exports.URL = URL;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2242,22 +2258,6 @@ var MutableData = function (_Data) {
 exports.MutableData = MutableData;
 
 /***/ }),
-/* 17 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UISizeZero = { width: 0, height: 0 };
-exports.UISizeMake = function (width, height) {
-    return { width: width, height: height };
-};
-exports.UISizeEqualToSize = function (a, b) {
-    return Math.abs(a.width - b.width) < 0.001 && Math.abs(a.height - b.height) < 0.001;
-};
-
-/***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2295,8 +2295,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(10);
-var UITouch_1 = __webpack_require__(9);
+var UIGestureRecognizer_1 = __webpack_require__(14);
+var UITouch_1 = __webpack_require__(10);
 var UIView_1 = __webpack_require__(1);
 
 var UILongPressGestureRecognizer = function (_UIGestureRecognizer_) {
@@ -2400,489 +2400,18 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var Ticker = function () {
-    function Ticker() {
-        _classCallCheck(this, Ticker);
-
-        this.taskBlocks = {};
-        this.timerHandler = undefined;
-    }
-
-    Ticker.prototype.hasTask = function hasTask(taskID) {
-        return this.taskBlocks[taskID] !== undefined;
-    };
-
-    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
-        this.taskBlocks[taskID] = taskBlock;
-        this.activeTimer();
-    };
-
-    Ticker.prototype.run = function run() {
-        var currentBlocks = this.taskBlocks;
-        this.taskBlocks = {};
-        this.timerHandler = undefined;
-        if (Object.keys(currentBlocks).length > 0) {
-            for (var key in currentBlocks) {
-                try {
-                    currentBlocks[key]();
-                } catch (error) {}
-            }
-        }
-    };
-
-    Ticker.prototype.activeTimer = function activeTimer() {
-        if (this.timerHandler !== undefined) {
-            return;
-        }
-        this.timerHandler = setTimeout(this.run.bind(this), 16);
-    };
-
-    _createClass(Ticker, null, [{
-        key: "shared",
-        get: function get() {
-            if (getApp().TickerShared === undefined) {
-                getApp().TickerShared = new Ticker();
-            }
-            return getApp().TickerShared;
-        }
-    }]);
-
-    return Ticker;
-}();
-
-exports.Ticker = Ticker;
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UITouch_1 = __webpack_require__(9);
-var UIGestureRecognizer_1 = __webpack_require__(10);
-var UIView_1 = __webpack_require__(1);
-
-var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
-    _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
-
-    function UITapGestureRecognizer() {
-        _classCallCheck(this, UITapGestureRecognizer);
-
-        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
-
-        _this.numberOfTapsRequired = 1;
-        _this.numberOfTouchesRequired = 1;
-        _this.beganPoints = {};
-        _this.validPointsCount = 0;
-        return _this;
-    }
-
-    UITapGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
-        var _this2 = this;
-
-        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
-        touches.forEach(function (it) {
-            if (it.phase == UITouch_1.UITouchPhase.began) {
-                if (UIView_1.UIView.recognizedGesture != undefined) {
-                    _this2.beganPoints = {};
-                    return;
-                }
-                if (it.windowPoint) {
-                    _this2.beganPoints[it.identifier] = it.windowPoint;
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
-                if (it.windowPoint && _this2.beganPoints[it.identifier]) {
-                    if (Math.abs(_this2.beganPoints[it.identifier].x - it.windowPoint.x) >= 22.0 || Math.abs(_this2.beganPoints[it.identifier].y - it.windowPoint.y) >= 22.0) {
-                        delete _this2.beganPoints[it.identifier];
-                    }
-                }
-            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
-                if (UIView_1.UIView.recognizedGesture != undefined) {
-                    _this2.beganPoints = {};
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-                    _this2.validPointsCount = 0;
-                    return;
-                }
-                if (it.tapCount >= _this2.numberOfTapsRequired && _this2.beganPoints[it.identifier] != undefined) {
-                    _this2.validPointsCount++;
-                }
-                delete _this2.beganPoints[it.identifier];
-                if (_this2.validPointsCount >= _this2.numberOfTouchesRequired) {
-                    UIView_1.UIView.recognizedGesture = _this2;
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
-                    _this2.handleEvent("touch");
-                    _this2.emit("touch", _this2);
-                    setTimeout(function () {
-                        UIView_1.UIView.recognizedGesture = undefined;
-                    }, 0);
-                }
-                if (Object.keys(_this2.beganPoints).length == 0 || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.ended) {
-                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
-                    _this2.validPointsCount = 0;
-                }
-            }
-        });
-    };
-
-    return UITapGestureRecognizer;
-}(UIGestureRecognizer_1.UIGestureRecognizer);
-
-exports.UITapGestureRecognizer = UITapGestureRecognizer;
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
-var UIColor_1 = __webpack_require__(5);
-var UIEnums_1 = __webpack_require__(6);
-
-var UILabel = function (_UIView_1$UIView) {
-    _inherits(UILabel, _UIView_1$UIView);
-
-    function UILabel() {
-        _classCallCheck(this, UILabel);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
-
-        _this.clazz = "UILabel";
-        _this._text = undefined;
-        _this._attributedText = undefined;
-        _this._font = undefined;
-        _this._textColor = undefined;
-        _this._textAlignment = UIEnums_1.UITextAlignment.left;
-        _this._numberOfLines = 1;
-        return _this;
-    }
-
-    // invalidate
-    UILabel.prototype.buildData = function buildData() {
-        var _this2 = this;
-
-        var data = _UIView_1$UIView.prototype.buildData.call(this);
-        if (this.attributedText) {
-            data.richText = this.attributedText.toHTMLText();
-        } else {
-            data.text = this._text !== undefined ? this._text : "";
-        }
-        data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
-            switch (_this2._textAlignment) {
-                case UIEnums_1.UITextAlignment.left:
-                    return "left";
-                case UIEnums_1.UITextAlignment.center:
-                    return "center";
-                case UIEnums_1.UITextAlignment.right:
-                    return "right";
-            }
-            return "left";
-        }() + ";\n            " + function () {
-            if (_this2._numberOfLines === 1) {
-                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
-            } else {
-                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
-            }
-        }() + "\n        }";
-        return data;
-    };
-
-    _createClass(UILabel, [{
-        key: "text",
-        get: function get() {
-            return this._text;
-        },
-        set: function set(value) {
-            if (this._text === value) {
-                return;
-            }
-            this._text = value;
-            this.markFlagDirty("text", "richText");
-        }
-    }, {
-        key: "attributedText",
-        get: function get() {
-            return this._attributedText;
-        },
-        set: function set(value) {
-            if (this._attributedText === value) {
-                return;
-            }
-            this._attributedText = value;
-            this.markFlagDirty("text", "richText");
-        }
-    }, {
-        key: "font",
-        get: function get() {
-            return this._font;
-        },
-        set: function set(value) {
-            if (this._font === value) {
-                return;
-            }
-            this._font = value;
-            this.markFlagDirty("textStyle");
-        }
-    }, {
-        key: "textColor",
-        get: function get() {
-            return this._textColor;
-        },
-        set: function set(value) {
-            if (this._textColor === value) {
-                return;
-            }
-            this._textColor = value;
-            this.markFlagDirty("textStyle");
-        }
-    }, {
-        key: "textAlignment",
-        get: function get() {
-            return this._textAlignment;
-        },
-        set: function set(value) {
-            if (this._textAlignment === value) {
-                return;
-            }
-            this._textAlignment = value;
-            this.markFlagDirty("textStyle");
-        }
-    }, {
-        key: "numberOfLines",
-        get: function get() {
-            return this._numberOfLines;
-        },
-        set: function set(value) {
-            if (this._numberOfLines === value) {
-                return;
-            }
-            this._numberOfLines = value;
-            this.markFlagDirty("textStyle");
-        }
-    }]);
-
-    return UILabel;
-}(UIView_1.UIView);
-
-exports.UILabel = UILabel;
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIEnums_1 = __webpack_require__(6);
-
-var UIImageView = function (_UIView_1$UIView) {
-    _inherits(UIImageView, _UIView_1$UIView);
-
-    function UIImageView() {
-        _classCallCheck(this, UIImageView);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
-
-        _this.clazz = "UIImageView";
-        _this._image = undefined;
-        _this._contentMode = UIEnums_1.UIViewContentMode.scaleToFill;
-        return _this;
-    }
-
-    UIImageView.prototype.buildData = function buildData() {
-        var _this2 = this;
-
-        var data = _UIView_1$UIView.prototype.buildData.call(this);
-        data.imageSource = this._image !== undefined ? this._image.imageSource : null;
-        data.scaleMode = function () {
-            switch (_this2._contentMode) {
-                case UIEnums_1.UIViewContentMode.scaleToFill:
-                    return "scaleToFill";
-                case UIEnums_1.UIViewContentMode.scaleAspectFit:
-                    return "aspectFit";
-                case UIEnums_1.UIViewContentMode.scaleAspectFill:
-                    return "aspectFill";
-            }
-            return "scaleToFill";
-        }();
-        return data;
-    };
-
-    _createClass(UIImageView, [{
-        key: "image",
-        get: function get() {
-            return this._image;
-        },
-        set: function set(value) {
-            if (this._image === value) {
-                return;
-            }
-            this._image = value;
-            this.markFlagDirty("imageSource");
-        }
-    }, {
-        key: "contentMode",
-        get: function get() {
-            return this._contentMode;
-        },
-        set: function set(value) {
-            if (this._contentMode === value) {
-                return;
-            }
-            this._contentMode = value;
-            this.markFlagDirty("scaleMode");
-        }
-    }]);
-
-    return UIImageView;
-}(UIView_1.UIView);
-
-exports.UIImageView = UIImageView;
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIColor_1 = __webpack_require__(5);
-var EventEmitter_1 = __webpack_require__(13);
-
-var UINavigationItem = function () {
-    function UINavigationItem() {
-        _classCallCheck(this, UINavigationItem);
-
-        this.viewController = undefined;
-        this.navigationBar = undefined;
-        this.leftBarButtonItems = [];
-        this.rightBarButtonItems = [];
-    }
-
-    UINavigationItem.prototype.setNeedsUpdate = function setNeedsUpdate() {};
-
-    return UINavigationItem;
-}();
-
-exports.UINavigationItem = UINavigationItem;
-
-var UIBarButtonItem = function (_EventEmitter_1$Event) {
-    _inherits(UIBarButtonItem, _EventEmitter_1$Event);
-
-    function UIBarButtonItem() {
-        _classCallCheck(this, UIBarButtonItem);
-
-        return _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
-    }
-
-    return UIBarButtonItem;
-}(EventEmitter_1.EventEmitter);
-
-exports.UIBarButtonItem = UIBarButtonItem;
-
-var UINavigationBar = function (_UIView_1$UIView) {
-    _inherits(UINavigationBar, _UIView_1$UIView);
-
-    function UINavigationBar() {
-        _classCallCheck(this, UINavigationBar);
-
-        var _this2 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
-
-        _this2.navigationController = undefined;
-        _this2._barTintColor = undefined;
-        _this2.barTintColor = UIColor_1.UIColor.white;
-        _this2.tintColor = UIColor_1.UIColor.black;
-        return _this2;
-    }
-
-    UINavigationBar.prototype.tintColorDidChange = function tintColorDidChange() {
-        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
-        if (this.navigationController) {
-            this.navigationController.updateBrowserBar();
-        }
-    };
-
-    _createClass(UINavigationBar, [{
-        key: "barTintColor",
-        get: function get() {
-            return this._barTintColor;
-        },
-        set: function set(value) {
-            this._barTintColor = value;
-            if (this.navigationController) {
-                this.navigationController.updateBrowserBar();
-            }
-        }
-    }]);
-
-    return UINavigationBar;
-}(UIView_1.UIView);
-
-exports.UINavigationBar = UINavigationBar;
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIPoint_1 = __webpack_require__(12);
-var UISize_1 = __webpack_require__(17);
+var UIPoint_1 = __webpack_require__(11);
+var UISize_1 = __webpack_require__(13);
 var UIEdgeInsets_1 = __webpack_require__(8);
 var UIPanGestureRecognizer_1 = __webpack_require__(35);
 var UIRefreshControl_1 = __webpack_require__(36);
-var UIFetchMoreControl_1 = __webpack_require__(33);
+var UIFetchMoreControl_1 = __webpack_require__(37);
 var isIOS = wx.getSystemInfoSync().platform === "ios";
 
 var UIScrollView = function (_UIView_1$UIView) {
@@ -3273,6 +2802,453 @@ var UIScrollView = function (_UIView_1$UIView) {
 exports.UIScrollView = UIScrollView;
 
 /***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var Ticker = function () {
+    function Ticker() {
+        _classCallCheck(this, Ticker);
+
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+    }
+
+    Ticker.prototype.hasTask = function hasTask(taskID) {
+        return this.taskBlocks[taskID] !== undefined;
+    };
+
+    Ticker.prototype.addTask = function addTask(taskID, taskBlock) {
+        this.taskBlocks[taskID] = taskBlock;
+        this.activeTimer();
+    };
+
+    Ticker.prototype.run = function run() {
+        var currentBlocks = this.taskBlocks;
+        this.taskBlocks = {};
+        this.timerHandler = undefined;
+        if (Object.keys(currentBlocks).length > 0) {
+            for (var key in currentBlocks) {
+                try {
+                    currentBlocks[key]();
+                } catch (error) {}
+            }
+        }
+    };
+
+    Ticker.prototype.activeTimer = function activeTimer() {
+        if (this.timerHandler !== undefined) {
+            return;
+        }
+        this.timerHandler = setTimeout(this.run.bind(this), 16);
+    };
+
+    _createClass(Ticker, null, [{
+        key: "shared",
+        get: function get() {
+            if (getApp().TickerShared === undefined) {
+                getApp().TickerShared = new Ticker();
+            }
+            return getApp().TickerShared;
+        }
+    }]);
+
+    return Ticker;
+}();
+
+exports.Ticker = Ticker;
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Matrix_1 = __webpack_require__(32);
+exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
+exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
+    return { a: a, b: b, c: c, d: d, tx: tx, ty: ty };
+};
+exports.UIAffineTransformMakeTranslation = function (tx, ty) {
+    return exports.UIAffineTransformMake(1.0, 0.0, 0.0, 1.0, tx, ty);
+};
+exports.UIAffineTransformMakeScale = function (sx, sy) {
+    return exports.UIAffineTransformMake(sx, 0.0, 0.0, sy, 0.0, 0.0);
+};
+exports.UIAffineTransformMakeRotation = function (angle) {
+    var mCos = Math.cos(angle);
+    var mSin = Math.sin(angle);
+    return exports.UIAffineTransformMake(mCos, -mSin, mSin, mCos, 0.0, 0.0);
+};
+exports.UIAffineTransformTranslate = function (t, tx, ty) {
+    var matrix = new Matrix_1.Matrix();
+    matrix.setValues(t);
+    matrix.postTranslate(tx, ty);
+    return matrix.getValues();
+};
+exports.UIAffineTransformScale = function (t, sx, sy) {
+    var matrix = new Matrix_1.Matrix();
+    matrix.setValues(t);
+    matrix.postScale(sx, sx);
+    return matrix.getValues();
+};
+exports.UIAffineTransformRotate = function (t, angle) {
+    var matrix = new Matrix_1.Matrix();
+    matrix.setValues(t);
+    matrix.postRotate(angle);
+    return matrix.getValues();
+};
+exports.UIAffineTransformInvert = function (t) {
+    return {
+        a: t.a,
+        b: t.c,
+        c: t.b,
+        d: t.d,
+        tx: t.tx,
+        ty: t.ty
+    };
+};
+exports.UIAffineTransformConcat = function (t1, t2) {
+    var matrix1 = new Matrix_1.Matrix();
+    matrix1.setValues(t1);
+    var matrix2 = new Matrix_1.Matrix();
+    matrix2.setValues(t2);
+    matrix1.concat(matrix2);
+    return matrix1.getValues();
+};
+exports.UIAffineTransformEqualToTransform = function (t1, t2) {
+    return Math.abs(t1.a - t2.a) < 0.001 && Math.abs(t1.b - t2.b) < 0.001 && Math.abs(t1.c - t2.c) < 0.001 && Math.abs(t1.d - t2.d) < 0.001 && Math.abs(t1.tx - t2.tx) < 0.001 && Math.abs(t1.ty - t2.ty) < 0.001;
+};
+exports.UIAffineTransformIsIdentity = function (transform) {
+    return exports.UIAffineTransformEqualToTransform(transform, exports.UIAffineTransformIdentity);
+};
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UITouch_1 = __webpack_require__(10);
+var UIGestureRecognizer_1 = __webpack_require__(14);
+var UIView_1 = __webpack_require__(1);
+
+var UITapGestureRecognizer = function (_UIGestureRecognizer_) {
+    _inherits(UITapGestureRecognizer, _UIGestureRecognizer_);
+
+    function UITapGestureRecognizer() {
+        _classCallCheck(this, UITapGestureRecognizer);
+
+        var _this = _possibleConstructorReturn(this, _UIGestureRecognizer_.apply(this, arguments));
+
+        _this.numberOfTapsRequired = 1;
+        _this.numberOfTouchesRequired = 1;
+        _this.beganPoints = {};
+        _this.validPointsCount = 0;
+        return _this;
+    }
+
+    UITapGestureRecognizer.prototype.handleTouch = function handleTouch(touches) {
+        var _this2 = this;
+
+        _UIGestureRecognizer_.prototype.handleTouch.call(this, touches);
+        touches.forEach(function (it) {
+            if (it.phase == UITouch_1.UITouchPhase.began) {
+                if (UIView_1.UIView.recognizedGesture != undefined) {
+                    _this2.beganPoints = {};
+                    return;
+                }
+                if (it.windowPoint) {
+                    _this2.beganPoints[it.identifier] = it.windowPoint;
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.moved) {
+                if (it.windowPoint && _this2.beganPoints[it.identifier]) {
+                    if (Math.abs(_this2.beganPoints[it.identifier].x - it.windowPoint.x) >= 22.0 || Math.abs(_this2.beganPoints[it.identifier].y - it.windowPoint.y) >= 22.0) {
+                        delete _this2.beganPoints[it.identifier];
+                    }
+                }
+            } else if (it.phase == UITouch_1.UITouchPhase.ended) {
+                if (UIView_1.UIView.recognizedGesture != undefined) {
+                    _this2.beganPoints = {};
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+                    _this2.validPointsCount = 0;
+                    return;
+                }
+                if (it.tapCount >= _this2.numberOfTapsRequired && _this2.beganPoints[it.identifier] != undefined) {
+                    _this2.validPointsCount++;
+                }
+                delete _this2.beganPoints[it.identifier];
+                if (_this2.validPointsCount >= _this2.numberOfTouchesRequired) {
+                    UIView_1.UIView.recognizedGesture = _this2;
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.ended;
+                    _this2.handleEvent("touch");
+                    _this2.emit("touch", _this2);
+                    setTimeout(function () {
+                        UIView_1.UIView.recognizedGesture = undefined;
+                    }, 0);
+                }
+                if (Object.keys(_this2.beganPoints).length == 0 || _this2.state == UIGestureRecognizer_1.UIGestureRecognizerState.ended) {
+                    _this2.state = UIGestureRecognizer_1.UIGestureRecognizerState.possible;
+                    _this2.validPointsCount = 0;
+                }
+            }
+        });
+    };
+
+    return UITapGestureRecognizer;
+}(UIGestureRecognizer_1.UIGestureRecognizer);
+
+exports.UITapGestureRecognizer = UITapGestureRecognizer;
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIColor_1 = __webpack_require__(5);
+var UIEnums_1 = __webpack_require__(6);
+
+var UILabel = function (_UIView_1$UIView) {
+    _inherits(UILabel, _UIView_1$UIView);
+
+    function UILabel() {
+        _classCallCheck(this, UILabel);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this.clazz = "UILabel";
+        _this._text = undefined;
+        _this._attributedText = undefined;
+        _this._font = undefined;
+        _this._textColor = undefined;
+        _this._textAlignment = UIEnums_1.UITextAlignment.left;
+        _this._numberOfLines = 1;
+        return _this;
+    }
+
+    // invalidate
+    UILabel.prototype.buildData = function buildData() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
+        if (this.attributedText) {
+            data.richText = this.attributedText.toHTMLText();
+        } else {
+            data.text = this._text !== undefined ? this._text : "";
+        }
+        data.textStyle = "\n            line-height: 1.0;\n            color: " + (this._textColor !== undefined ? UIColor_1.UIColor.toStyle(this._textColor) : "black") + ";\n            font-size: " + (this._font !== undefined ? this._font.pointSize : 14) + "px;\n            font-family: " + (this._font !== undefined ? this._font.fontName : "") + "; \n            font-weight: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            font-style: " + (this._font !== undefined ? this._font.fontStyle : "") + "; \n            text-align: " + function () {
+            switch (_this2._textAlignment) {
+                case UIEnums_1.UITextAlignment.left:
+                    return "left";
+                case UIEnums_1.UITextAlignment.center:
+                    return "center";
+                case UIEnums_1.UITextAlignment.right:
+                    return "right";
+            }
+            return "left";
+        }() + ";\n            " + function () {
+            if (_this2._numberOfLines === 1) {
+                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: inline-block;\n                    white-space: nowrap;\n                    ";
+            } else {
+                return "\n                    overflow: hidden;\n                    text-overflow: ellipsis;\n                    display: -webkit-box;\n                    webkit-box-orient: vertical;\n                    ";
+            }
+        }() + "\n        }";
+        return data;
+    };
+
+    _createClass(UILabel, [{
+        key: "text",
+        get: function get() {
+            return this._text;
+        },
+        set: function set(value) {
+            if (this._text === value) {
+                return;
+            }
+            this._text = value;
+            this.markFlagDirty("text", "richText");
+        }
+    }, {
+        key: "attributedText",
+        get: function get() {
+            return this._attributedText;
+        },
+        set: function set(value) {
+            if (this._attributedText === value) {
+                return;
+            }
+            this._attributedText = value;
+            this.markFlagDirty("text", "richText");
+        }
+    }, {
+        key: "font",
+        get: function get() {
+            return this._font;
+        },
+        set: function set(value) {
+            if (this._font === value) {
+                return;
+            }
+            this._font = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "textColor",
+        get: function get() {
+            return this._textColor;
+        },
+        set: function set(value) {
+            if (this._textColor === value) {
+                return;
+            }
+            this._textColor = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "textAlignment",
+        get: function get() {
+            return this._textAlignment;
+        },
+        set: function set(value) {
+            if (this._textAlignment === value) {
+                return;
+            }
+            this._textAlignment = value;
+            this.markFlagDirty("textStyle");
+        }
+    }, {
+        key: "numberOfLines",
+        get: function get() {
+            return this._numberOfLines;
+        },
+        set: function set(value) {
+            if (this._numberOfLines === value) {
+                return;
+            }
+            this._numberOfLines = value;
+            this.markFlagDirty("textStyle");
+        }
+    }]);
+
+    return UILabel;
+}(UIView_1.UIView);
+
+exports.UILabel = UILabel;
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIEnums_1 = __webpack_require__(6);
+
+var UIImageView = function (_UIView_1$UIView) {
+    _inherits(UIImageView, _UIView_1$UIView);
+
+    function UIImageView() {
+        _classCallCheck(this, UIImageView);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this.clazz = "UIImageView";
+        _this._image = undefined;
+        _this._contentMode = UIEnums_1.UIViewContentMode.scaleToFill;
+        return _this;
+    }
+
+    UIImageView.prototype.buildData = function buildData() {
+        var _this2 = this;
+
+        var data = _UIView_1$UIView.prototype.buildData.call(this);
+        data.imageSource = this._image !== undefined ? this._image.imageSource : null;
+        data.scaleMode = function () {
+            switch (_this2._contentMode) {
+                case UIEnums_1.UIViewContentMode.scaleToFill:
+                    return "scaleToFill";
+                case UIEnums_1.UIViewContentMode.scaleAspectFit:
+                    return "aspectFit";
+                case UIEnums_1.UIViewContentMode.scaleAspectFill:
+                    return "aspectFill";
+            }
+            return "scaleToFill";
+        }();
+        return data;
+    };
+
+    _createClass(UIImageView, [{
+        key: "image",
+        get: function get() {
+            return this._image;
+        },
+        set: function set(value) {
+            if (this._image === value) {
+                return;
+            }
+            this._image = value;
+            this.markFlagDirty("imageSource");
+        }
+    }, {
+        key: "contentMode",
+        get: function get() {
+            return this._contentMode;
+        },
+        set: function set(value) {
+            if (this._contentMode === value) {
+                return;
+            }
+            this._contentMode = value;
+            this.markFlagDirty("scaleMode");
+        }
+    }]);
+
+    return UIImageView;
+}(UIView_1.UIView);
+
+exports.UIImageView = UIImageView;
+
+/***/ }),
 /* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3282,8 +3258,127 @@ exports.UIScrollView = UIScrollView;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var URL_1 = __webpack_require__(15);
-var Data_1 = __webpack_require__(16);
+
+var UIIndexPath = function () {
+    function UIIndexPath(row, section) {
+        _classCallCheck(this, UIIndexPath);
+
+        this.row = row;
+        this.section = section;
+    }
+
+    UIIndexPath.prototype.mapKey = function mapKey() {
+        return this.row + "-" + this.section;
+    };
+
+    return UIIndexPath;
+}();
+
+exports.UIIndexPath = UIIndexPath;
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIColor_1 = __webpack_require__(5);
+var EventEmitter_1 = __webpack_require__(12);
+
+var UINavigationItem = function () {
+    function UINavigationItem() {
+        _classCallCheck(this, UINavigationItem);
+
+        this.viewController = undefined;
+        this.navigationBar = undefined;
+        this.leftBarButtonItems = [];
+        this.rightBarButtonItems = [];
+    }
+
+    UINavigationItem.prototype.setNeedsUpdate = function setNeedsUpdate() {};
+
+    return UINavigationItem;
+}();
+
+exports.UINavigationItem = UINavigationItem;
+
+var UIBarButtonItem = function (_EventEmitter_1$Event) {
+    _inherits(UIBarButtonItem, _EventEmitter_1$Event);
+
+    function UIBarButtonItem() {
+        _classCallCheck(this, UIBarButtonItem);
+
+        return _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
+    }
+
+    return UIBarButtonItem;
+}(EventEmitter_1.EventEmitter);
+
+exports.UIBarButtonItem = UIBarButtonItem;
+
+var UINavigationBar = function (_UIView_1$UIView) {
+    _inherits(UINavigationBar, _UIView_1$UIView);
+
+    function UINavigationBar() {
+        _classCallCheck(this, UINavigationBar);
+
+        var _this2 = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this2.navigationController = undefined;
+        _this2._barTintColor = undefined;
+        _this2.barTintColor = UIColor_1.UIColor.white;
+        _this2.tintColor = UIColor_1.UIColor.black;
+        return _this2;
+    }
+
+    UINavigationBar.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
+        if (this.navigationController) {
+            this.navigationController.updateBrowserBar();
+        }
+    };
+
+    _createClass(UINavigationBar, [{
+        key: "barTintColor",
+        get: function get() {
+            return this._barTintColor;
+        },
+        set: function set(value) {
+            this._barTintColor = value;
+            if (this.navigationController) {
+                this.navigationController.updateBrowserBar();
+            }
+        }
+    }]);
+
+    return UINavigationBar;
+}(UIView_1.UIView);
+
+exports.UINavigationBar = UINavigationBar;
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var URL_1 = __webpack_require__(16);
+var Data_1 = __webpack_require__(17);
 
 var Bundle = function () {
     function Bundle(type) {
@@ -3328,7 +3423,7 @@ Bundle.js = new Bundle("js");
 exports.Bundle = Bundle;
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3341,7 +3436,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var URL_1 = __webpack_require__(15);
+var URL_1 = __webpack_require__(16);
 var URLRequestCachePolicy;
 (function (URLRequestCachePolicy) {
     URLRequestCachePolicy[URLRequestCachePolicy["useProtocol"] = 0] = "useProtocol";
@@ -3414,7 +3509,7 @@ var MutableURLRequest = function (_URLRequest) {
 exports.MutableURLRequest = MutableURLRequest;
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3438,7 +3533,7 @@ var URLResponse = function URLResponse() {
 exports.URLResponse = URLResponse;
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3471,74 +3566,7 @@ var UUID = function () {
 exports.UUID = UUID;
 
 /***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Matrix_1 = __webpack_require__(31);
-exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
-exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
-    return { a: a, b: b, c: c, d: d, tx: tx, ty: ty };
-};
-exports.UIAffineTransformMakeTranslation = function (tx, ty) {
-    return exports.UIAffineTransformMake(1.0, 0.0, 0.0, 1.0, tx, ty);
-};
-exports.UIAffineTransformMakeScale = function (sx, sy) {
-    return exports.UIAffineTransformMake(sx, 0.0, 0.0, sy, 0.0, 0.0);
-};
-exports.UIAffineTransformMakeRotation = function (angle) {
-    var mCos = Math.cos(angle);
-    var mSin = Math.sin(angle);
-    return exports.UIAffineTransformMake(mCos, -mSin, mSin, mCos, 0.0, 0.0);
-};
-exports.UIAffineTransformTranslate = function (t, tx, ty) {
-    var matrix = new Matrix_1.Matrix();
-    matrix.setValues(t);
-    matrix.postTranslate(tx, ty);
-    return matrix.getValues();
-};
-exports.UIAffineTransformScale = function (t, sx, sy) {
-    var matrix = new Matrix_1.Matrix();
-    matrix.setValues(t);
-    matrix.postScale(sx, sx);
-    return matrix.getValues();
-};
-exports.UIAffineTransformRotate = function (t, angle) {
-    var matrix = new Matrix_1.Matrix();
-    matrix.setValues(t);
-    matrix.postRotate(angle);
-    return matrix.getValues();
-};
-exports.UIAffineTransformInvert = function (t) {
-    return {
-        a: t.a,
-        b: t.c,
-        c: t.b,
-        d: t.d,
-        tx: t.tx,
-        ty: t.ty
-    };
-};
-exports.UIAffineTransformConcat = function (t1, t2) {
-    var matrix1 = new Matrix_1.Matrix();
-    matrix1.setValues(t1);
-    var matrix2 = new Matrix_1.Matrix();
-    matrix2.setValues(t2);
-    matrix1.concat(matrix2);
-    return matrix1.getValues();
-};
-exports.UIAffineTransformEqualToTransform = function (t1, t2) {
-    return Math.abs(t1.a - t2.a) < 0.001 && Math.abs(t1.b - t2.b) < 0.001 && Math.abs(t1.c - t2.c) < 0.001 && Math.abs(t1.d - t2.d) < 0.001 && Math.abs(t1.tx - t2.tx) < 0.001 && Math.abs(t1.ty - t2.ty) < 0.001;
-};
-exports.UIAffineTransformIsIdentity = function (transform) {
-    return exports.UIAffineTransformEqualToTransform(transform, exports.UIAffineTransformIdentity);
-};
-
-/***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3966,7 +3994,7 @@ var Matrix = function () {
 exports.Matrix = Matrix;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3986,10 +4014,10 @@ var UIFont_1 = __webpack_require__(18);
 var UIEnums_1 = __webpack_require__(6);
 var UIColor_1 = __webpack_require__(5);
 var UIEdgeInsets_1 = __webpack_require__(8);
-var UITapGestureRecognizer_1 = __webpack_require__(21);
+var UITapGestureRecognizer_1 = __webpack_require__(23);
 var UILongPressGestureRecognizer_1 = __webpack_require__(19);
-var UILabel_1 = __webpack_require__(22);
-var UIImageView_1 = __webpack_require__(23);
+var UILabel_1 = __webpack_require__(24);
+var UIImageView_1 = __webpack_require__(25);
 
 var UIButton = function (_UIView_1$UIView) {
     _inherits(UIButton, _UIView_1$UIView);
@@ -4372,197 +4400,984 @@ var UIButton = function (_UIView_1$UIView) {
 exports.UIButton = UIButton;
 
 /***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIColor_1 = __webpack_require__(5);
-
-var UIFetchMoreControl = function (_UIView_1$UIView) {
-    _inherits(UIFetchMoreControl, _UIView_1$UIView);
-
-    function UIFetchMoreControl() {
-        _classCallCheck(this, UIFetchMoreControl);
-
-        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
-
-        _this.scrollView = undefined;
-        _this.enabled = true;
-        _this.fetching = false;
-        _this.tintColor = UIColor_1.UIColor.gray;
-        return _this;
-    }
-
-    UIFetchMoreControl.prototype.tintColorDidChange = function tintColorDidChange() {
-        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
-    };
-
-    UIFetchMoreControl.prototype.beginFetching = function beginFetching() {
-        var _this2 = this;
-
-        this.fetching = true;
-        setTimeout(function () {
-            _this2.emit("fetch", _this2);
-        }, 250);
-    };
-
-    UIFetchMoreControl.prototype.endFetching = function endFetching() {
-        if (this.scrollView) {
-            var it = this.scrollView;
-            if (it.contentOffset.y > it.contentSize.height + it.contentInset.bottom - it.bounds.height) {
-                it.setContentOffset({ x: 0.0, y: it.contentSize.height + it.contentInset.bottom - it.bounds.height }, true);
-            }
-        }
-        this.fetching = false;
-    };
-
-    return UIFetchMoreControl;
-}(UIView_1.UIView);
-
-exports.UIFetchMoreControl = UIFetchMoreControl;
-
-/***/ }),
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) {
-            try {
-                step(generator.next(value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function rejected(value) {
-            try {
-                step(generator["throw"](value));
-            } catch (e) {
-                reject(e);
-            }
-        }
-        function step(result) {
-            result.done ? resolve(result.value) : new P(function (resolve) {
-                resolve(result.value);
-            }).then(fulfilled, rejected);
-        }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 Object.defineProperty(exports, "__esModule", { value: true });
-var UISize_1 = __webpack_require__(17);
-var EventEmitter_1 = __webpack_require__(13);
-var UIImageRenderingMode;
-(function (UIImageRenderingMode) {
-    UIImageRenderingMode[UIImageRenderingMode["automatic"] = 0] = "automatic";
-    UIImageRenderingMode[UIImageRenderingMode["alwaysOriginal"] = 1] = "alwaysOriginal";
-    UIImageRenderingMode[UIImageRenderingMode["alwaysTemplate"] = 2] = "alwaysTemplate";
-})(UIImageRenderingMode = exports.UIImageRenderingMode || (exports.UIImageRenderingMode = {}));
+var UIView_1 = __webpack_require__(1);
+var UIScrollView_1 = __webpack_require__(20);
+var UIRect_1 = __webpack_require__(9);
+var UIIndexPath_1 = __webpack_require__(26);
+var UISize_1 = __webpack_require__(13);
+var UIAffineTransform_1 = __webpack_require__(22);
+var UIPoint_1 = __webpack_require__(11);
+var UIAnimator_1 = __webpack_require__(7);
+var EventEmitter_1 = __webpack_require__(12);
+var UITouch_1 = __webpack_require__(10);
+var ItemType;
+(function (ItemType) {
+    ItemType[ItemType["cell"] = 0] = "cell";
+    ItemType[ItemType["supplementaryView"] = 1] = "supplementaryView";
+    ItemType[ItemType["decorationView"] = 2] = "decorationView";
+})(ItemType = exports.ItemType || (exports.ItemType = {}));
+exports.UICollectionElementKindCell = "UICollectionElementKindCell";
+var itemKeyCache = {};
 
-var UIImage = function (_EventEmitter_1$Event) {
-    _inherits(UIImage, _EventEmitter_1$Event);
+var UICollectionViewItemKey = function () {
+    function UICollectionViewItemKey() {
+        var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ItemType.cell;
+        var indexPath = arguments[1];
+        var identifier = arguments[2];
 
-    function UIImage(options) {
-        var cloner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+        _classCallCheck(this, UICollectionViewItemKey);
 
-        _classCallCheck(this, UIImage);
+        this.type = type;
+        this.indexPath = indexPath;
+        this.identifier = identifier;
+    }
 
-        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.call(this));
-
-        _this.options = options;
-        _this.imageSource = undefined;
-        _this.renderingMode = UIImageRenderingMode.alwaysOriginal;
-        _this.loaded = false;
-        _this.size = UISize_1.UISizeZero;
-        _this.scale = 1.0;
-        if (options.base64) {
-            _this.imageSource = "data:image/png;base64," + options.base64;
-        } else if (options.data) {
-            _this.imageSource = "data:image/png;base64," + options.data.base64EncodedString();
-        } else if (options.name) {
-            _this.imageSource = "/assets/images/" + options.name + "@2x.png";
+    UICollectionViewItemKey.collectionItemKeyForCellWithIndexPath = function collectionItemKeyForCellWithIndexPath(indexPath) {
+        var hashKey = 0 + "," + indexPath.mapKey() + ",UICollectionElementKindCell";
+        if (itemKeyCache[hashKey] !== undefined) {
+            return itemKeyCache[hashKey];
+        } else {
+            var value = new UICollectionViewItemKey(ItemType.cell, indexPath, exports.UICollectionElementKindCell);
+            itemKeyCache[hashKey] = value;
+            return value;
         }
-        if (options.renderingMode !== undefined) {
-            _this.renderingMode = options.renderingMode;
+    };
+
+    UICollectionViewItemKey.collectionItemKeyForLayoutAttributes = function collectionItemKeyForLayoutAttributes(layoutAttributes) {
+        var hashKey = layoutAttributes.representedElementCategory + "," + layoutAttributes.indexPath.mapKey() + "," + layoutAttributes.representedElementKind;
+        if (itemKeyCache[hashKey] !== undefined) {
+            return itemKeyCache[hashKey];
+        } else {
+            var value = new UICollectionViewItemKey(layoutAttributes.representedElementCategory, layoutAttributes.indexPath, layoutAttributes.representedElementKind);
+            itemKeyCache[hashKey] = value;
+            return value;
         }
+    };
+
+    return UICollectionViewItemKey;
+}();
+
+exports.UICollectionViewItemKey = UICollectionViewItemKey;
+
+var UICollectionViewLayoutAttributes = function () {
+    function UICollectionViewLayoutAttributes(indexPath) {
+        var elementKind = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+        var representedElementCategory = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ItemType.cell;
+
+        _classCallCheck(this, UICollectionViewLayoutAttributes);
+
+        this.indexPath = indexPath;
+        this.elementKind = elementKind;
+        this.representedElementCategory = representedElementCategory;
+        this.frame = UIRect_1.UIRectZero;
+        this.center = UIPoint_1.UIPointZero;
+        this.size = UISize_1.UISizeZero;
+        this.transform = UIAffineTransform_1.UIAffineTransformIdentity;
+        this.alpha = 1.0;
+        this.zIndex = 0;
+        this.hidden = false;
+        this.representedElementKind = this.elementKind;
+    }
+
+    UICollectionViewLayoutAttributes.prototype.isDecorationView = function isDecorationView() {
+        return this.representedElementCategory === ItemType.decorationView;
+    };
+
+    UICollectionViewLayoutAttributes.prototype.isSupplementaryView = function isSupplementaryView() {
+        return this.representedElementCategory === ItemType.supplementaryView;
+    };
+
+    UICollectionViewLayoutAttributes.prototype.isCell = function isCell() {
+        return this.representedElementCategory === ItemType.cell;
+    };
+
+    UICollectionViewLayoutAttributes.layoutAttributesForCellWithIndexPath = function layoutAttributesForCellWithIndexPath(indexPath) {
+        return new UICollectionViewLayoutAttributes(indexPath, exports.UICollectionElementKindCell, ItemType.cell);
+    };
+
+    UICollectionViewLayoutAttributes.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(elementKind, indexPath) {
+        return new UICollectionViewLayoutAttributes(indexPath, elementKind, ItemType.supplementaryView);
+    };
+
+    UICollectionViewLayoutAttributes.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(elementKind, indexPath) {
+        return new UICollectionViewLayoutAttributes(indexPath, elementKind, ItemType.decorationView);
+    };
+
+    return UICollectionViewLayoutAttributes;
+}();
+
+exports.UICollectionViewLayoutAttributes = UICollectionViewLayoutAttributes;
+
+var UICollectionViewLayout = function (_EventEmitter_1$Event) {
+    _inherits(UICollectionViewLayout, _EventEmitter_1$Event);
+
+    function UICollectionViewLayout() {
+        _classCallCheck(this, UICollectionViewLayout);
+
+        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
+
+        _this.layoutAttributesClass = UICollectionViewLayoutAttributes;
+        _this.collectionView = undefined;
         return _this;
     }
 
-    UIImage.fromURL = function fromURL(url) {
-        var image = new UIImage({});
-        image.imageSource = url;
-        return image;
-    };
+    UICollectionViewLayout.prototype.prepareLayout = function prepareLayout() {};
 
-    UIImage.scaleFromName = function scaleFromName(name) {
-        if (name.indexOf("@2x") > 0) {
-            return 2.0;
-        } else if (name.indexOf("@3x") > 0) {
-            return 3.0;
-        } else if (name.indexOf("@4x") > 0) {
-            return 4.0;
+    UICollectionViewLayout.prototype.invalidateLayout = function invalidateLayout() {
+        if (this.collectionView && this.collectionView._collectionViewData) {
+            this.collectionView._collectionViewData.invalidate();
         }
-        return 1.0;
+        if (this.collectionView) {
+            this.collectionView.setNeedsLayout(true);
+        }
     };
 
-    UIImage.prototype.fetchSize = function fetchSize() {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-            var _this2 = this;
-
-            return regeneratorRuntime.wrap(function _callee$(_context) {
-                while (1) {
-                    switch (_context.prev = _context.next) {
-                        case 0:
-                            if (!this.loaded) {
-                                _context.next = 4;
-                                break;
-                            }
-
-                            return _context.abrupt("return", this.size);
-
-                        case 4:
-                            _context.next = 6;
-                            return new Promise(function (resolver, rejector) {
-                                _this2.on("load", function () {
-                                    resolver(_this2.size);
-                                });
-                            });
-
-                        case 6:
-                            return _context.abrupt("return", _context.sent);
-
-                        case 7:
-                        case "end":
-                            return _context.stop();
-                    }
-                }
-            }, _callee, this);
-        }));
+    UICollectionViewLayout.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
+        return [];
     };
 
-    return UIImage;
+    UICollectionViewLayout.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
+        return undefined;
+    };
+
+    UICollectionViewLayout.prototype.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(kind, indexPath) {
+        return undefined;
+    };
+
+    UICollectionViewLayout.prototype.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(kind, indexPath) {
+        return undefined;
+    };
+
+    UICollectionViewLayout.prototype.collectionViewContentSize = function collectionViewContentSize() {
+        return UISize_1.UISizeZero;
+    };
+
+    return UICollectionViewLayout;
 }(EventEmitter_1.EventEmitter);
 
-exports.UIImage = UIImage;
+exports.UICollectionViewLayout = UICollectionViewLayout;
+
+var UICollectionView = function (_UIScrollView_1$UIScr) {
+    _inherits(UICollectionView, _UIScrollView_1$UIScr);
+
+    function UICollectionView(collectionViewLayout) {
+        _classCallCheck(this, UICollectionView);
+
+        var _this2 = _possibleConstructorReturn(this, _UIScrollView_1$UIScr.call(this));
+
+        _this2.collectionViewLayout = collectionViewLayout;
+        _this2.allowsSelection = true;
+        _this2.allowsMultipleSelection = false;
+        // Implementations
+        _this2._allVisibleViewsDict = new Map();
+        _this2._indexPathsForSelectedItems = [];
+        _this2._indexPathsForHighlightedItems = [];
+        _this2._registeredCells = {};
+        _this2._collectionViewData = new UICollectionViewData(_this2, _this2.collectionViewLayout);
+        _this2._cellReuseQueues = {};
+        _this2._supplementaryViewReuseQueues = {};
+        _this2._decorationViewReuseQueues = {};
+        _this2.firstTouchPoint = undefined;
+        _this2.firstTouchCell = undefined;
+        collectionViewLayout.collectionView = _this2;
+        return _this2;
+    }
+
+    UICollectionView.prototype.register = function register(initializer, reuseIdentifier) {
+        this._registeredCells[reuseIdentifier] = initializer;
+    };
+
+    UICollectionView.prototype.dequeueReusableCell = function dequeueReusableCell(reuseIdentifier, indexPath) {
+        if (this._cellReuseQueues[reuseIdentifier] && this._cellReuseQueues[reuseIdentifier].length > 0) {
+            var _cell = this._cellReuseQueues[reuseIdentifier][0];
+            if (_cell instanceof UICollectionViewCell) {
+                this._cellReuseQueues[reuseIdentifier].splice(0, 1);
+                return _cell;
+            }
+        }
+        var initializer = this._registeredCells[reuseIdentifier];
+        if (!initializer) {
+            return new UICollectionViewCell();
+        }
+        var cell = initializer(undefined);
+        cell.reuseIdentifier = reuseIdentifier;
+        cell.collectionView = this;
+        return cell;
+    };
+
+    UICollectionView.prototype.allCells = function allCells() {
+        var result = [];
+        this._allVisibleViewsDict.forEach(function (it) {
+            if (it instanceof UICollectionViewCell) {
+                result.push(it);
+            }
+        });
+        return result;
+    };
+
+    UICollectionView.prototype.visibleCells = function visibleCells() {
+        var _this3 = this;
+
+        return this.allCells().filter(function (it) {
+            return UIRect_1.UIRectIntersectsRect(_this3.visibleBoundRects, it.frame);
+        });
+    };
+
+    UICollectionView.prototype.reloadData = function reloadData() {
+        var _this4 = this;
+
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this.invalidateLayout();
+            this.setNeedsLayout(true);
+            return;
+        }
+        this.invalidateLayout();
+        this._allVisibleViewsDict.forEach(function (it) {
+            it.hidden = true;
+        });
+        this._allVisibleViewsDict.clear();
+        this._indexPathsForSelectedItems.forEach(function (it) {
+            var cell = _this4.cellForItemAtIndexPath(it);
+            if (cell) {
+                cell.selected = false;
+                cell.highlighted = false;
+            }
+        });
+        this._indexPathsForSelectedItems = [];
+        this._indexPathsForHighlightedItems = [];
+        this.setNeedsLayout(true);
+    };
+
+    UICollectionView.prototype.selectItem = function selectItem(indexPath, animated) {
+        var _this5 = this;
+
+        if (!this.allowsMultipleSelection) {
+            this._indexPathsForSelectedItems.forEach(function (indexPath) {
+                _this5._allVisibleViewsDict.forEach(function (it) {
+                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                        it.selected = false;
+                        _this5.emit("didDeselectItem", it.currentIndexPath, it);
+                    }
+                });
+            });
+            this._indexPathsForSelectedItems = [];
+        }
+        this._indexPathsForSelectedItems.push(indexPath);
+        if (animated) {
+            UIAnimator_1.UIAnimator.linear(0.5, function () {
+                _this5._allVisibleViewsDict.forEach(function (it) {
+                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                        it.selected = true;
+                    }
+                });
+            }, undefined);
+        } else {
+            this._allVisibleViewsDict.forEach(function (it) {
+                if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                    it.selected = true;
+                }
+            });
+        }
+    };
+
+    UICollectionView.prototype.deselectItem = function deselectItem(indexPath, animated) {
+        var _this6 = this;
+
+        {
+            var idx = this._indexPathsForSelectedItems.map(function (it) {
+                return it.mapKey();
+            }).indexOf(indexPath.mapKey());
+            if (idx >= 0) {
+                this._indexPathsForSelectedItems.splice(idx, 1);
+            }
+        }
+        if (animated) {
+            UIAnimator_1.UIAnimator.linear(0.5, function () {
+                _this6._allVisibleViewsDict.forEach(function (it) {
+                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                        it.selected = false;
+                    }
+                });
+            }, undefined);
+        } else {
+            this._allVisibleViewsDict.forEach(function (it) {
+                if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
+                    it.selected = false;
+                }
+            });
+        }
+    };
+    // Query Grid
+
+
+    UICollectionView.prototype.numberOfSections = function numberOfSections() {
+        return this._collectionViewData.numberOfSections();
+    };
+
+    UICollectionView.prototype.numberOfItemsInSection = function numberOfItemsInSection(section) {
+        return this._collectionViewData.numberOfItemsInSection(section);
+    };
+
+    UICollectionView.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
+        return this.collectionViewLayout.layoutAttributesForItemAtIndexPath(indexPath);
+    };
+
+    UICollectionView.prototype.layoutAttributesForSupplementaryElementOfKind = function layoutAttributesForSupplementaryElementOfKind(kind, indexPath) {
+        return this.collectionViewLayout.layoutAttributesForSupplementaryViewOfKind(kind, indexPath);
+    };
+
+    UICollectionView.prototype.indexPathForItemAtPoint = function indexPathForItemAtPoint(point) {
+        var targets = this.collectionViewLayout.layoutAttributesForElementsInRect({ x: point.x, y: point.y, width: 1.0, height: 1.0 });
+        return targets[targets.length - 1].indexPath;
+    };
+
+    UICollectionView.prototype.indexPathForCell = function indexPathForCell(cell) {
+        var keys = this._allVisibleViewsDict.keys();
+        while (true) {
+            var element = keys.next();
+            if (element.done) {
+                break;
+            }
+            if (this._allVisibleViewsDict.get(element.value) === cell) {
+                return element.value.indexPath;
+            }
+        }
+        return undefined;
+    };
+
+    UICollectionView.prototype.cellForItemAtIndexPath = function cellForItemAtIndexPath(indexPath) {
+        var keys = this._allVisibleViewsDict.keys();
+        while (true) {
+            var element = keys.next();
+            if (element.done) {
+                break;
+            }
+            if (element.value.indexPath.mapKey() === indexPath.mapKey()) {
+                var cell = this._allVisibleViewsDict.get(element.value);
+                if (cell instanceof UICollectionViewCell) {
+                    return cell;
+                }
+            }
+        }
+        return undefined;
+    };
+
+    UICollectionView.prototype.indexPathsForVisibleItems = function indexPathsForVisibleItems() {
+        return this.visibleCells().filter(function (it) {
+            return it.layoutAttributes !== undefined;
+        }).map(function (it) {
+            return it.layoutAttributes.indexPath;
+        });
+    };
+
+    UICollectionView.prototype.indexPathsForSelectedItems = function indexPathsForSelectedItems() {
+        return this._indexPathsForSelectedItems;
+    };
+
+    UICollectionView.prototype.layoutSubviews = function layoutSubviews() {
+        _UIScrollView_1$UIScr.prototype.layoutSubviews.call(this);
+        this.layoutCollectionViews();
+    };
+    // Private
+
+
+    UICollectionView.prototype.layoutCollectionViews = function layoutCollectionViews() {
+        this._collectionViewData.validateLayoutInRect(this.visibleBoundRects);
+        var contentRect = this._collectionViewData.collectionViewContentRect();
+        this.contentSize = contentRect;
+        this._collectionViewData.validateLayoutInRect(this.visibleBoundRects);
+        this.updateVisibleCellsNow(true);
+    };
+
+    UICollectionView.prototype.invalidateLayout = function invalidateLayout() {
+        this.collectionViewLayout.invalidateLayout();
+        this._collectionViewData.invalidate();
+    };
+
+    UICollectionView.prototype.updateVisibleCellsNow = function updateVisibleCellsNow() {
+        var _this7 = this;
+
+        var now = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+        var layoutAttributesArray = this._collectionViewData.layoutAttributesForElementsInRect(this.visibleBoundRects);
+        if (layoutAttributesArray.length === 0) {
+            return;
+        }
+        var itemKeysToAddDict = new Map();
+        layoutAttributesArray.forEach(function (layoutAttributes) {
+            var itemKey = UICollectionViewItemKey.collectionItemKeyForLayoutAttributes(layoutAttributes);
+            itemKeysToAddDict.set(itemKey, layoutAttributes);
+            var view = _this7._allVisibleViewsDict.get(itemKey);
+            if (view instanceof UICollectionReusableView) {
+                if (view instanceof UICollectionViewCell) {
+                    if (_this7.fetchMoreControl && _this7.fetchMoreControl.fetching && view.currentIndexPath && view.currentIndexPath.mapKey() === itemKey.indexPath.mapKey()) {
+                        return;
+                    }
+                    view.currentIndexPath = itemKey.indexPath;
+                    view.highlighted = _this7._indexPathsForHighlightedItems.map(function (it) {
+                        return it.mapKey();
+                    }).indexOf(itemKey.indexPath.mapKey()) >= 0;
+                    view.selected = _this7._indexPathsForSelectedItems.map(function (it) {
+                        return it.mapKey();
+                    }).indexOf(itemKey.indexPath.mapKey()) >= 0;
+                }
+                view.applyLayoutAttributes(layoutAttributes);
+            } else {
+                switch (itemKey.type) {
+                    case ItemType.cell:
+                        {
+                            view = _this7.createPreparedCellForItemAtIndexPath(itemKey.indexPath, layoutAttributes);
+                            if (view instanceof UICollectionViewCell) {
+                                view.currentIndexPath = itemKey.indexPath;
+                                view.highlighted = _this7._indexPathsForHighlightedItems.map(function (it) {
+                                    return it.mapKey();
+                                }).indexOf(itemKey.indexPath.mapKey()) >= 0;
+                                view.selected = _this7._indexPathsForSelectedItems.map(function (it) {
+                                    return it.mapKey();
+                                }).indexOf(itemKey.indexPath.mapKey()) >= 0;
+                            }
+                            break;
+                        }
+                    case ItemType.supplementaryView:
+                        {
+                            view = _this7.createPreparedSupplementaryViewForElementOfKind(layoutAttributes.representedElementKind, layoutAttributes.indexPath, layoutAttributes);
+                            break;
+                        }
+                    case ItemType.decorationView:
+                        {
+                            view = undefined;
+                        }
+                }
+                if (view instanceof UICollectionReusableView) {
+                    _this7._allVisibleViewsDict.set(itemKey, view);
+                    _this7.addControlledSubview(view);
+                    view.applyLayoutAttributes(layoutAttributes);
+                }
+            }
+        });
+        var allVisibleItemKeys = function () {
+            var keys = [];
+            var keySet = _this7._allVisibleViewsDict.keys();
+            while (true) {
+                var key = keySet.next();
+                if (key.done) {
+                    break;
+                }
+                keys.push(key.value);
+            }
+            return keys;
+        }();
+        itemKeysToAddDict.forEach(function (_, it) {
+            var idx = allVisibleItemKeys.indexOf(it);
+            if (idx >= 0) {
+                allVisibleItemKeys.splice(idx, 1);
+            }
+        });
+        allVisibleItemKeys.forEach(function (itemKey) {
+            var reusableView = _this7._allVisibleViewsDict.get(itemKey);
+            if (reusableView) {
+                reusableView.hidden = true;
+                _this7._allVisibleViewsDict.delete(itemKey);
+                switch (itemKey.type) {
+                    case ItemType.cell:
+                        {
+                            _this7.reuseCell(reusableView);
+                            break;
+                        }
+                    case ItemType.supplementaryView:
+                        {
+                            _this7.reuseSupplementaryView(reusableView);
+                            break;
+                        }
+                    case ItemType.decorationView:
+                        {
+                            _this7.reuseDecorationView(reusableView);
+                            break;
+                        }
+                }
+            }
+        });
+    };
+
+    UICollectionView.prototype.createPreparedCellForItemAtIndexPath = function createPreparedCellForItemAtIndexPath(indexPath, layoutAttributes) {
+        var cell = this.__cellForItemAtIndexPath(this, indexPath);
+        return cell;
+    };
+
+    UICollectionView.prototype.createPreparedSupplementaryViewForElementOfKind = function createPreparedSupplementaryViewForElementOfKind(kind, indexPath, layoutAttributes) {
+        var view = this.__viewForSupplementaryElementOfKind(this, kind, indexPath);
+        if (view) {
+            view.applyLayoutAttributes(layoutAttributes);
+        }
+        return view;
+    };
+
+    UICollectionView.prototype.addControlledSubview = function addControlledSubview(subview) {
+        if (subview.superview === undefined) {
+            this.addSubview(subview);
+        }
+        subview.hidden = false;
+    };
+
+    UICollectionView.prototype.queueReusableView = function queueReusableView(reusableView, queue, identifier) {
+        reusableView.hidden = true;
+        reusableView.prepareForReuse();
+        if (queue[identifier] === undefined) {
+            queue[identifier] = [];
+        }
+        var reusableViews = queue[identifier] || [];
+        reusableViews.push(reusableView);
+    };
+
+    UICollectionView.prototype.reuseCell = function reuseCell(cell) {
+        var reuseIdentifier = cell.reuseIdentifier;
+        if (reuseIdentifier === undefined) {
+            return;
+        }
+        this.queueReusableView(cell, this._cellReuseQueues, reuseIdentifier);
+    };
+
+    UICollectionView.prototype.reuseSupplementaryView = function reuseSupplementaryView(supplementaryView) {
+        var layoutAttributes = supplementaryView.layoutAttributes;
+        var reuseIdentifier = supplementaryView.reuseIdentifier;
+        if (layoutAttributes === undefined || reuseIdentifier === undefined) {
+            return;
+        }
+        var kindAndIdentifier = "${layoutAttributes.elementKind}/$reuseIdentifier";
+        this.queueReusableView(supplementaryView, this._supplementaryViewReuseQueues, kindAndIdentifier);
+    };
+
+    UICollectionView.prototype.reuseDecorationView = function reuseDecorationView(decorationView) {
+        var reuseIdentifier = decorationView.reuseIdentifier;
+        if (reuseIdentifier === undefined) {
+            return;
+        }
+        this.queueReusableView(decorationView, this._decorationViewReuseQueues, reuseIdentifier);
+    };
+    // Touches
+
+
+    UICollectionView.prototype.touchesBegan = function touchesBegan(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesBegan.call(this, touches);
+        var firstTouch = touches[0];
+        if (!firstTouch) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.began, firstTouch);
+    };
+
+    UICollectionView.prototype.touchesMoved = function touchesMoved(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesMoved.call(this, touches);
+        var firstTouch = touches[0];
+        if (!firstTouch) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.moved, firstTouch);
+    };
+
+    UICollectionView.prototype.touchesEnded = function touchesEnded(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesEnded.call(this, touches);
+        var firstTouch = touches[0];
+        if (!firstTouch) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.ended, firstTouch);
+    };
+
+    UICollectionView.prototype.touchesCancelled = function touchesCancelled(touches) {
+        _UIScrollView_1$UIScr.prototype.touchesCancelled.call(this, touches);
+        var firstTouch = touches[0];
+        if (!firstTouch) {
+            return;
+        }
+        this.handleTouch(UITouch_1.UITouchPhase.cancelled, firstTouch);
+    };
+
+    UICollectionView.prototype.handleTouch = function handleTouch(phase, currentTouch) {
+        var _this8 = this;
+
+        if (!this.allowsSelection) {
+            return;
+        }
+        switch (phase) {
+            case UITouch_1.UITouchPhase.began:
+                {
+                    if (!this.tracking) {
+                        var hitTestView = currentTouch.view;
+                        var cellShouldHighlighted = true;
+                        while (hitTestView !== undefined) {
+                            if (hitTestView instanceof UICollectionViewCell) {
+                                break;
+                            }
+                            if (hitTestView.gestureRecognizers.length > 0) {
+                                cellShouldHighlighted = false;
+                            }
+                            hitTestView = hitTestView.superview;
+                        }
+                        if (cellShouldHighlighted) {
+                            this.firstTouchPoint = currentTouch.windowPoint;
+                            if (hitTestView instanceof UICollectionViewCell) {
+                                this.firstTouchCell = hitTestView;
+                                setTimeout(function () {
+                                    if (_this8.firstTouchPoint === undefined || !(hitTestView instanceof UICollectionViewCell)) {
+                                        return;
+                                    }
+                                    if (hitTestView.currentIndexPath) {
+                                        _this8._indexPathsForHighlightedItems.push(hitTestView.currentIndexPath);
+                                    }
+                                    hitTestView.highlighted = true;
+                                }, 150);
+                            }
+                        }
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.moved:
+                {
+                    if (this.firstTouchPoint && currentTouch.windowPoint) {
+                        if (UIView_1.UIView.recognizedGesture !== undefined || Math.abs(currentTouch.windowPoint.y - this.firstTouchPoint.y) > 8) {
+                            this._indexPathsForHighlightedItems = [];
+                            this._allVisibleViewsDict.forEach(function (it) {
+                                if (it instanceof UICollectionViewCell) {
+                                    it.highlighted = false;
+                                }
+                            });
+                            this.firstTouchPoint = undefined;
+                            this.firstTouchCell = undefined;
+                        }
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.ended:
+                {
+                    if (this.firstTouchCell) {
+                        var cell = this.firstTouchCell;
+                        this._indexPathsForHighlightedItems = [];
+                        if (!this.allowsMultipleSelection) {
+                            this._indexPathsForSelectedItems.forEach(function (indexPath) {
+                                _this8._allVisibleViewsDict.forEach(function (it, key) {
+                                    if (key.indexPath && key.indexPath.mapKey() === indexPath.mapKey()) {
+                                        if (it instanceof UICollectionViewCell) {
+                                            it.selected = false;
+                                            _this8.emit("didDeselectItem", it.currentIndexPath, it);
+                                        }
+                                    }
+                                });
+                            });
+                            this._indexPathsForSelectedItems = [];
+                        }
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._indexPathsForHighlightedItems = [];
+                        this._allVisibleViewsDict.forEach(function (it) {
+                            if (it instanceof UICollectionViewCell) {
+                                it.highlighted = false;
+                            }
+                        });
+                        if (cell.currentIndexPath) {
+                            var idx = this._indexPathsForSelectedItems.map(function (it) {
+                                return it.mapKey();
+                            }).indexOf(cell.currentIndexPath.mapKey());
+                            if (idx >= 0) {
+                                this._indexPathsForSelectedItems.splice(idx, 1);
+                            } else {
+                                this._indexPathsForSelectedItems.push(cell.currentIndexPath);
+                            }
+                        }
+                        cell.selected = !cell.selected;
+                        if (cell.selected) {
+                            this.emit("didSelectItem", cell.currentIndexPath, cell);
+                        } else {
+                            this.emit("didDeselectItem", cell.currentIndexPath, cell);
+                        }
+                    } else {
+                        this.firstTouchPoint = undefined;
+                        this.firstTouchCell = undefined;
+                        this._indexPathsForHighlightedItems = [];
+                        this._allVisibleViewsDict.forEach(function (it) {
+                            if (it instanceof UICollectionViewCell) {
+                                it.highlighted = false;
+                            }
+                        });
+                    }
+                    break;
+                }
+            case UITouch_1.UITouchPhase.cancelled:
+                {
+                    this.firstTouchPoint = undefined;
+                    this.firstTouchCell = undefined;
+                    this._indexPathsForHighlightedItems = [];
+                    this._allVisibleViewsDict.forEach(function (it) {
+                        if (it instanceof UICollectionViewCell) {
+                            it.highlighted = false;
+                        }
+                    });
+                    break;
+                }
+        }
+    };
+    // DataSource & Delegate
+
+
+    UICollectionView.prototype.__cellForItemAtIndexPath = function __cellForItemAtIndexPath(collectionView, indexPath) {
+        return collectionView.val("cellForItem", indexPath) || new UICollectionViewCell();
+    };
+
+    UICollectionView.prototype.__viewForSupplementaryElementOfKind = function __viewForSupplementaryElementOfKind(collectionView, kind, indexPath) {
+        return undefined;
+    };
+
+    UICollectionView.prototype.__numberOfSections = function __numberOfSections(collectionView) {
+        var value = collectionView.val("numberOfSections");
+        return typeof value === "number" ? value : 1;
+    };
+
+    UICollectionView.prototype.__numberOfItemsInSection = function __numberOfItemsInSection(collectionView, inSection) {
+        var value = collectionView.val("numberOfItems", inSection);
+        return typeof value === "number" ? value : 0;
+    };
+
+    _createClass(UICollectionView, [{
+        key: "visibleBoundRects",
+        get: function get() {
+            return { x: 0.0, y: 0.0, width: Math.max(this.bounds.width, this.contentSize.width), height: Math.max(this.bounds.height, this.contentSize.height) };
+        }
+    }]);
+
+    return UICollectionView;
+}(UIScrollView_1.UIScrollView);
+
+exports.UICollectionView = UICollectionView;
+
+var UICollectionReusableView = function (_UIView_1$UIView) {
+    _inherits(UICollectionReusableView, _UIView_1$UIView);
+
+    function UICollectionReusableView() {
+        _classCallCheck(this, UICollectionReusableView);
+
+        var _this9 = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
+
+        _this9.collectionView = undefined;
+        _this9.layoutAttributes = undefined;
+        _this9.reuseIdentifier = undefined;
+        return _this9;
+    }
+
+    UICollectionReusableView.prototype.prepareForReuse = function prepareForReuse() {
+        this.layoutAttributes = undefined;
+    };
+
+    UICollectionReusableView.prototype.applyLayoutAttributes = function applyLayoutAttributes(layoutAttributes) {
+        if (layoutAttributes !== this.layoutAttributes) {
+            this.layoutAttributes = layoutAttributes;
+            this.frame = layoutAttributes.frame;
+            this.transform = layoutAttributes.transform;
+        }
+    };
+
+    return UICollectionReusableView;
+}(UIView_1.UIView);
+
+exports.UICollectionReusableView = UICollectionReusableView;
+
+var UICollectionViewCell = function (_UICollectionReusable) {
+    _inherits(UICollectionViewCell, _UICollectionReusable);
+
+    function UICollectionViewCell() {
+        _classCallCheck(this, UICollectionViewCell);
+
+        var _this10 = _possibleConstructorReturn(this, _UICollectionReusable.call(this));
+
+        _this10._selected = false;
+        _this10._highlighted = false;
+        _this10.contentView = new UIView_1.UIView();
+        _this10.currentIndexPath = undefined;
+        _this10.addSubview(_this10.contentView);
+        return _this10;
+    }
+
+    UICollectionViewCell.prototype.prepareForReuse = function prepareForReuse() {
+        _UICollectionReusable.prototype.prepareForReuse.call(this);
+        this.selected = false;
+        this.highlighted = false;
+    };
+
+    UICollectionViewCell.prototype.layoutSubviews = function layoutSubviews() {
+        _UICollectionReusable.prototype.layoutSubviews.call(this);
+        this.contentView.frame = this.bounds;
+    };
+
+    _createClass(UICollectionViewCell, [{
+        key: "selected",
+        get: function get() {
+            return this._selected;
+        },
+        set: function set(value) {
+            this._selected = value;
+            this.emit("selected", this, value);
+        }
+    }, {
+        key: "highlighted",
+        get: function get() {
+            return this._highlighted;
+        },
+        set: function set(value) {
+            this._highlighted = value;
+            this.emit("highlighted", this, value);
+        }
+    }]);
+
+    return UICollectionViewCell;
+}(UICollectionReusableView);
+
+exports.UICollectionViewCell = UICollectionViewCell;
+
+var UICollectionViewData = function () {
+    function UICollectionViewData(collectionView, layout) {
+        _classCallCheck(this, UICollectionViewData);
+
+        this.collectionView = collectionView;
+        this.layout = layout;
+        this.layoutIsPrepared = false;
+        this.itemCountsAreValid = false;
+        this._numSections = 0;
+        this._numItems = 0;
+        this._sectionItemCounts = [];
+        this.validLayoutRect = undefined;
+        this.contentSize = UISize_1.UISizeZero;
+        this.cachedLayoutAttributes = [];
+    }
+
+    UICollectionViewData.prototype.validateLayoutInRect = function validateLayoutInRect(rect) {
+        this.validateItemCounts();
+        this.prepareToLoadData();
+        if (this.validLayoutRect === undefined || !UIRect_1.UIRectEqualToRect(this.validLayoutRect, rect)) {
+            this.validLayoutRect = rect;
+            this.cachedLayoutAttributes = this.layout.layoutAttributesForElementsInRect(rect).filter(function (it) {
+                return it.isCell() || it.isDecorationView() || it.isSupplementaryView();
+            });
+        }
+    };
+
+    UICollectionViewData.prototype.rectForItemAtIndexPath = function rectForItemAtIndexPath(indexPath) {
+        return UIRect_1.UIRectZero;
+    };
+
+    UICollectionViewData.prototype.globalIndexForItemAtIndexPath = function globalIndexForItemAtIndexPath(indexPath) {
+        return this.numberOfItemsBeforeSection(indexPath.section) + indexPath.row;
+    };
+
+    UICollectionViewData.prototype.indexPathForItemAtGlobalIndex = function indexPathForItemAtGlobalIndex(index) {
+        this.validateItemCounts();
+        var section = 0;
+        var countItems = 0;
+        for (var i = 0; i < this._numSections; i++) {
+            var _section = i;
+            var countIncludingThisSection = countItems + this._sectionItemCounts[_section];
+            if (countIncludingThisSection > index) {
+                break;
+            }
+            countItems = countIncludingThisSection;
+        }
+        var item = index - countItems;
+        return new UIIndexPath_1.UIIndexPath(item, section);
+    };
+
+    UICollectionViewData.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
+        this.validateLayoutInRect(rect);
+        return this.cachedLayoutAttributes;
+    };
+
+    UICollectionViewData.prototype.invalidate = function invalidate() {
+        this.itemCountsAreValid = false;
+        this.layoutIsPrepared = false;
+        this.validLayoutRect = undefined;
+    };
+
+    UICollectionViewData.prototype.numberOfItemsBeforeSection = function numberOfItemsBeforeSection(section) {
+        this.validateItemCounts();
+        var returnCount = 0;
+        for (var i = 0; i < section; i++) {
+            returnCount += this._sectionItemCounts[i];
+        }
+        return returnCount;
+    };
+
+    UICollectionViewData.prototype.numberOfItemsInSection = function numberOfItemsInSection(section) {
+        this.validateItemCounts();
+        if (section >= this._numSections || section < 0) {
+            return 0;
+        }
+        return this._sectionItemCounts[section];
+    };
+
+    UICollectionViewData.prototype.numberOfItems = function numberOfItems() {
+        this.validateItemCounts();
+        return this._numItems;
+    };
+
+    UICollectionViewData.prototype.numberOfSections = function numberOfSections() {
+        this.validateItemCounts();
+        return this._numSections;
+    };
+
+    UICollectionViewData.prototype.collectionViewContentRect = function collectionViewContentRect() {
+        return { x: 0.0, y: 0.0, width: this.contentSize.width, height: this.contentSize.height };
+    };
+
+    UICollectionViewData.prototype.updateItemCounts = function updateItemCounts() {
+        var collectionView = this.collectionView;
+        this._numSections = collectionView.__numberOfSections(collectionView);
+        if (this._numSections <= 0) {
+            this._numItems = 0;
+            this._sectionItemCounts = [];
+            this.itemCountsAreValid = true;
+            return;
+        }
+        this._numItems = 0;
+        var sectionItemCounts = [];
+        for (var index = 0; index < this._numSections; index++) {
+            var cellCount = collectionView.__numberOfItemsInSection(collectionView, index);
+            sectionItemCounts.push(cellCount);
+            this._numItems += cellCount;
+        }
+        this._sectionItemCounts = sectionItemCounts;
+        this.itemCountsAreValid = true;
+    };
+
+    UICollectionViewData.prototype.validateItemCounts = function validateItemCounts() {
+        if (!this.itemCountsAreValid) {
+            this.updateItemCounts();
+        }
+    };
+
+    UICollectionViewData.prototype.prepareToLoadData = function prepareToLoadData() {
+        if (!this.layoutIsPrepared) {
+            this.layout.prepareLayout();
+            this.contentSize = this.layout.collectionViewContentSize();
+            this.layoutIsPrepared = true;
+        }
+    };
+
+    return UICollectionViewData;
+}();
+
+exports.UICollectionViewData = UICollectionViewData;
 
 /***/ }),
 /* 35 */
@@ -4578,9 +5393,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(10);
+var UIGestureRecognizer_1 = __webpack_require__(14);
 var UIView_1 = __webpack_require__(1);
-var UITouch_1 = __webpack_require__(9);
+var UITouch_1 = __webpack_require__(10);
 
 var UIPanGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIPanGestureRecognizer, _UIGestureRecognizer_);
@@ -4868,15 +5683,208 @@ var UIRefreshControl = function (_UIView_1$UIView2) {
 exports.UIRefreshControl = UIRefreshControl;
 
 /***/ }),
-/* 37 */,
-/* 38 */,
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UIView_1 = __webpack_require__(1);
+var UIColor_1 = __webpack_require__(5);
+
+var UIFetchMoreControl = function (_UIView_1$UIView) {
+    _inherits(UIFetchMoreControl, _UIView_1$UIView);
+
+    function UIFetchMoreControl() {
+        _classCallCheck(this, UIFetchMoreControl);
+
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIView.call(this));
+
+        _this.scrollView = undefined;
+        _this.enabled = true;
+        _this.fetching = false;
+        _this.tintColor = UIColor_1.UIColor.gray;
+        return _this;
+    }
+
+    UIFetchMoreControl.prototype.tintColorDidChange = function tintColorDidChange() {
+        _UIView_1$UIView.prototype.tintColorDidChange.call(this);
+    };
+
+    UIFetchMoreControl.prototype.beginFetching = function beginFetching() {
+        var _this2 = this;
+
+        this.fetching = true;
+        setTimeout(function () {
+            _this2.emit("fetch", _this2);
+        }, 250);
+    };
+
+    UIFetchMoreControl.prototype.endFetching = function endFetching() {
+        if (this.scrollView) {
+            var it = this.scrollView;
+            if (it.contentOffset.y > it.contentSize.height + it.contentInset.bottom - it.bounds.height) {
+                it.setContentOffset({ x: 0.0, y: it.contentSize.height + it.contentInset.bottom - it.bounds.height }, true);
+            }
+        }
+        this.fetching = false;
+    };
+
+    return UIFetchMoreControl;
+}(UIView_1.UIView);
+
+exports.UIFetchMoreControl = UIFetchMoreControl;
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) {
+            try {
+                step(generator.next(value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function rejected(value) {
+            try {
+                step(generator["throw"](value));
+            } catch (e) {
+                reject(e);
+            }
+        }
+        function step(result) {
+            result.done ? resolve(result.value) : new P(function (resolve) {
+                resolve(result.value);
+            }).then(fulfilled, rejected);
+        }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var UISize_1 = __webpack_require__(13);
+var EventEmitter_1 = __webpack_require__(12);
+var UIImageRenderingMode;
+(function (UIImageRenderingMode) {
+    UIImageRenderingMode[UIImageRenderingMode["automatic"] = 0] = "automatic";
+    UIImageRenderingMode[UIImageRenderingMode["alwaysOriginal"] = 1] = "alwaysOriginal";
+    UIImageRenderingMode[UIImageRenderingMode["alwaysTemplate"] = 2] = "alwaysTemplate";
+})(UIImageRenderingMode = exports.UIImageRenderingMode || (exports.UIImageRenderingMode = {}));
+
+var UIImage = function (_EventEmitter_1$Event) {
+    _inherits(UIImage, _EventEmitter_1$Event);
+
+    function UIImage(options) {
+        var cloner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+        _classCallCheck(this, UIImage);
+
+        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.call(this));
+
+        _this.options = options;
+        _this.imageSource = undefined;
+        _this.renderingMode = UIImageRenderingMode.alwaysOriginal;
+        _this.loaded = false;
+        _this.size = UISize_1.UISizeZero;
+        _this.scale = 1.0;
+        if (options.base64) {
+            _this.imageSource = "data:image/png;base64," + options.base64;
+        } else if (options.data) {
+            _this.imageSource = "data:image/png;base64," + options.data.base64EncodedString();
+        } else if (options.name) {
+            _this.imageSource = "/assets/images/" + options.name + "@2x.png";
+        }
+        if (options.renderingMode !== undefined) {
+            _this.renderingMode = options.renderingMode;
+        }
+        return _this;
+    }
+
+    UIImage.fromURL = function fromURL(url) {
+        var image = new UIImage({});
+        image.imageSource = url;
+        return image;
+    };
+
+    UIImage.scaleFromName = function scaleFromName(name) {
+        if (name.indexOf("@2x") > 0) {
+            return 2.0;
+        } else if (name.indexOf("@3x") > 0) {
+            return 3.0;
+        } else if (name.indexOf("@4x") > 0) {
+            return 4.0;
+        }
+        return 1.0;
+    };
+
+    UIImage.prototype.fetchSize = function fetchSize() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+            var _this2 = this;
+
+            return regeneratorRuntime.wrap(function _callee$(_context) {
+                while (1) {
+                    switch (_context.prev = _context.next) {
+                        case 0:
+                            if (!this.loaded) {
+                                _context.next = 4;
+                                break;
+                            }
+
+                            return _context.abrupt("return", this.size);
+
+                        case 4:
+                            _context.next = 6;
+                            return new Promise(function (resolver, rejector) {
+                                _this2.on("load", function () {
+                                    resolver(_this2.size);
+                                });
+                            });
+
+                        case 6:
+                            return _context.abrupt("return", _context.sent);
+
+                        case 7:
+                        case "end":
+                            return _context.stop();
+                    }
+                }
+            }, _callee, this);
+        }));
+    };
+
+    return UIImage;
+}(EventEmitter_1.EventEmitter);
+
+exports.UIImage = UIImage;
+
+/***/ }),
 /* 39 */,
 /* 40 */,
 /* 41 */,
 /* 42 */,
 /* 43 */,
 /* 44 */,
-/* 45 */
+/* 45 */,
+/* 46 */,
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4884,64 +5892,64 @@ exports.UIRefreshControl = UIRefreshControl;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-Object.assign(module.exports, __webpack_require__(26));
-Object.assign(module.exports, __webpack_require__(16));
-Object.assign(module.exports, __webpack_require__(46));
-Object.assign(module.exports, __webpack_require__(47));
-Object.assign(module.exports, __webpack_require__(48));
-Object.assign(module.exports, __webpack_require__(15));
-Object.assign(module.exports, __webpack_require__(27));
 Object.assign(module.exports, __webpack_require__(28));
+Object.assign(module.exports, __webpack_require__(17));
+Object.assign(module.exports, __webpack_require__(48));
 Object.assign(module.exports, __webpack_require__(49));
 Object.assign(module.exports, __webpack_require__(50));
+Object.assign(module.exports, __webpack_require__(16));
 Object.assign(module.exports, __webpack_require__(29));
+Object.assign(module.exports, __webpack_require__(30));
 Object.assign(module.exports, __webpack_require__(51));
 Object.assign(module.exports, __webpack_require__(52));
-Object.assign(module.exports, __webpack_require__(55));
-Object.assign(module.exports, __webpack_require__(30));
+Object.assign(module.exports, __webpack_require__(31));
+Object.assign(module.exports, __webpack_require__(53));
+Object.assign(module.exports, __webpack_require__(54));
+Object.assign(module.exports, __webpack_require__(57));
+Object.assign(module.exports, __webpack_require__(22));
 Object.assign(module.exports, __webpack_require__(7));
-Object.assign(module.exports, __webpack_require__(56));
-Object.assign(module.exports, __webpack_require__(32));
-Object.assign(module.exports, __webpack_require__(78));
-Object.assign(module.exports, __webpack_require__(79));
-Object.assign(module.exports, __webpack_require__(5));
 Object.assign(module.exports, __webpack_require__(58));
-Object.assign(module.exports, __webpack_require__(59));
+Object.assign(module.exports, __webpack_require__(33));
+Object.assign(module.exports, __webpack_require__(34));
+Object.assign(module.exports, __webpack_require__(60));
+Object.assign(module.exports, __webpack_require__(5));
+Object.assign(module.exports, __webpack_require__(61));
+Object.assign(module.exports, __webpack_require__(62));
 Object.assign(module.exports, __webpack_require__(8));
 Object.assign(module.exports, __webpack_require__(6));
-Object.assign(module.exports, __webpack_require__(33));
+Object.assign(module.exports, __webpack_require__(37));
 Object.assign(module.exports, __webpack_require__(18));
-Object.assign(module.exports, __webpack_require__(10));
-Object.assign(module.exports, __webpack_require__(34));
-Object.assign(module.exports, __webpack_require__(23));
-Object.assign(module.exports, __webpack_require__(22));
-Object.assign(module.exports, __webpack_require__(19));
-Object.assign(module.exports, __webpack_require__(24));
-Object.assign(module.exports, __webpack_require__(60));
-Object.assign(module.exports, __webpack_require__(62));
-Object.assign(module.exports, __webpack_require__(63));
-Object.assign(module.exports, __webpack_require__(35));
-Object.assign(module.exports, __webpack_require__(64));
-Object.assign(module.exports, __webpack_require__(12));
-Object.assign(module.exports, __webpack_require__(65));
-Object.assign(module.exports, __webpack_require__(11));
-Object.assign(module.exports, __webpack_require__(36));
-Object.assign(module.exports, __webpack_require__(66));
-Object.assign(module.exports, __webpack_require__(67));
+Object.assign(module.exports, __webpack_require__(14));
+Object.assign(module.exports, __webpack_require__(38));
 Object.assign(module.exports, __webpack_require__(25));
-Object.assign(module.exports, __webpack_require__(17));
+Object.assign(module.exports, __webpack_require__(24));
+Object.assign(module.exports, __webpack_require__(19));
+Object.assign(module.exports, __webpack_require__(27));
+Object.assign(module.exports, __webpack_require__(63));
+Object.assign(module.exports, __webpack_require__(65));
+Object.assign(module.exports, __webpack_require__(66));
+Object.assign(module.exports, __webpack_require__(35));
+Object.assign(module.exports, __webpack_require__(67));
+Object.assign(module.exports, __webpack_require__(11));
 Object.assign(module.exports, __webpack_require__(68));
+Object.assign(module.exports, __webpack_require__(9));
+Object.assign(module.exports, __webpack_require__(36));
 Object.assign(module.exports, __webpack_require__(69));
 Object.assign(module.exports, __webpack_require__(70));
+Object.assign(module.exports, __webpack_require__(20));
+Object.assign(module.exports, __webpack_require__(13));
 Object.assign(module.exports, __webpack_require__(71));
-Object.assign(module.exports, __webpack_require__(21));
+Object.assign(module.exports, __webpack_require__(72));
 Object.assign(module.exports, __webpack_require__(73));
-Object.assign(module.exports, __webpack_require__(75));
+Object.assign(module.exports, __webpack_require__(74));
+Object.assign(module.exports, __webpack_require__(23));
 Object.assign(module.exports, __webpack_require__(76));
-Object.assign(module.exports, __webpack_require__(9));
-Object.assign(module.exports, __webpack_require__(1));
-Object.assign(module.exports, __webpack_require__(14));
 Object.assign(module.exports, __webpack_require__(77));
+Object.assign(module.exports, __webpack_require__(78));
+Object.assign(module.exports, __webpack_require__(10));
+Object.assign(module.exports, __webpack_require__(1));
+Object.assign(module.exports, __webpack_require__(15));
+Object.assign(module.exports, __webpack_require__(79));
 Component({
     properties: {
         view: {
@@ -4968,7 +5976,7 @@ Component({
 });
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5009,7 +6017,7 @@ DispatchQueue.global = new DispatchQueue();
 exports.DispatchQueue = DispatchQueue;
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5018,8 +6026,8 @@ exports.DispatchQueue = DispatchQueue;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Data_1 = __webpack_require__(16);
-var Bundle_1 = __webpack_require__(26);
+var Data_1 = __webpack_require__(17);
+var Bundle_1 = __webpack_require__(28);
 var fs = wx.getFileSystemManager();
 
 var FileManager = function () {
@@ -5206,7 +6214,7 @@ FileManager.jsBundleDirectory = "xt://";
 exports.FileManager = FileManager;
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5262,7 +6270,7 @@ var Timer = function () {
 exports.Timer = Timer;
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5271,10 +6279,10 @@ exports.Timer = Timer;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var URLRequest_1 = __webpack_require__(27);
-var URL_1 = __webpack_require__(15);
-var Data_1 = __webpack_require__(16);
-var URLResponse_1 = __webpack_require__(28);
+var URLRequest_1 = __webpack_require__(29);
+var URL_1 = __webpack_require__(16);
+var Data_1 = __webpack_require__(17);
+var URLResponse_1 = __webpack_require__(30);
 
 var URLSession = function () {
     function URLSession() {
@@ -5378,7 +6386,7 @@ var URLSessionTask = function () {
 exports.URLSessionTask = URLSessionTask;
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5437,7 +6445,7 @@ UserDefaults.standard = new UserDefaults();
 exports.UserDefaults = UserDefaults;
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5517,7 +6525,7 @@ var UIActionSheet = function () {
 exports.UIActionSheet = UIActionSheet;
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5593,7 +6601,7 @@ var UIActivityIndicatorView = function (_UIView_1$UIView) {
 exports.UIActivityIndicatorView = UIActivityIndicatorView;
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6094,7 +7102,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })(undefined || {});
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6105,8 +7113,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIRect_1 = __webpack_require__(11);
-var UISize_1 = __webpack_require__(17);
+var UIRect_1 = __webpack_require__(9);
+var UISize_1 = __webpack_require__(13);
 
 var CALayer = function () {
     function CALayer() {
@@ -6364,7 +7372,7 @@ var CALayer = function () {
 exports.CALayer = CALayer;
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6408,7 +7416,7 @@ var UIAlert = function () {
 exports.UIAlert = UIAlert;
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6421,11 +7429,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIRect_1 = __webpack_require__(11);
+var UIRect_1 = __webpack_require__(9);
 var UIColor_1 = __webpack_require__(5);
 var UIFont_1 = __webpack_require__(18);
 var UIEnums_1 = __webpack_require__(6);
-var TextMeasurer_1 = __webpack_require__(57);
+var TextMeasurer_1 = __webpack_require__(59);
 
 var UIAttributedStringKey = function UIAttributedStringKey() {
     _classCallCheck(this, UIAttributedStringKey);
@@ -6715,7 +7723,7 @@ var UIMutableAttributedString = function (_UIAttributedString) {
 exports.UIMutableAttributedString = UIMutableAttributedString;
 
 /***/ }),
-/* 57 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6806,7 +7814,712 @@ var TextMeasurer = function () {
 exports.TextMeasurer = TextMeasurer;
 
 /***/ }),
-/* 58 */
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var UISize_1 = __webpack_require__(13);
+var UIRect_1 = __webpack_require__(9);
+var UIEdgeInsets_1 = __webpack_require__(8);
+var UICollectionView_1 = __webpack_require__(34);
+var UIIndexPath_1 = __webpack_require__(26);
+var UICollectionViewScrollDirection;
+(function (UICollectionViewScrollDirection) {
+    UICollectionViewScrollDirection[UICollectionViewScrollDirection["vertical"] = 0] = "vertical";
+    UICollectionViewScrollDirection[UICollectionViewScrollDirection["horizontal"] = 1] = "horizontal";
+})(UICollectionViewScrollDirection = exports.UICollectionViewScrollDirection || (exports.UICollectionViewScrollDirection = {}));
+var UIFlowLayoutCommonRowHorizontalAlignmentKey = "UIFlowLayoutCommonRowHorizontalAlignmentKey";
+var UIFlowLayoutLastRowHorizontalAlignmentKey = "UIFlowLayoutLastRowHorizontalAlignmentKey";
+var UIFlowLayoutRowVerticalAlignmentKey = "UIFlowLayoutRowVerticalAlignmentKey";
+var UICollectionElementKindSectionHeader = "UICollectionElementKindSectionHeader";
+var UICollectionElementKindSectionFooter = "UICollectionElementKindSectionFooter";
+var UIFlowLayoutHorizontalAlignment;
+(function (UIFlowLayoutHorizontalAlignment) {
+    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["left"] = 0] = "left";
+    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["center"] = 1] = "center";
+    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["right"] = 2] = "right";
+    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["justify"] = 3] = "justify";
+})(UIFlowLayoutHorizontalAlignment = exports.UIFlowLayoutHorizontalAlignment || (exports.UIFlowLayoutHorizontalAlignment = {}));
+
+var UIGridLayoutInfo = function () {
+    function UIGridLayoutInfo() {
+        _classCallCheck(this, UIGridLayoutInfo);
+
+        this.sections = [];
+        this.rowAlignmentOptions = {};
+        this.usesFloatingHeaderFooter = false;
+        this.dimension = 0.0;
+        this.horizontal = false;
+        this.leftToRight = false;
+        this.contentSize = UISize_1.UISizeZero;
+        this._isValid = false;
+    }
+
+    UIGridLayoutInfo.prototype.frameForItemAtIndexPath = function frameForItemAtIndexPath(indexPath) {
+        var section = this.sections[indexPath.section];
+        var itemFrame = void 0;
+        if (section.fixedItemSize) {
+            itemFrame = { x: 0.0, y: 0.0, width: section.itemSize.width, height: section.itemSize.height };
+        } else {
+            itemFrame = section.items[indexPath.row].itemFrame;
+        }
+        return itemFrame;
+    };
+
+    UIGridLayoutInfo.prototype.addSection = function addSection() {
+        var section = new UIGridLayoutSection();
+        section.rowAlignmentOptions = this.rowAlignmentOptions;
+        section.layoutInfo = this;
+        this.sections.push(section);
+        this.invalidate(false);
+        return section;
+    };
+
+    UIGridLayoutInfo.prototype.invalidate = function invalidate(arg) {
+        this._isValid = false;
+    };
+
+    UIGridLayoutInfo.prototype.snapshot = function snapshot() {
+        var layoutInfo = new UIGridLayoutInfo();
+        layoutInfo.sections = this.sections.slice(0);
+        layoutInfo.rowAlignmentOptions = this.rowAlignmentOptions;
+        layoutInfo.usesFloatingHeaderFooter = this.usesFloatingHeaderFooter;
+        layoutInfo.dimension = this.dimension;
+        layoutInfo.horizontal = this.horizontal;
+        layoutInfo.leftToRight = this.leftToRight;
+        layoutInfo.contentSize = Object.assign({}, this.contentSize);
+        return layoutInfo;
+    };
+
+    return UIGridLayoutInfo;
+}();
+
+var UIGridLayoutSection = function () {
+    function UIGridLayoutSection() {
+        _classCallCheck(this, UIGridLayoutSection);
+
+        this.items = [];
+        this.rows = [];
+        this.fixedItemSize = false;
+        this.itemSize = UISize_1.UISizeZero;
+        this._itemsCount = 0;
+        this.verticalInterstice = 0.0;
+        this.horizontalInterstice = 0.0;
+        this.sectionMargins = UIEdgeInsets_1.UIEdgeInsetsZero;
+        this.frame = UIRect_1.UIRectZero;
+        this.headerFrame = UIRect_1.UIRectZero;
+        this.footerFrame = UIRect_1.UIRectZero;
+        this.headerDimension = 0.0;
+        this.footerDimension = 0.0;
+        this.layoutInfo = undefined;
+        this.rowAlignmentOptions = {};
+        this.otherMargin = 0.0;
+        this.beginMargin = 0.0;
+        this.endMargin = 0.0;
+        this.actualGap = 0.0;
+        this.lastRowBeginMargin = 0.0;
+        this.lastRowEndMargin = 0.0;
+        this.lastRowActualGap = 0.0;
+        this.lastRowIncomplete = false;
+        this.itemsByRowCount = 0;
+        this.indexOfImcompleteRow = 0;
+        this._isValid = false;
+    }
+
+    UIGridLayoutSection.prototype.recomputeFromIndex = function recomputeFromIndex(index) {
+        this.invalidate();
+        this.computeLayout();
+    };
+
+    UIGridLayoutSection.prototype.invalidate = function invalidate() {
+        this._isValid = false;
+        this.rows = [];
+    };
+
+    UIGridLayoutSection.prototype.computeLayout = function computeLayout() {
+        if (!this._isValid) {
+            var layoutInfo = this.layoutInfo;
+            if (layoutInfo === undefined) {
+                return;
+            }
+            var sectionSize = { width: 0.0, height: 0.0 };
+            var rowIndex = 0;
+            var itemIndex = 0;
+            var itemsByRowCount = 0;
+            var dimensionLeft = 0.0;
+            var row = undefined;
+            var headerFooterDimension = layoutInfo.dimension;
+            var dimension = headerFooterDimension;
+            if (layoutInfo.horizontal) {
+                dimension -= this.sectionMargins.top + this.sectionMargins.bottom;
+                this.headerFrame = { x: sectionSize.width, y: 0.0, width: this.headerDimension, height: headerFooterDimension };
+                sectionSize.width += this.headerDimension + this.sectionMargins.right;
+            } else {
+                dimension -= this.sectionMargins.left + this.sectionMargins.right;
+                this.headerFrame = { x: 0.0, y: sectionSize.height, width: headerFooterDimension, height: this.headerDimension };
+                sectionSize.height += this.headerDimension + this.sectionMargins.top;
+            }
+            var spacing = layoutInfo.horizontal ? this.verticalInterstice : this.horizontalInterstice;
+            while (itemIndex <= this.itemsCount) {
+                var finishCycle = itemIndex >= this.itemsCount;
+                var item = undefined;
+                if (!finishCycle) {
+                    item = this.fixedItemSize ? undefined : this.items[itemIndex];
+                }
+                var itemSize = this.fixedItemSize ? this.itemSize : item && item.itemFrame ? { width: item.itemFrame.width, height: item.itemFrame.height } : { width: 0, height: 0 };
+                var itemDimension = layoutInfo.horizontal ? itemSize.height : itemSize.width;
+                if (itemsByRowCount > 0) {
+                    itemDimension += spacing;
+                }
+                if (dimensionLeft < itemDimension || finishCycle) {
+                    if (row) {
+                        this.itemsByRowCount = Math.max(itemsByRowCount, this.itemsByRowCount);
+                        row.itemCount = itemsByRowCount;
+                        if (!finishCycle) {
+                            this.indexOfImcompleteRow = rowIndex;
+                        }
+                        row.layoutRow();
+                        if (layoutInfo.horizontal) {
+                            row.rowFrame = { x: sectionSize.width, y: this.sectionMargins.top, width: row.rowSize.width, height: row.rowSize.height };
+                            sectionSize.height = Math.max(row.rowSize.height, sectionSize.height);
+                            sectionSize.width += row.rowSize.width + (finishCycle ? 0.0 : this.horizontalInterstice);
+                        } else {
+                            row.rowFrame = { x: this.sectionMargins.left, y: sectionSize.height, width: row.rowSize.width, height: row.rowSize.height };
+                            sectionSize.height += row.rowSize.height + (finishCycle ? 0.0 : this.verticalInterstice);
+                            sectionSize.width = Math.max(row.rowSize.width, sectionSize.width);
+                        }
+                    }
+                    if (!finishCycle) {
+                        if (row) {
+                            row.complete = true;
+                        }
+                        row = this.addRow();
+                        row.fixedItemSize = this.fixedItemSize;
+                        row.index = rowIndex;
+                        this.indexOfImcompleteRow = rowIndex;
+                        rowIndex++;
+                        if (itemsByRowCount > 0) {
+                            itemDimension -= spacing;
+                        }
+                        dimensionLeft = dimension - itemDimension;
+                        itemsByRowCount = 0;
+                    }
+                } else {
+                    dimensionLeft -= itemDimension;
+                }
+                if (item && row) {
+                    row.addItem(item);
+                }
+                itemIndex++;
+                itemsByRowCount++;
+            }
+            if (layoutInfo.horizontal) {
+                sectionSize.width += this.sectionMargins.right;
+                this.footerFrame = { x: sectionSize.width, y: 0.0, width: this.footerDimension, height: headerFooterDimension };
+                sectionSize.width += this.footerDimension;
+            } else {
+                sectionSize.height += this.sectionMargins.bottom;
+                this.footerFrame = { x: 0.0, y: sectionSize.height, width: headerFooterDimension, height: this.footerDimension };
+                sectionSize.height += this.footerDimension;
+            }
+            this.frame = { x: 0.0, y: 0.0, width: sectionSize.width, height: sectionSize.height };
+            this._isValid = true;
+        }
+    };
+
+    UIGridLayoutSection.prototype.addItem = function addItem() {
+        var item = new UIGridLayoutItem();
+        item.section = this;
+        this.items.push(item);
+        return item;
+    };
+
+    UIGridLayoutSection.prototype.addRow = function addRow() {
+        var item = new UIGridLayoutRow();
+        item.section = this;
+        this.rows.push(item);
+        return item;
+    };
+
+    UIGridLayoutSection.prototype.snapshot = function snapshot() {
+        var snapshotSection = new UIGridLayoutSection();
+        snapshotSection.items = this.items.slice(0);
+        snapshotSection.rows = this.rows.slice(0);
+        snapshotSection.verticalInterstice = this.verticalInterstice;
+        snapshotSection.horizontalInterstice = this.horizontalInterstice;
+        snapshotSection.sectionMargins = this.sectionMargins;
+        snapshotSection.frame = this.frame;
+        snapshotSection.headerFrame = this.headerFrame;
+        snapshotSection.footerFrame = this.footerFrame;
+        snapshotSection.headerDimension = this.headerDimension;
+        snapshotSection.footerDimension = this.footerDimension;
+        snapshotSection.layoutInfo = this.layoutInfo;
+        snapshotSection.rowAlignmentOptions = this.rowAlignmentOptions;
+        snapshotSection.fixedItemSize = this.fixedItemSize;
+        snapshotSection.itemSize = this.itemSize;
+        snapshotSection.itemsCount = this.itemsCount;
+        snapshotSection.otherMargin = this.otherMargin;
+        snapshotSection.beginMargin = this.beginMargin;
+        snapshotSection.endMargin = this.endMargin;
+        snapshotSection.actualGap = this.actualGap;
+        snapshotSection.lastRowBeginMargin = this.lastRowBeginMargin;
+        snapshotSection.lastRowEndMargin = this.lastRowEndMargin;
+        snapshotSection.lastRowActualGap = this.lastRowActualGap;
+        snapshotSection.lastRowIncomplete = this.lastRowIncomplete;
+        snapshotSection.itemsByRowCount = this.itemsByRowCount;
+        snapshotSection.indexOfImcompleteRow = this.indexOfImcompleteRow;
+        return snapshotSection;
+    };
+
+    _createClass(UIGridLayoutSection, [{
+        key: "itemsCount",
+        get: function get() {
+            return this.fixedItemSize ? this._itemsCount : this.items.length;
+        },
+        set: function set(value) {
+            this._itemsCount = value;
+        }
+    }]);
+
+    return UIGridLayoutSection;
+}();
+
+var UIGridLayoutItem = function UIGridLayoutItem() {
+    _classCallCheck(this, UIGridLayoutItem);
+
+    this.section = undefined;
+    this.rowObject = undefined;
+    this.itemFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+};
+
+var UIGridLayoutRow = function () {
+    function UIGridLayoutRow() {
+        _classCallCheck(this, UIGridLayoutRow);
+
+        this.section = undefined;
+        this.items = [];
+        this.rowSize = UISize_1.UISizeZero;
+        this.rowFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+        this.index = 0;
+        this.complete = false;
+        this.fixedItemSize = false;
+        this._itemCount = 0;
+        this._isValid = false;
+    }
+
+    UIGridLayoutRow.prototype.addItem = function addItem(item) {
+        this.items.push(item);
+        item.rowObject = this;
+        this.invalidate();
+    };
+
+    UIGridLayoutRow.prototype.layoutRow = function layoutRow() {
+        this.layoutRowAndGenerateRectArray(false);
+    };
+
+    UIGridLayoutRow.prototype.itemRects = function itemRects() {
+        return this.layoutRowAndGenerateRectArray(true) || [];
+    };
+
+    UIGridLayoutRow.prototype.invalidate = function invalidate() {
+        this._isValid = false;
+        this.rowSize = UISize_1.UISizeZero;
+        this.rowFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+    };
+
+    UIGridLayoutRow.prototype.snapshot = function snapshot() {
+        var snapshotRow = new UIGridLayoutRow();
+        snapshotRow.section = this.section;
+        snapshotRow.items = this.items;
+        snapshotRow.rowSize = Object.assign({}, this.rowSize);
+        snapshotRow.rowFrame = Object.assign({}, this.rowFrame);
+        snapshotRow.index = this.index;
+        snapshotRow.complete = this.complete;
+        snapshotRow.fixedItemSize = this.fixedItemSize;
+        snapshotRow.itemCount = this.itemCount;
+        return snapshotRow;
+    };
+
+    UIGridLayoutRow.prototype.layoutRowAndGenerateRectArray = function layoutRowAndGenerateRectArray(generateRectArray) {
+        var rects = generateRectArray ? [] : undefined;
+        if (!this._isValid || generateRectArray) {
+            var section = this.section;
+            if (section === undefined) {
+                return undefined;
+            }
+            var isHorizontal = section.layoutInfo && section.layoutInfo.horizontal ? true : false;
+            var isLastRow = section.indexOfImcompleteRow == this.index;
+            var horizontalAlignment = section.rowAlignmentOptions[isLastRow ? UIFlowLayoutLastRowHorizontalAlignmentKey : UIFlowLayoutCommonRowHorizontalAlignmentKey];
+            if (horizontalAlignment === undefined) {
+                return undefined;
+            }
+            var leftOverSpace = section.layoutInfo && section.layoutInfo.dimension || 0.0;
+            if (isHorizontal) {
+                leftOverSpace -= section.sectionMargins.top + section.sectionMargins.bottom;
+            } else {
+                leftOverSpace -= section.sectionMargins.left + section.sectionMargins.right;
+            }
+            var usedItemCount = 0;
+            var itemIndex = 0;
+            var spacing = isHorizontal ? section.verticalInterstice : section.horizontalInterstice;
+            while (itemIndex < this.itemCount || isLastRow) {
+                var nextItemSize;
+                if (!this.fixedItemSize) {
+                    var _item = this.items[Math.min(itemIndex, this.itemCount - 1)];
+                    nextItemSize = isHorizontal ? _item.itemFrame.height : _item.itemFrame.width;
+                } else {
+                    nextItemSize = isHorizontal ? section.itemSize.height : section.itemSize.width;
+                }
+                if (itemIndex > 0) {
+                    nextItemSize += spacing;
+                }
+                if (leftOverSpace < nextItemSize) {
+                    break;
+                }
+                leftOverSpace -= nextItemSize;
+                itemIndex++;
+                usedItemCount = itemIndex;
+            }
+            var itemOffset = { x: 0, y: 0 };
+            if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.right) {
+                itemOffset.x += leftOverSpace;
+            } else if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.center || horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify && usedItemCount == 1) {
+                itemOffset.x += leftOverSpace / 2.0;
+            }
+            var interSpacing = usedItemCount <= 1 ? 0.0 : leftOverSpace / (usedItemCount - 1);
+            var frame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+            var itemFrame = { x: 0.0, y: 0.0, width: section.itemSize.width, height: section.itemSize.height };
+            for (var _itemIndex = 0; _itemIndex < this.itemCount; _itemIndex++) {
+                var item = undefined;
+                if (!this.fixedItemSize) {
+                    item = this.items[_itemIndex];
+                    itemFrame = Object.assign({}, item.itemFrame);
+                }
+                if (isHorizontal) {
+                    itemFrame.y = itemOffset.y;
+                    itemOffset.y += itemFrame.height + section.verticalInterstice;
+                    if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify) {
+                        itemOffset.y += interSpacing;
+                    }
+                } else {
+                    itemFrame.x = itemOffset.x;
+                    itemOffset.x += itemFrame.width + section.horizontalInterstice;
+                    if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify) {
+                        itemOffset.x += interSpacing;
+                    }
+                }
+                var iFrame = { x: itemFrame.x, y: itemFrame.y, width: itemFrame.width, height: itemFrame.height };
+                if (item) {
+                    item.itemFrame = iFrame;
+                }
+                if (rects) {
+                    rects.push(iFrame);
+                }
+                frame = UIRect_1.UIRectUnion(frame, iFrame);
+            }
+            this.rowSize = { width: frame.width, height: frame.height };
+            this._isValid = true;
+        }
+        return rects;
+    };
+
+    _createClass(UIGridLayoutRow, [{
+        key: "itemCount",
+        get: function get() {
+            return this.fixedItemSize ? this._itemCount : this.items.length;
+        },
+        set: function set(value) {
+            this._itemCount = value;
+        }
+    }]);
+
+    return UIGridLayoutRow;
+}();
+
+var UICollectionViewFlowLayout = function (_UICollectionView_1$U) {
+    _inherits(UICollectionViewFlowLayout, _UICollectionView_1$U);
+
+    function UICollectionViewFlowLayout() {
+        var _this$rowAlignmentOpt;
+
+        _classCallCheck(this, UICollectionViewFlowLayout);
+
+        var _this = _possibleConstructorReturn(this, _UICollectionView_1$U.apply(this, arguments));
+
+        _this._data = undefined;
+        _this.minimumLineSpacing = 10.0;
+        _this.minimumInteritemSpacing = 10.0;
+        _this.itemSize = { width: 50.0, height: 50.0 };
+        _this.headerReferenceSize = UISize_1.UISizeZero;
+        _this.footerReferenceSize = UISize_1.UISizeZero;
+        _this._sectionInset = UIEdgeInsets_1.UIEdgeInsetsZero;
+        _this.scrollDirection = UICollectionViewScrollDirection.vertical;
+        _this.rowAlignmentOptions = (_this$rowAlignmentOpt = {}, _this$rowAlignmentOpt[UIFlowLayoutCommonRowHorizontalAlignmentKey] = UIFlowLayoutHorizontalAlignment.justify, _this$rowAlignmentOpt[UIFlowLayoutLastRowHorizontalAlignmentKey] = UIFlowLayoutHorizontalAlignment.justify, _this$rowAlignmentOpt[UIFlowLayoutRowVerticalAlignmentKey] = 1, _this$rowAlignmentOpt);
+        _this._visibleBounds = UIRect_1.UIRectZero;
+        _this.rectCache = [];
+        return _this;
+    }
+
+    UICollectionViewFlowLayout.prototype.prepareLayout = function prepareLayout() {
+        _UICollectionView_1$U.prototype.prepareLayout.call(this);
+        var data = new UIGridLayoutInfo();
+        data.horizontal = this.scrollDirection == UICollectionViewScrollDirection.horizontal;
+        this._visibleBounds = this.collectionView ? this.collectionView.visibleBoundRects : UIRect_1.UIRectZero;
+        data.dimension = data.horizontal ? this._visibleBounds.height : this._visibleBounds.width;
+        data.rowAlignmentOptions = this.rowAlignmentOptions;
+        this._data = data;
+        this.fetchItemsInfo();
+    };
+
+    UICollectionViewFlowLayout.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
+        var _this2 = this;
+
+        if (this._data == undefined) {
+            this.prepareLayout();
+        }
+        var layoutAttributesArray = [];
+        var _data = this._data;
+        if (_data === undefined) {
+            return [];
+        }
+        _data.sections.forEach(function (section, sectionIndex) {
+            if (true) {
+                var rectCache = _this2.rectCache;
+                var normalizedHeaderFrame = { x: section.headerFrame.x + section.frame.x, y: section.headerFrame.y + section.frame.y, width: section.headerFrame.width, height: section.headerFrame.height };
+                if (!UIRect_1.UIRectIsEmpty(normalizedHeaderFrame) && UIRect_1.UIRectIntersectsRect(normalizedHeaderFrame, rect)) {
+                    var layoutAttributes = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), UICollectionElementKindSectionHeader, UICollectionView_1.ItemType.supplementaryView);
+                    layoutAttributes.frame = normalizedHeaderFrame;
+                    layoutAttributesArray.push(layoutAttributes);
+                }
+                var itemRects = rectCache[sectionIndex];
+                if (itemRects === undefined && section.fixedItemSize && section.rows.length > 0) {
+                    itemRects = section.rows[0].itemRects();
+                    if (itemRects != undefined) {
+                        rectCache[sectionIndex] = itemRects;
+                    }
+                }
+                section.rows.forEach(function (row) {
+                    var normalizedRowFrame = { x: row.rowFrame.x + section.frame.x, y: row.rowFrame.y + section.frame.y, width: row.rowFrame.width, height: row.rowFrame.height };
+                    if (UIRect_1.UIRectIntersectsRect(normalizedRowFrame, rect)) {
+                        for (var itemIndex = 0; itemIndex < row.itemCount; itemIndex++) {
+                            var _layoutAttributes = void 0;
+                            var sectionItemIndex = void 0;
+                            var itemFrame = void 0;
+                            if (row.fixedItemSize) {
+                                itemFrame = itemRects[itemIndex] || UIRect_1.UIRectZero;
+                                sectionItemIndex = row.index * section.itemsByRowCount + itemIndex;
+                            } else {
+                                var item = row.items[itemIndex];
+                                sectionItemIndex = section.items.indexOf(item);
+                                itemFrame = item.itemFrame;
+                            }
+                            var normalizedItemFrame = { x: normalizedRowFrame.x + itemFrame.x, y: normalizedRowFrame.y + itemFrame.y, width: itemFrame.width, height: itemFrame.height };
+                            if (UIRect_1.UIRectIntersectsRect(normalizedItemFrame, rect)) {
+                                _layoutAttributes = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(sectionItemIndex, sectionIndex), UICollectionView_1.UICollectionElementKindCell, UICollectionView_1.ItemType.cell);
+                                _layoutAttributes.frame = normalizedItemFrame;
+                                layoutAttributesArray.push(_layoutAttributes);
+                            }
+                        }
+                    }
+                });
+                var normalizedFooterFrame = { x: section.footerFrame.x + section.frame.x, y: section.footerFrame.y + section.frame.y, width: section.footerFrame.width, height: section.footerFrame.height };
+                if (!UIRect_1.UIRectIsEmpty(normalizedFooterFrame) && UIRect_1.UIRectIntersectsRect(normalizedFooterFrame, rect)) {
+                    var _layoutAttributes2 = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), UICollectionElementKindSectionFooter, UICollectionView_1.ItemType.supplementaryView);
+                    _layoutAttributes2.frame = normalizedFooterFrame;
+                    layoutAttributesArray.push(_layoutAttributes2);
+                }
+            }
+        });
+        return layoutAttributesArray;
+    };
+
+    UICollectionViewFlowLayout.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
+        if (this._data === undefined) {
+            this.prepareLayout();
+        }
+        var _data = this._data;
+        if (_data === undefined) {
+            return undefined;
+        }
+        var section = _data.sections[indexPath.section];
+        var row = undefined;
+        var itemFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+        if (section.fixedItemSize && section.itemsByRowCount > 0 && indexPath.row / section.itemsByRowCount < section.rows.length) {
+            row = section.rows[indexPath.row / section.itemsByRowCount];
+            var itemIndex = indexPath.row % section.itemsByRowCount;
+            var itemRects = row.itemRects();
+            itemFrame = itemRects[itemIndex];
+        } else if (indexPath.row < section.items.length) {
+            var item = section.items[indexPath.row];
+            row = item.rowObject;
+            itemFrame = item.itemFrame;
+        }
+        var layoutAttributes = new this.layoutAttributesClass(indexPath, UICollectionView_1.UICollectionElementKindCell, UICollectionView_1.ItemType.cell);
+        if (row) {
+            var normalizedRowFrame = { x: row.rowFrame.x + section.frame.x, y: row.rowFrame.y + section.frame.y, width: row.rowFrame.width, height: row.rowFrame.height };
+            layoutAttributes.frame = { x: normalizedRowFrame.x + itemFrame.x, y: normalizedRowFrame.y + itemFrame.y, width: itemFrame.width, height: itemFrame.height };
+        }
+        return layoutAttributes;
+    };
+
+    UICollectionViewFlowLayout.prototype.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(kind, indexPath) {
+        if (this._data === undefined) {
+            this.prepareLayout();
+        }
+        var _data = this._data;
+        if (_data === undefined) {
+            return undefined;
+        }
+        var sectionIndex = indexPath.section;
+        var layoutAttributes = undefined;
+        if (sectionIndex < _data.sections.length) {
+            var section = _data.sections[sectionIndex];
+            var normalizedFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
+            if (kind == UICollectionElementKindSectionHeader) {
+                normalizedFrame = section.headerFrame;
+            } else if (kind == UICollectionElementKindSectionFooter) {
+                normalizedFrame = section.footerFrame;
+            }
+            if (!UIRect_1.UIRectIsEmpty(normalizedFrame)) {
+                normalizedFrame = { x: normalizedFrame.x + section.frame.x, y: normalizedFrame.y + section.frame.y, width: normalizedFrame.width, height: normalizedFrame.height };
+                layoutAttributes = new this.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), kind, UICollectionView_1.ItemType.supplementaryView);
+                layoutAttributes.frame = normalizedFrame;
+            }
+        }
+        return layoutAttributes;
+    };
+
+    UICollectionViewFlowLayout.prototype.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(kind, indexPath) {
+        return undefined;
+    };
+
+    UICollectionViewFlowLayout.prototype.collectionViewContentSize = function collectionViewContentSize() {
+        if (this._data === undefined) {
+            this.prepareLayout();
+        }
+        var _data = this._data;
+        if (_data === undefined) {
+            return _UICollectionView_1$U.prototype.collectionViewContentSize.call(this);
+        }
+        return _data.contentSize;
+    };
+
+    UICollectionViewFlowLayout.prototype.invalidateLayout = function invalidateLayout() {
+        _UICollectionView_1$U.prototype.invalidateLayout.call(this);
+        this.rectCache = [];
+        this._data = undefined;
+    };
+
+    UICollectionViewFlowLayout.prototype.__sizeForItem = function __sizeForItem(indexPath) {
+        return this.val("sizeForItem", indexPath) || this.itemSize;
+    };
+
+    UICollectionViewFlowLayout.prototype.__insetForSection = function __insetForSection(inSection) {
+        return this.val("insetForSection", inSection) || this.sectionInset;
+    };
+
+    UICollectionViewFlowLayout.prototype.__minimumLineSpacing = function __minimumLineSpacing(inSection) {
+        var value = this.val("minimumLineSpacing", inSection);
+        return typeof value === "number" ? value : this.minimumLineSpacing;
+    };
+
+    UICollectionViewFlowLayout.prototype.__minimumInteritemSpacing = function __minimumInteritemSpacing(inSection) {
+        var value = this.val("minimumInteritemSpacing", inSection);
+        return typeof value === "number" ? value : this.minimumInteritemSpacing;
+    };
+
+    UICollectionViewFlowLayout.prototype.__referenceSizeForHeader = function __referenceSizeForHeader(inSection) {
+        return this.headerReferenceSize;
+    };
+
+    UICollectionViewFlowLayout.prototype.__referenceSizeForFooter = function __referenceSizeForFooter(inSection) {
+        return this.footerReferenceSize;
+    };
+
+    UICollectionViewFlowLayout.prototype.fetchItemsInfo = function fetchItemsInfo() {
+        this.getSizingInfos();
+        this.updateItemsLayout();
+    };
+
+    UICollectionViewFlowLayout.prototype.getSizingInfos = function getSizingInfos() {
+        var _data = this._data;
+        if (_data === undefined) {
+            return;
+        }
+        var collectionView = this.collectionView;
+        if (collectionView === undefined) {
+            return;
+        }
+        var numberOfSections = collectionView.numberOfSections();
+        for (var section = 0; section < numberOfSections; section++) {
+            var layoutSection = _data.addSection();
+            layoutSection.verticalInterstice = _data.horizontal ? this.__minimumInteritemSpacing(section) : this.__minimumLineSpacing(section);
+            layoutSection.horizontalInterstice = !_data.horizontal ? this.__minimumInteritemSpacing(section) : this.__minimumLineSpacing(section);
+            layoutSection.sectionMargins = this.__insetForSection(section);
+            layoutSection.headerDimension = _data.horizontal ? this.__referenceSizeForHeader(section).width : this.__referenceSizeForHeader(section).height;
+            layoutSection.footerDimension = _data.horizontal ? this.__referenceSizeForFooter(section).width : this.__referenceSizeForFooter(section).height;
+            var numberOfItems = collectionView.numberOfItemsInSection(section);
+            for (var item = 0; item < numberOfItems; item++) {
+                var indexPath = new UIIndexPath_1.UIIndexPath(item, section);
+                var itemSize = this.__sizeForItem(indexPath);
+                var layoutItem = layoutSection.addItem();
+                layoutItem.itemFrame = { x: 0.0, y: 0.0, width: itemSize.width, height: itemSize.height };
+            }
+        }
+    };
+
+    UICollectionViewFlowLayout.prototype.updateItemsLayout = function updateItemsLayout() {
+        var _data = this._data;
+        if (_data === undefined) {
+            return;
+        }
+        var contentSize = { width: 0, height: 0 };
+        _data.sections.forEach(function (section) {
+            section.computeLayout();
+            var sectionFrame = Object.assign({}, section.frame);
+            if (_data.horizontal) {
+                sectionFrame.x += contentSize.width;
+                contentSize.width += section.frame.width + section.frame.x;
+                contentSize.height = Math.max(contentSize.height, sectionFrame.height + section.frame.y + section.sectionMargins.top + section.sectionMargins.bottom);
+            } else {
+                sectionFrame.y += contentSize.height;
+                contentSize.height += sectionFrame.height + section.frame.y;
+                contentSize.width = Math.max(contentSize.width, sectionFrame.width + section.frame.x + section.sectionMargins.left + section.sectionMargins.right);
+            }
+            section.frame = { x: sectionFrame.x, y: sectionFrame.y, width: sectionFrame.width, height: sectionFrame.height };
+        });
+        _data.contentSize = { width: contentSize.width, height: contentSize.height };
+    };
+
+    _createClass(UICollectionViewFlowLayout, [{
+        key: "sectionInset",
+        get: function get() {
+            return this._sectionInset;
+        },
+        set: function set(value) {
+            this._sectionInset = value;
+            this.invalidateLayout();
+        }
+    }]);
+
+    return UICollectionViewFlowLayout;
+}(UICollectionView_1.UICollectionViewLayout);
+
+exports.UICollectionViewFlowLayout = UICollectionViewFlowLayout;
+
+/***/ }),
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6851,7 +8564,7 @@ var UIConfirm = function () {
 exports.UIConfirm = UIConfirm;
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6860,7 +8573,7 @@ exports.UIConfirm = UIConfirm;
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UUID_1 = __webpack_require__(29);
+var UUID_1 = __webpack_require__(31);
 
 var UIDevice = function UIDevice() {
     _classCallCheck(this, UIDevice);
@@ -6887,7 +8600,7 @@ UIDevice.current = new UIDevice();
 exports.UIDevice = UIDevice;
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6900,7 +8613,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(14);
+var UIViewController_1 = __webpack_require__(15);
 
 var UINavigationBarViewController = function (_UIViewController_1$U) {
     _inherits(UINavigationBarViewController, _UIViewController_1$U);
@@ -6921,7 +8634,7 @@ var UINavigationBarViewController = function (_UIViewController_1$U) {
 exports.UINavigationBarViewController = UINavigationBarViewController;
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6998,7 +8711,7 @@ var UITabBarItem = function () {
 exports.UITabBarItem = UITabBarItem;
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7011,8 +8724,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(14);
-var UINavigationBar_1 = __webpack_require__(24);
+var UIViewController_1 = __webpack_require__(15);
+var UINavigationBar_1 = __webpack_require__(27);
 var UIAnimator_1 = __webpack_require__(7);
 var UIColor_1 = __webpack_require__(5);
 
@@ -7206,7 +8919,7 @@ var UINavigationController = function (_UIViewController_1$U) {
 exports.UINavigationController = UINavigationController;
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7221,9 +8934,9 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(14);
-var UIScrollView_1 = __webpack_require__(25);
-var UIPoint_1 = __webpack_require__(12);
+var UIViewController_1 = __webpack_require__(15);
+var UIScrollView_1 = __webpack_require__(20);
+var UIPoint_1 = __webpack_require__(11);
 var UIAnimator_1 = __webpack_require__(7);
 
 var UIPageViewController = function (_UIViewController_1$U) {
@@ -7508,7 +9221,7 @@ var UIPageViewController = function (_UIViewController_1$U) {
 exports.UIPageViewController = UIPageViewController;
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7521,7 +9234,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(10);
+var UIGestureRecognizer_1 = __webpack_require__(14);
 
 var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIPinchGestureRecognizer, _UIGestureRecognizer_);
@@ -7546,7 +9259,7 @@ var UIPinchGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIPinchGestureRecognizer = UIPinchGestureRecognizer;
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7671,7 +9384,7 @@ var UIProgressView = function (_UIView_1$UIView) {
 exports.UIProgressView = UIProgressView;
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7684,7 +9397,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIGestureRecognizer_1 = __webpack_require__(10);
+var UIGestureRecognizer_1 = __webpack_require__(14);
 
 var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
     _inherits(UIRotationGestureRecognizer, _UIGestureRecognizer_);
@@ -7705,7 +9418,7 @@ var UIRotationGestureRecognizer = function (_UIGestureRecognizer_) {
 exports.UIRotationGestureRecognizer = UIRotationGestureRecognizer;
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7726,7 +9439,7 @@ UIScreen.main = new UIScreen();
 exports.UIScreen = UIScreen;
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7921,7 +9634,7 @@ var UISlider = function (_UIView_1$UIView2) {
 exports.UISlider = UISlider;
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8236,7 +9949,7 @@ var UIStackView = function (_UIView_1$UIView) {
 exports.UIStackView = UIStackView;
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8420,7 +10133,7 @@ var UISwitch = function (_UIView_1$UIView2) {
 exports.UISwitch = UISwitch;
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8435,8 +10148,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var UIViewController_1 = __webpack_require__(14);
-var UITabBar_1 = __webpack_require__(72);
+var UIViewController_1 = __webpack_require__(15);
+var UITabBar_1 = __webpack_require__(75);
 
 var UITabBarController = function (_UIViewController_1$U) {
     _inherits(UITabBarController, _UIViewController_1$U);
@@ -8624,7 +10337,7 @@ var UITabBarController = function (_UIViewController_1$U) {
 exports.UITabBarController = UITabBarController;
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8641,11 +10354,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
 var UIColor_1 = __webpack_require__(5);
-var UIImageView_1 = __webpack_require__(23);
-var UILabel_1 = __webpack_require__(22);
+var UIImageView_1 = __webpack_require__(25);
+var UILabel_1 = __webpack_require__(24);
 var UIFont_1 = __webpack_require__(18);
 var UIEnums_1 = __webpack_require__(6);
-var UITapGestureRecognizer_1 = __webpack_require__(21);
+var UITapGestureRecognizer_1 = __webpack_require__(23);
 var UIEdgeInsets_1 = __webpack_require__(8);
 
 var UITabBar = function (_UIView_1$UIView) {
@@ -8832,7 +10545,7 @@ var UITabBarButton = function (_UIView_1$UIView2) {
 exports.UITabBarButton = UITabBarButton;
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8848,12 +10561,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
-var UIScrollView_1 = __webpack_require__(25);
+var UIScrollView_1 = __webpack_require__(20);
 var UIColor_1 = __webpack_require__(5);
-var UIIndexPath_1 = __webpack_require__(74);
-var UIRect_1 = __webpack_require__(11);
+var UIIndexPath_1 = __webpack_require__(26);
+var UIRect_1 = __webpack_require__(9);
 var UIAnimator_1 = __webpack_require__(7);
-var UITouch_1 = __webpack_require__(9);
+var UITouch_1 = __webpack_require__(10);
 // @Reference https://github.com/BigZaphod/Chameleon/blob/master/UIKit/Classes/UITableView.m
 
 var UITableView = function (_UIScrollView_1$UIScr) {
@@ -9584,35 +11297,7 @@ var UITableViewCell = function (_UIView_1$UIView) {
 exports.UITableViewCell = UITableViewCell;
 
 /***/ }),
-/* 74 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-
-var UIIndexPath = function () {
-    function UIIndexPath(row, section) {
-        _classCallCheck(this, UIIndexPath);
-
-        this.row = row;
-        this.section = section;
-    }
-
-    UIIndexPath.prototype.mapKey = function mapKey() {
-        return this.row + "-" + this.section;
-    };
-
-    return UIIndexPath;
-}();
-
-exports.UIIndexPath = UIIndexPath;
-
-/***/ }),
-/* 75 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9630,8 +11315,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(1);
 var UIColor_1 = __webpack_require__(5);
 var UIEnums_1 = __webpack_require__(6);
-var UIButton_1 = __webpack_require__(32);
-var UIImage_1 = __webpack_require__(34);
+var UIButton_1 = __webpack_require__(33);
+var UIImage_1 = __webpack_require__(38);
 var clearButtonImage = new UIImage_1.UIImage({ base64: "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAC0UExURUxpcY+NlKqqqo+PlI+OlI6Nk4+OlI6Nk4+OlH9/f39//46NlI+PlY6NlY6Nk5+fn4+OlJGOlpCQlY6OlI+OlJGOlI2NkY+Nk4+Ok46Ok1VVVQAAAI+OlJGOlY6OlY+Pk4+Pk4+PlJCOlJCOlY+OlI+Nk46NlI+OlI+PlI6Olo6Ok4+Nk4+Nk46OlI+Nk4+OlJCPlZGQlpKRl5OSmJaVnJWUmpeWnJSSmZCOlJSTmZCOlZOSmb7cF6QAAAAvdFJOUwD+A2X9/Pv+/gIC6Cnz2AjHZmhdul0/cPu+AwHkRkaAcL1/aOXm9/Y+Zvu7/rqAXZkdXwAAAYZJREFUKM91U4d2wjAMVMCOnQBhBMIoe7R0Sk4gQPv//1U5Zpail5fk6eyTdD4D2AgA6uv5LKrVotl8XS8SpyhB0GnoPDNEJst1Iw44dYwAqu10i1IpRKUkbtN29bQ3gHFloyUjLpTUm8rYoSUYPe98jVfh+buXsWVmzsrO5/XCOyKCOfxdpWAO2xvGNGVYECvMiGn8zafl7aTaQ4/81bcRiMLgsMeo1mnM8zW2EhW9xaUpGSEMdcPYJ4Vy26hDoplJZEMmaSIRNrnFVSY4qROY5JIrIna5fjlNy/yZ7m1C5l/Qz2wfytAr12+1+NUkU6SyPkTFn22kDE/ATxltY3Z9BDVy4wlKWzAYQCsl4TJUuwYXd2BkPh7TnhviGWBx09DMjeLdjNItEjKfQ+IVIizDiwjh8CTCUb5eHHadfNNS3DvJZ4Vnnak3RCf8fnkUvsP1w/f/j6wdPDzsH3fY1iaHvzY5OJvYvaN7g40u9ntsTcsc3pi6E15M7a5DMunb69CfJOfr8AsJs0zEPPGMHwAAAABJRU5ErkJggg==", renderingMode: UIImage_1.UIImageRenderingMode.alwaysOriginal });
 
 var UITextField = function (_UIView_1$UIView) {
@@ -9975,7 +11660,7 @@ var UITextField = function (_UIView_1$UIView) {
 exports.UITextField = UITextField;
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10178,7 +11863,7 @@ var UITextView = function (_UIView_1$UIView) {
 exports.UITextView = UITextView;
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10249,1683 +11934,6 @@ var UIWebView = function (_UIView_1$UIView) {
 }(UIView_1.UIView);
 
 exports.UIWebView = UIWebView;
-
-/***/ }),
-/* 78 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UIView_1 = __webpack_require__(1);
-var UIScrollView_1 = __webpack_require__(25);
-var UIRect_1 = __webpack_require__(11);
-var UIIndexPath_1 = __webpack_require__(74);
-var UISize_1 = __webpack_require__(17);
-var UIAffineTransform_1 = __webpack_require__(30);
-var UIPoint_1 = __webpack_require__(12);
-var UIAnimator_1 = __webpack_require__(7);
-var EventEmitter_1 = __webpack_require__(13);
-var UITouch_1 = __webpack_require__(9);
-var ItemType;
-(function (ItemType) {
-    ItemType[ItemType["cell"] = 0] = "cell";
-    ItemType[ItemType["supplementaryView"] = 1] = "supplementaryView";
-    ItemType[ItemType["decorationView"] = 2] = "decorationView";
-})(ItemType = exports.ItemType || (exports.ItemType = {}));
-exports.UICollectionElementKindCell = "UICollectionElementKindCell";
-var itemKeyCache = {};
-
-var UICollectionViewItemKey = function () {
-    function UICollectionViewItemKey() {
-        var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ItemType.cell;
-        var indexPath = arguments[1];
-        var identifier = arguments[2];
-
-        _classCallCheck(this, UICollectionViewItemKey);
-
-        this.type = type;
-        this.indexPath = indexPath;
-        this.identifier = identifier;
-    }
-
-    UICollectionViewItemKey.collectionItemKeyForCellWithIndexPath = function collectionItemKeyForCellWithIndexPath(indexPath) {
-        var hashKey = 0 + "," + indexPath.mapKey() + ",UICollectionElementKindCell";
-        if (itemKeyCache[hashKey] !== undefined) {
-            return itemKeyCache[hashKey];
-        } else {
-            var value = new UICollectionViewItemKey(ItemType.cell, indexPath, exports.UICollectionElementKindCell);
-            itemKeyCache[hashKey] = value;
-            return value;
-        }
-    };
-
-    UICollectionViewItemKey.collectionItemKeyForLayoutAttributes = function collectionItemKeyForLayoutAttributes(layoutAttributes) {
-        var hashKey = layoutAttributes.representedElementCategory + "," + layoutAttributes.indexPath.mapKey() + "," + layoutAttributes.representedElementKind;
-        if (itemKeyCache[hashKey] !== undefined) {
-            return itemKeyCache[hashKey];
-        } else {
-            var value = new UICollectionViewItemKey(layoutAttributes.representedElementCategory, layoutAttributes.indexPath, layoutAttributes.representedElementKind);
-            itemKeyCache[hashKey] = value;
-            return value;
-        }
-    };
-
-    return UICollectionViewItemKey;
-}();
-
-exports.UICollectionViewItemKey = UICollectionViewItemKey;
-
-var UICollectionViewLayoutAttributes = function () {
-    function UICollectionViewLayoutAttributes(indexPath) {
-        var elementKind = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
-        var representedElementCategory = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ItemType.cell;
-
-        _classCallCheck(this, UICollectionViewLayoutAttributes);
-
-        this.indexPath = indexPath;
-        this.elementKind = elementKind;
-        this.representedElementCategory = representedElementCategory;
-        this.frame = UIRect_1.UIRectZero;
-        this.center = UIPoint_1.UIPointZero;
-        this.size = UISize_1.UISizeZero;
-        this.transform = UIAffineTransform_1.UIAffineTransformIdentity;
-        this.alpha = 1.0;
-        this.zIndex = 0;
-        this.hidden = false;
-        this.representedElementKind = this.elementKind;
-    }
-
-    UICollectionViewLayoutAttributes.prototype.isDecorationView = function isDecorationView() {
-        return this.representedElementCategory === ItemType.decorationView;
-    };
-
-    UICollectionViewLayoutAttributes.prototype.isSupplementaryView = function isSupplementaryView() {
-        return this.representedElementCategory === ItemType.supplementaryView;
-    };
-
-    UICollectionViewLayoutAttributes.prototype.isCell = function isCell() {
-        return this.representedElementCategory === ItemType.cell;
-    };
-
-    UICollectionViewLayoutAttributes.layoutAttributesForCellWithIndexPath = function layoutAttributesForCellWithIndexPath(indexPath) {
-        return new UICollectionViewLayoutAttributes(indexPath, exports.UICollectionElementKindCell, ItemType.cell);
-    };
-
-    UICollectionViewLayoutAttributes.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(elementKind, indexPath) {
-        return new UICollectionViewLayoutAttributes(indexPath, elementKind, ItemType.supplementaryView);
-    };
-
-    UICollectionViewLayoutAttributes.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(elementKind, indexPath) {
-        return new UICollectionViewLayoutAttributes(indexPath, elementKind, ItemType.decorationView);
-    };
-
-    return UICollectionViewLayoutAttributes;
-}();
-
-exports.UICollectionViewLayoutAttributes = UICollectionViewLayoutAttributes;
-
-var UICollectionViewLayout = function (_EventEmitter_1$Event) {
-    _inherits(UICollectionViewLayout, _EventEmitter_1$Event);
-
-    function UICollectionViewLayout() {
-        _classCallCheck(this, UICollectionViewLayout);
-
-        var _this = _possibleConstructorReturn(this, _EventEmitter_1$Event.apply(this, arguments));
-
-        _this.layoutAttributesClass = UICollectionViewLayoutAttributes;
-        _this.collectionView = undefined;
-        return _this;
-    }
-
-    UICollectionViewLayout.prototype.prepareLayout = function prepareLayout() {};
-
-    UICollectionViewLayout.prototype.invalidateLayout = function invalidateLayout() {
-        if (this.collectionView && this.collectionView._collectionViewData) {
-            this.collectionView._collectionViewData.invalidate();
-        }
-        if (this.collectionView) {
-            this.collectionView.setNeedsLayout(true);
-        }
-    };
-
-    UICollectionViewLayout.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
-        return [];
-    };
-
-    UICollectionViewLayout.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
-        return undefined;
-    };
-
-    UICollectionViewLayout.prototype.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(kind, indexPath) {
-        return undefined;
-    };
-
-    UICollectionViewLayout.prototype.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(kind, indexPath) {
-        return undefined;
-    };
-
-    UICollectionViewLayout.prototype.collectionViewContentSize = function collectionViewContentSize() {
-        return UISize_1.UISizeZero;
-    };
-
-    return UICollectionViewLayout;
-}(EventEmitter_1.EventEmitter);
-
-exports.UICollectionViewLayout = UICollectionViewLayout;
-
-var UICollectionView = function (_UIScrollView_1$UIScr) {
-    _inherits(UICollectionView, _UIScrollView_1$UIScr);
-
-    function UICollectionView(collectionViewLayout) {
-        _classCallCheck(this, UICollectionView);
-
-        var _this2 = _possibleConstructorReturn(this, _UIScrollView_1$UIScr.call(this));
-
-        _this2.collectionViewLayout = collectionViewLayout;
-        _this2.allowsSelection = true;
-        _this2.allowsMultipleSelection = false;
-        // Implementations
-        _this2._allVisibleViewsDict = new Map();
-        _this2._indexPathsForSelectedItems = [];
-        _this2._indexPathsForHighlightedItems = [];
-        _this2._registeredCells = {};
-        _this2._collectionViewData = new UICollectionViewData(_this2, _this2.collectionViewLayout);
-        _this2._cellReuseQueues = {};
-        _this2._supplementaryViewReuseQueues = {};
-        _this2._decorationViewReuseQueues = {};
-        _this2.firstTouchPoint = undefined;
-        _this2.firstTouchCell = undefined;
-        collectionViewLayout.collectionView = _this2;
-        return _this2;
-    }
-
-    UICollectionView.prototype.register = function register(initializer, reuseIdentifier) {
-        this._registeredCells[reuseIdentifier] = initializer;
-    };
-
-    UICollectionView.prototype.dequeueReusableCell = function dequeueReusableCell(reuseIdentifier, indexPath) {
-        if (this._cellReuseQueues[reuseIdentifier] && this._cellReuseQueues[reuseIdentifier].length > 0) {
-            var _cell = this._cellReuseQueues[reuseIdentifier][0];
-            if (_cell instanceof UICollectionViewCell) {
-                this._cellReuseQueues[reuseIdentifier].splice(0, 1);
-                return _cell;
-            }
-        }
-        var initializer = this._registeredCells[reuseIdentifier];
-        if (!initializer) {
-            return new UICollectionViewCell();
-        }
-        var cell = initializer(undefined);
-        cell.reuseIdentifier = reuseIdentifier;
-        cell.collectionView = this;
-        return cell;
-    };
-
-    UICollectionView.prototype.allCells = function allCells() {
-        var result = [];
-        this._allVisibleViewsDict.forEach(function (it) {
-            if (it instanceof UICollectionViewCell) {
-                result.push(it);
-            }
-        });
-        return result;
-    };
-
-    UICollectionView.prototype.visibleCells = function visibleCells() {
-        var _this3 = this;
-
-        return this.allCells().filter(function (it) {
-            return UIRect_1.UIRectIntersectsRect(_this3.visibleBoundRects, it.frame);
-        });
-    };
-
-    UICollectionView.prototype.reloadData = function reloadData() {
-        var _this4 = this;
-
-        this.invalidateLayout();
-        this._allVisibleViewsDict.forEach(function (it) {
-            it.hidden = true;
-        });
-        this._allVisibleViewsDict.clear();
-        this._indexPathsForSelectedItems.forEach(function (it) {
-            var cell = _this4.cellForItemAtIndexPath(it);
-            if (cell) {
-                cell.selected = false;
-                cell.highlighted = false;
-            }
-        });
-        this._indexPathsForSelectedItems = [];
-        this._indexPathsForHighlightedItems = [];
-        this.setNeedsLayout(true);
-    };
-
-    UICollectionView.prototype.selectItem = function selectItem(indexPath, animated) {
-        var _this5 = this;
-
-        if (!this.allowsMultipleSelection) {
-            this._indexPathsForSelectedItems.forEach(function (indexPath) {
-                _this5._allVisibleViewsDict.forEach(function (it) {
-                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
-                        it.selected = false;
-                        _this5.emit("didDeselectItem", it.currentIndexPath, it);
-                    }
-                });
-            });
-            this._indexPathsForSelectedItems = [];
-        }
-        this._indexPathsForSelectedItems.push(indexPath);
-        if (animated) {
-            UIAnimator_1.UIAnimator.linear(0.5, function () {
-                _this5._allVisibleViewsDict.forEach(function (it) {
-                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
-                        it.selected = true;
-                    }
-                });
-            }, undefined);
-        } else {
-            this._allVisibleViewsDict.forEach(function (it) {
-                if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
-                    it.selected = true;
-                }
-            });
-        }
-    };
-
-    UICollectionView.prototype.deselectItem = function deselectItem(indexPath, animated) {
-        var _this6 = this;
-
-        {
-            var idx = this._indexPathsForSelectedItems.map(function (it) {
-                return it.mapKey();
-            }).indexOf(indexPath.mapKey());
-            if (idx >= 0) {
-                this._indexPathsForSelectedItems.splice(idx, 1);
-            }
-        }
-        if (animated) {
-            UIAnimator_1.UIAnimator.linear(0.5, function () {
-                _this6._allVisibleViewsDict.forEach(function (it) {
-                    if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
-                        it.selected = false;
-                    }
-                });
-            }, undefined);
-        } else {
-            this._allVisibleViewsDict.forEach(function (it) {
-                if (it instanceof UICollectionViewCell && it.currentIndexPath && it.currentIndexPath.mapKey() === indexPath.mapKey()) {
-                    it.selected = false;
-                }
-            });
-        }
-    };
-    // Query Grid
-
-
-    UICollectionView.prototype.numberOfSections = function numberOfSections() {
-        return this._collectionViewData.numberOfSections();
-    };
-
-    UICollectionView.prototype.numberOfItemsInSection = function numberOfItemsInSection(section) {
-        return this._collectionViewData.numberOfItemsInSection(section);
-    };
-
-    UICollectionView.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
-        return this.collectionViewLayout.layoutAttributesForItemAtIndexPath(indexPath);
-    };
-
-    UICollectionView.prototype.layoutAttributesForSupplementaryElementOfKind = function layoutAttributesForSupplementaryElementOfKind(kind, indexPath) {
-        return this.collectionViewLayout.layoutAttributesForSupplementaryViewOfKind(kind, indexPath);
-    };
-
-    UICollectionView.prototype.indexPathForItemAtPoint = function indexPathForItemAtPoint(point) {
-        var targets = this.collectionViewLayout.layoutAttributesForElementsInRect({ x: point.x, y: point.y, width: 1.0, height: 1.0 });
-        return targets[targets.length - 1].indexPath;
-    };
-
-    UICollectionView.prototype.indexPathForCell = function indexPathForCell(cell) {
-        var keys = this._allVisibleViewsDict.keys();
-        while (true) {
-            var element = keys.next();
-            if (element.done) {
-                break;
-            }
-            if (this._allVisibleViewsDict.get(element.value) === cell) {
-                return element.value.indexPath;
-            }
-        }
-        return undefined;
-    };
-
-    UICollectionView.prototype.cellForItemAtIndexPath = function cellForItemAtIndexPath(indexPath) {
-        var keys = this._allVisibleViewsDict.keys();
-        while (true) {
-            var element = keys.next();
-            if (element.done) {
-                break;
-            }
-            if (element.value.indexPath.mapKey() === indexPath.mapKey()) {
-                var cell = this._allVisibleViewsDict.get(element.value);
-                if (cell instanceof UICollectionViewCell) {
-                    return cell;
-                }
-            }
-        }
-        return undefined;
-    };
-
-    UICollectionView.prototype.indexPathsForVisibleItems = function indexPathsForVisibleItems() {
-        return this.visibleCells().filter(function (it) {
-            return it.layoutAttributes !== undefined;
-        }).map(function (it) {
-            return it.layoutAttributes.indexPath;
-        });
-    };
-
-    UICollectionView.prototype.indexPathsForSelectedItems = function indexPathsForSelectedItems() {
-        return this._indexPathsForSelectedItems;
-    };
-
-    UICollectionView.prototype.layoutSubviews = function layoutSubviews() {
-        _UIScrollView_1$UIScr.prototype.layoutSubviews.call(this);
-        this.layoutCollectionViews();
-    };
-    // Private
-
-
-    UICollectionView.prototype.layoutCollectionViews = function layoutCollectionViews() {
-        this._collectionViewData.validateLayoutInRect(this.visibleBoundRects);
-        var contentRect = this._collectionViewData.collectionViewContentRect();
-        this.contentSize = contentRect;
-        this._collectionViewData.validateLayoutInRect(this.visibleBoundRects);
-        this.updateVisibleCellsNow(true);
-    };
-
-    UICollectionView.prototype.invalidateLayout = function invalidateLayout() {
-        this.collectionViewLayout.invalidateLayout();
-        this._collectionViewData.invalidate();
-    };
-
-    UICollectionView.prototype.updateVisibleCellsNow = function updateVisibleCellsNow() {
-        var _this7 = this;
-
-        var now = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-
-        var layoutAttributesArray = this._collectionViewData.layoutAttributesForElementsInRect(this.visibleBoundRects);
-        if (layoutAttributesArray.length === 0) {
-            return;
-        }
-        var itemKeysToAddDict = new Map();
-        layoutAttributesArray.forEach(function (layoutAttributes) {
-            var itemKey = UICollectionViewItemKey.collectionItemKeyForLayoutAttributes(layoutAttributes);
-            itemKeysToAddDict.set(itemKey, layoutAttributes);
-            var view = _this7._allVisibleViewsDict.get(itemKey);
-            if (view instanceof UICollectionReusableView) {
-                if (view instanceof UICollectionViewCell) {
-                    view.currentIndexPath = itemKey.indexPath;
-                    view.highlighted = _this7._indexPathsForHighlightedItems.map(function (it) {
-                        return it.mapKey();
-                    }).indexOf(itemKey.indexPath.mapKey()) >= 0;
-                    view.selected = _this7._indexPathsForSelectedItems.map(function (it) {
-                        return it.mapKey();
-                    }).indexOf(itemKey.indexPath.mapKey()) >= 0;
-                }
-                view.applyLayoutAttributes(layoutAttributes);
-            } else {
-                switch (itemKey.type) {
-                    case ItemType.cell:
-                        {
-                            view = _this7.createPreparedCellForItemAtIndexPath(itemKey.indexPath, layoutAttributes);
-                            if (view instanceof UICollectionViewCell) {
-                                view.currentIndexPath = itemKey.indexPath;
-                                view.highlighted = _this7._indexPathsForHighlightedItems.map(function (it) {
-                                    return it.mapKey();
-                                }).indexOf(itemKey.indexPath.mapKey()) >= 0;
-                                view.selected = _this7._indexPathsForSelectedItems.map(function (it) {
-                                    return it.mapKey();
-                                }).indexOf(itemKey.indexPath.mapKey()) >= 0;
-                            }
-                            break;
-                        }
-                    case ItemType.supplementaryView:
-                        {
-                            view = _this7.createPreparedSupplementaryViewForElementOfKind(layoutAttributes.representedElementKind, layoutAttributes.indexPath, layoutAttributes);
-                            break;
-                        }
-                    case ItemType.decorationView:
-                        {
-                            view = undefined;
-                        }
-                }
-                if (view instanceof UICollectionReusableView) {
-                    _this7._allVisibleViewsDict.set(itemKey, view);
-                    _this7.addControlledSubview(view);
-                    view.applyLayoutAttributes(layoutAttributes);
-                }
-            }
-        });
-        var allVisibleItemKeys = function () {
-            var keys = [];
-            var keySet = _this7._allVisibleViewsDict.keys();
-            while (true) {
-                var key = keySet.next();
-                if (key.done) {
-                    break;
-                }
-                keys.push(key.value);
-            }
-            return keys;
-        }();
-        itemKeysToAddDict.forEach(function (_, it) {
-            var idx = allVisibleItemKeys.indexOf(it);
-            if (idx >= 0) {
-                allVisibleItemKeys.splice(idx, 1);
-            }
-        });
-        allVisibleItemKeys.forEach(function (itemKey) {
-            var reusableView = _this7._allVisibleViewsDict.get(itemKey);
-            if (reusableView) {
-                reusableView.hidden = true;
-                _this7._allVisibleViewsDict.delete(itemKey);
-                switch (itemKey.type) {
-                    case ItemType.cell:
-                        {
-                            _this7.reuseCell(reusableView);
-                            break;
-                        }
-                    case ItemType.supplementaryView:
-                        {
-                            _this7.reuseSupplementaryView(reusableView);
-                            break;
-                        }
-                    case ItemType.decorationView:
-                        {
-                            _this7.reuseDecorationView(reusableView);
-                            break;
-                        }
-                }
-            }
-        });
-    };
-
-    UICollectionView.prototype.createPreparedCellForItemAtIndexPath = function createPreparedCellForItemAtIndexPath(indexPath, layoutAttributes) {
-        var cell = this.__cellForItemAtIndexPath(this, indexPath);
-        return cell;
-    };
-
-    UICollectionView.prototype.createPreparedSupplementaryViewForElementOfKind = function createPreparedSupplementaryViewForElementOfKind(kind, indexPath, layoutAttributes) {
-        var view = this.__viewForSupplementaryElementOfKind(this, kind, indexPath);
-        if (view) {
-            view.applyLayoutAttributes(layoutAttributes);
-        }
-        return view;
-    };
-
-    UICollectionView.prototype.addControlledSubview = function addControlledSubview(subview) {
-        if (subview.superview === undefined) {
-            this.addSubview(subview);
-        }
-        subview.hidden = false;
-    };
-
-    UICollectionView.prototype.queueReusableView = function queueReusableView(reusableView, queue, identifier) {
-        reusableView.hidden = true;
-        reusableView.prepareForReuse();
-        if (queue[identifier] === undefined) {
-            queue[identifier] = [];
-        }
-        var reusableViews = queue[identifier] || [];
-        reusableViews.push(reusableView);
-    };
-
-    UICollectionView.prototype.reuseCell = function reuseCell(cell) {
-        var reuseIdentifier = cell.reuseIdentifier;
-        if (reuseIdentifier === undefined) {
-            return;
-        }
-        this.queueReusableView(cell, this._cellReuseQueues, reuseIdentifier);
-    };
-
-    UICollectionView.prototype.reuseSupplementaryView = function reuseSupplementaryView(supplementaryView) {
-        var layoutAttributes = supplementaryView.layoutAttributes;
-        var reuseIdentifier = supplementaryView.reuseIdentifier;
-        if (layoutAttributes === undefined || reuseIdentifier === undefined) {
-            return;
-        }
-        var kindAndIdentifier = "${layoutAttributes.elementKind}/$reuseIdentifier";
-        this.queueReusableView(supplementaryView, this._supplementaryViewReuseQueues, kindAndIdentifier);
-    };
-
-    UICollectionView.prototype.reuseDecorationView = function reuseDecorationView(decorationView) {
-        var reuseIdentifier = decorationView.reuseIdentifier;
-        if (reuseIdentifier === undefined) {
-            return;
-        }
-        this.queueReusableView(decorationView, this._decorationViewReuseQueues, reuseIdentifier);
-    };
-    // Touches
-
-
-    UICollectionView.prototype.touchesBegan = function touchesBegan(touches) {
-        _UIScrollView_1$UIScr.prototype.touchesBegan.call(this, touches);
-        var firstTouch = touches[0];
-        if (!firstTouch) {
-            return;
-        }
-        this.handleTouch(UITouch_1.UITouchPhase.began, firstTouch);
-    };
-
-    UICollectionView.prototype.touchesMoved = function touchesMoved(touches) {
-        _UIScrollView_1$UIScr.prototype.touchesMoved.call(this, touches);
-        var firstTouch = touches[0];
-        if (!firstTouch) {
-            return;
-        }
-        this.handleTouch(UITouch_1.UITouchPhase.moved, firstTouch);
-    };
-
-    UICollectionView.prototype.touchesEnded = function touchesEnded(touches) {
-        _UIScrollView_1$UIScr.prototype.touchesEnded.call(this, touches);
-        var firstTouch = touches[0];
-        if (!firstTouch) {
-            return;
-        }
-        this.handleTouch(UITouch_1.UITouchPhase.ended, firstTouch);
-    };
-
-    UICollectionView.prototype.touchesCancelled = function touchesCancelled(touches) {
-        _UIScrollView_1$UIScr.prototype.touchesCancelled.call(this, touches);
-        var firstTouch = touches[0];
-        if (!firstTouch) {
-            return;
-        }
-        this.handleTouch(UITouch_1.UITouchPhase.cancelled, firstTouch);
-    };
-
-    UICollectionView.prototype.handleTouch = function handleTouch(phase, currentTouch) {
-        var _this8 = this;
-
-        if (!this.allowsSelection) {
-            return;
-        }
-        switch (phase) {
-            case UITouch_1.UITouchPhase.began:
-                {
-                    if (!this.tracking) {
-                        var hitTestView = currentTouch.view;
-                        var cellShouldHighlighted = true;
-                        while (hitTestView !== undefined) {
-                            if (hitTestView instanceof UICollectionViewCell) {
-                                break;
-                            }
-                            if (hitTestView.gestureRecognizers.length > 0) {
-                                cellShouldHighlighted = false;
-                            }
-                            hitTestView = hitTestView.superview;
-                        }
-                        if (cellShouldHighlighted) {
-                            this.firstTouchPoint = currentTouch.windowPoint;
-                            if (hitTestView instanceof UICollectionViewCell) {
-                                this.firstTouchCell = hitTestView;
-                                setTimeout(function () {
-                                    if (_this8.firstTouchPoint === undefined || !(hitTestView instanceof UICollectionViewCell)) {
-                                        return;
-                                    }
-                                    if (hitTestView.currentIndexPath) {
-                                        _this8._indexPathsForHighlightedItems.push(hitTestView.currentIndexPath);
-                                    }
-                                    hitTestView.highlighted = true;
-                                }, 150);
-                            }
-                        }
-                    }
-                    break;
-                }
-            case UITouch_1.UITouchPhase.moved:
-                {
-                    if (this.firstTouchPoint && currentTouch.windowPoint) {
-                        if (UIView_1.UIView.recognizedGesture !== undefined || Math.abs(currentTouch.windowPoint.y - this.firstTouchPoint.y) > 8) {
-                            this._indexPathsForHighlightedItems = [];
-                            this._allVisibleViewsDict.forEach(function (it) {
-                                if (it instanceof UICollectionViewCell) {
-                                    it.highlighted = false;
-                                }
-                            });
-                            this.firstTouchPoint = undefined;
-                            this.firstTouchCell = undefined;
-                        }
-                    }
-                    break;
-                }
-            case UITouch_1.UITouchPhase.ended:
-                {
-                    if (this.firstTouchCell) {
-                        var cell = this.firstTouchCell;
-                        this._indexPathsForHighlightedItems = [];
-                        if (!this.allowsMultipleSelection) {
-                            this._indexPathsForSelectedItems.forEach(function (indexPath) {
-                                _this8._allVisibleViewsDict.forEach(function (it, key) {
-                                    if (key.indexPath && key.indexPath.mapKey() === indexPath.mapKey()) {
-                                        if (it instanceof UICollectionViewCell) {
-                                            it.selected = false;
-                                            _this8.emit("didDeselectItem", it.currentIndexPath, it);
-                                        }
-                                    }
-                                });
-                            });
-                            this._indexPathsForSelectedItems = [];
-                        }
-                        this.firstTouchPoint = undefined;
-                        this.firstTouchCell = undefined;
-                        this._indexPathsForHighlightedItems = [];
-                        this._allVisibleViewsDict.forEach(function (it) {
-                            if (it instanceof UICollectionViewCell) {
-                                it.highlighted = false;
-                            }
-                        });
-                        if (cell.currentIndexPath) {
-                            var idx = this._indexPathsForSelectedItems.map(function (it) {
-                                return it.mapKey();
-                            }).indexOf(cell.currentIndexPath.mapKey());
-                            if (idx >= 0) {
-                                this._indexPathsForSelectedItems.splice(idx, 1);
-                            } else {
-                                this._indexPathsForSelectedItems.push(cell.currentIndexPath);
-                            }
-                        }
-                        cell.selected = !cell.selected;
-                        if (cell.selected) {
-                            this.emit("didSelectItem", cell.currentIndexPath, cell);
-                        } else {
-                            this.emit("didDeselectItem", cell.currentIndexPath, cell);
-                        }
-                    } else {
-                        this.firstTouchPoint = undefined;
-                        this.firstTouchCell = undefined;
-                        this._indexPathsForHighlightedItems = [];
-                        this._allVisibleViewsDict.forEach(function (it) {
-                            if (it instanceof UICollectionViewCell) {
-                                it.highlighted = false;
-                            }
-                        });
-                    }
-                    break;
-                }
-            case UITouch_1.UITouchPhase.cancelled:
-                {
-                    this.firstTouchPoint = undefined;
-                    this.firstTouchCell = undefined;
-                    this._indexPathsForHighlightedItems = [];
-                    this._allVisibleViewsDict.forEach(function (it) {
-                        if (it instanceof UICollectionViewCell) {
-                            it.highlighted = false;
-                        }
-                    });
-                    break;
-                }
-        }
-    };
-    // DataSource & Delegate
-
-
-    UICollectionView.prototype.__cellForItemAtIndexPath = function __cellForItemAtIndexPath(collectionView, indexPath) {
-        return collectionView.val("cellForItem", indexPath) || new UICollectionViewCell();
-    };
-
-    UICollectionView.prototype.__viewForSupplementaryElementOfKind = function __viewForSupplementaryElementOfKind(collectionView, kind, indexPath) {
-        return undefined;
-    };
-
-    UICollectionView.prototype.__numberOfSections = function __numberOfSections(collectionView) {
-        var value = collectionView.val("numberOfSections");
-        return typeof value === "number" ? value : 1;
-    };
-
-    UICollectionView.prototype.__numberOfItemsInSection = function __numberOfItemsInSection(collectionView, inSection) {
-        var value = collectionView.val("numberOfItems", inSection);
-        return typeof value === "number" ? value : 0;
-    };
-
-    _createClass(UICollectionView, [{
-        key: "visibleBoundRects",
-        get: function get() {
-            return { x: 0.0, y: 0.0, width: Math.max(this.bounds.width, this.contentSize.width), height: Math.max(this.bounds.height, this.contentSize.height) };
-        }
-    }]);
-
-    return UICollectionView;
-}(UIScrollView_1.UIScrollView);
-
-exports.UICollectionView = UICollectionView;
-
-var UICollectionReusableView = function (_UIView_1$UIView) {
-    _inherits(UICollectionReusableView, _UIView_1$UIView);
-
-    function UICollectionReusableView() {
-        _classCallCheck(this, UICollectionReusableView);
-
-        var _this9 = _possibleConstructorReturn(this, _UIView_1$UIView.apply(this, arguments));
-
-        _this9.collectionView = undefined;
-        _this9.layoutAttributes = undefined;
-        _this9.reuseIdentifier = undefined;
-        return _this9;
-    }
-
-    UICollectionReusableView.prototype.prepareForReuse = function prepareForReuse() {
-        this.layoutAttributes = undefined;
-    };
-
-    UICollectionReusableView.prototype.applyLayoutAttributes = function applyLayoutAttributes(layoutAttributes) {
-        if (layoutAttributes !== this.layoutAttributes) {
-            this.layoutAttributes = layoutAttributes;
-            this.frame = layoutAttributes.frame;
-            this.transform = layoutAttributes.transform;
-        }
-    };
-
-    return UICollectionReusableView;
-}(UIView_1.UIView);
-
-exports.UICollectionReusableView = UICollectionReusableView;
-
-var UICollectionViewCell = function (_UICollectionReusable) {
-    _inherits(UICollectionViewCell, _UICollectionReusable);
-
-    function UICollectionViewCell() {
-        _classCallCheck(this, UICollectionViewCell);
-
-        var _this10 = _possibleConstructorReturn(this, _UICollectionReusable.call(this));
-
-        _this10._selected = false;
-        _this10._highlighted = false;
-        _this10.contentView = new UIView_1.UIView();
-        _this10.currentIndexPath = undefined;
-        _this10.addSubview(_this10.contentView);
-        return _this10;
-    }
-
-    UICollectionViewCell.prototype.prepareForReuse = function prepareForReuse() {
-        _UICollectionReusable.prototype.prepareForReuse.call(this);
-        this.selected = false;
-        this.highlighted = false;
-    };
-
-    UICollectionViewCell.prototype.layoutSubviews = function layoutSubviews() {
-        _UICollectionReusable.prototype.layoutSubviews.call(this);
-        this.contentView.frame = this.bounds;
-    };
-
-    _createClass(UICollectionViewCell, [{
-        key: "selected",
-        get: function get() {
-            return this._selected;
-        },
-        set: function set(value) {
-            this._selected = value;
-            this.emit("selected", this, value);
-        }
-    }, {
-        key: "highlighted",
-        get: function get() {
-            return this._highlighted;
-        },
-        set: function set(value) {
-            this._highlighted = value;
-            this.emit("highlighted", this, value);
-        }
-    }]);
-
-    return UICollectionViewCell;
-}(UICollectionReusableView);
-
-exports.UICollectionViewCell = UICollectionViewCell;
-
-var UICollectionViewData = function () {
-    function UICollectionViewData(collectionView, layout) {
-        _classCallCheck(this, UICollectionViewData);
-
-        this.collectionView = collectionView;
-        this.layout = layout;
-        this.layoutIsPrepared = false;
-        this.itemCountsAreValid = false;
-        this._numSections = 0;
-        this._numItems = 0;
-        this._sectionItemCounts = [];
-        this.validLayoutRect = undefined;
-        this.contentSize = UISize_1.UISizeZero;
-        this.cachedLayoutAttributes = [];
-    }
-
-    UICollectionViewData.prototype.validateLayoutInRect = function validateLayoutInRect(rect) {
-        this.validateItemCounts();
-        this.prepareToLoadData();
-        if (this.validLayoutRect === undefined || !UIRect_1.UIRectEqualToRect(this.validLayoutRect, rect)) {
-            this.validLayoutRect = rect;
-            this.cachedLayoutAttributes = this.layout.layoutAttributesForElementsInRect(rect).filter(function (it) {
-                return it.isCell() || it.isDecorationView() || it.isSupplementaryView();
-            });
-        }
-    };
-
-    UICollectionViewData.prototype.rectForItemAtIndexPath = function rectForItemAtIndexPath(indexPath) {
-        return UIRect_1.UIRectZero;
-    };
-
-    UICollectionViewData.prototype.globalIndexForItemAtIndexPath = function globalIndexForItemAtIndexPath(indexPath) {
-        return this.numberOfItemsBeforeSection(indexPath.section) + indexPath.row;
-    };
-
-    UICollectionViewData.prototype.indexPathForItemAtGlobalIndex = function indexPathForItemAtGlobalIndex(index) {
-        this.validateItemCounts();
-        var section = 0;
-        var countItems = 0;
-        for (var i = 0; i < this._numSections; i++) {
-            var _section = i;
-            var countIncludingThisSection = countItems + this._sectionItemCounts[_section];
-            if (countIncludingThisSection > index) {
-                break;
-            }
-            countItems = countIncludingThisSection;
-        }
-        var item = index - countItems;
-        return new UIIndexPath_1.UIIndexPath(item, section);
-    };
-
-    UICollectionViewData.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
-        this.validateLayoutInRect(rect);
-        return this.cachedLayoutAttributes;
-    };
-
-    UICollectionViewData.prototype.invalidate = function invalidate() {
-        this.itemCountsAreValid = false;
-        this.layoutIsPrepared = false;
-        this.validLayoutRect = undefined;
-    };
-
-    UICollectionViewData.prototype.numberOfItemsBeforeSection = function numberOfItemsBeforeSection(section) {
-        this.validateItemCounts();
-        var returnCount = 0;
-        for (var i = 0; i < section; i++) {
-            returnCount += this._sectionItemCounts[i];
-        }
-        return returnCount;
-    };
-
-    UICollectionViewData.prototype.numberOfItemsInSection = function numberOfItemsInSection(section) {
-        this.validateItemCounts();
-        if (section >= this._numSections || section < 0) {
-            return 0;
-        }
-        return this._sectionItemCounts[section];
-    };
-
-    UICollectionViewData.prototype.numberOfItems = function numberOfItems() {
-        this.validateItemCounts();
-        return this._numItems;
-    };
-
-    UICollectionViewData.prototype.numberOfSections = function numberOfSections() {
-        this.validateItemCounts();
-        return this._numSections;
-    };
-
-    UICollectionViewData.prototype.collectionViewContentRect = function collectionViewContentRect() {
-        return { x: 0.0, y: 0.0, width: this.contentSize.width, height: this.contentSize.height };
-    };
-
-    UICollectionViewData.prototype.updateItemCounts = function updateItemCounts() {
-        var collectionView = this.collectionView;
-        this._numSections = collectionView.__numberOfSections(collectionView);
-        if (this._numSections <= 0) {
-            this._numItems = 0;
-            this._sectionItemCounts = [];
-            this.itemCountsAreValid = true;
-            return;
-        }
-        this._numItems = 0;
-        var sectionItemCounts = [];
-        for (var index = 0; index < this._numSections; index++) {
-            var cellCount = collectionView.__numberOfItemsInSection(collectionView, index);
-            sectionItemCounts.push(cellCount);
-            this._numItems += cellCount;
-        }
-        this._sectionItemCounts = sectionItemCounts;
-        this.itemCountsAreValid = true;
-    };
-
-    UICollectionViewData.prototype.validateItemCounts = function validateItemCounts() {
-        if (!this.itemCountsAreValid) {
-            this.updateItemCounts();
-        }
-    };
-
-    UICollectionViewData.prototype.prepareToLoadData = function prepareToLoadData() {
-        if (!this.layoutIsPrepared) {
-            this.layout.prepareLayout();
-            this.contentSize = this.layout.collectionViewContentSize();
-            this.layoutIsPrepared = true;
-        }
-    };
-
-    return UICollectionViewData;
-}();
-
-exports.UICollectionViewData = UICollectionViewData;
-
-/***/ }),
-/* 79 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var UISize_1 = __webpack_require__(17);
-var UIRect_1 = __webpack_require__(11);
-var UIEdgeInsets_1 = __webpack_require__(8);
-var UICollectionView_1 = __webpack_require__(78);
-var UIIndexPath_1 = __webpack_require__(74);
-var UICollectionViewScrollDirection;
-(function (UICollectionViewScrollDirection) {
-    UICollectionViewScrollDirection[UICollectionViewScrollDirection["vertical"] = 0] = "vertical";
-    UICollectionViewScrollDirection[UICollectionViewScrollDirection["horizontal"] = 1] = "horizontal";
-})(UICollectionViewScrollDirection = exports.UICollectionViewScrollDirection || (exports.UICollectionViewScrollDirection = {}));
-var UIFlowLayoutCommonRowHorizontalAlignmentKey = "UIFlowLayoutCommonRowHorizontalAlignmentKey";
-var UIFlowLayoutLastRowHorizontalAlignmentKey = "UIFlowLayoutLastRowHorizontalAlignmentKey";
-var UIFlowLayoutRowVerticalAlignmentKey = "UIFlowLayoutRowVerticalAlignmentKey";
-var UICollectionElementKindSectionHeader = "UICollectionElementKindSectionHeader";
-var UICollectionElementKindSectionFooter = "UICollectionElementKindSectionFooter";
-var UIFlowLayoutHorizontalAlignment;
-(function (UIFlowLayoutHorizontalAlignment) {
-    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["left"] = 0] = "left";
-    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["center"] = 1] = "center";
-    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["right"] = 2] = "right";
-    UIFlowLayoutHorizontalAlignment[UIFlowLayoutHorizontalAlignment["justify"] = 3] = "justify";
-})(UIFlowLayoutHorizontalAlignment = exports.UIFlowLayoutHorizontalAlignment || (exports.UIFlowLayoutHorizontalAlignment = {}));
-
-var UIGridLayoutInfo = function () {
-    function UIGridLayoutInfo() {
-        _classCallCheck(this, UIGridLayoutInfo);
-
-        this.sections = [];
-        this.rowAlignmentOptions = {};
-        this.usesFloatingHeaderFooter = false;
-        this.dimension = 0.0;
-        this.horizontal = false;
-        this.leftToRight = false;
-        this.contentSize = UISize_1.UISizeZero;
-        this._isValid = false;
-    }
-
-    UIGridLayoutInfo.prototype.frameForItemAtIndexPath = function frameForItemAtIndexPath(indexPath) {
-        var section = this.sections[indexPath.section];
-        var itemFrame = void 0;
-        if (section.fixedItemSize) {
-            itemFrame = { x: 0.0, y: 0.0, width: section.itemSize.width, height: section.itemSize.height };
-        } else {
-            itemFrame = section.items[indexPath.row].itemFrame;
-        }
-        return itemFrame;
-    };
-
-    UIGridLayoutInfo.prototype.addSection = function addSection() {
-        var section = new UIGridLayoutSection();
-        section.rowAlignmentOptions = this.rowAlignmentOptions;
-        section.layoutInfo = this;
-        this.sections.push(section);
-        this.invalidate(false);
-        return section;
-    };
-
-    UIGridLayoutInfo.prototype.invalidate = function invalidate(arg) {
-        this._isValid = false;
-    };
-
-    UIGridLayoutInfo.prototype.snapshot = function snapshot() {
-        var layoutInfo = new UIGridLayoutInfo();
-        layoutInfo.sections = this.sections.slice(0);
-        layoutInfo.rowAlignmentOptions = this.rowAlignmentOptions;
-        layoutInfo.usesFloatingHeaderFooter = this.usesFloatingHeaderFooter;
-        layoutInfo.dimension = this.dimension;
-        layoutInfo.horizontal = this.horizontal;
-        layoutInfo.leftToRight = this.leftToRight;
-        layoutInfo.contentSize = Object.assign({}, this.contentSize);
-        return layoutInfo;
-    };
-
-    return UIGridLayoutInfo;
-}();
-
-var UIGridLayoutSection = function () {
-    function UIGridLayoutSection() {
-        _classCallCheck(this, UIGridLayoutSection);
-
-        this.items = [];
-        this.rows = [];
-        this.fixedItemSize = false;
-        this.itemSize = UISize_1.UISizeZero;
-        this._itemsCount = 0;
-        this.verticalInterstice = 0.0;
-        this.horizontalInterstice = 0.0;
-        this.sectionMargins = UIEdgeInsets_1.UIEdgeInsetsZero;
-        this.frame = UIRect_1.UIRectZero;
-        this.headerFrame = UIRect_1.UIRectZero;
-        this.footerFrame = UIRect_1.UIRectZero;
-        this.headerDimension = 0.0;
-        this.footerDimension = 0.0;
-        this.layoutInfo = undefined;
-        this.rowAlignmentOptions = {};
-        this.otherMargin = 0.0;
-        this.beginMargin = 0.0;
-        this.endMargin = 0.0;
-        this.actualGap = 0.0;
-        this.lastRowBeginMargin = 0.0;
-        this.lastRowEndMargin = 0.0;
-        this.lastRowActualGap = 0.0;
-        this.lastRowIncomplete = false;
-        this.itemsByRowCount = 0;
-        this.indexOfImcompleteRow = 0;
-        this._isValid = false;
-    }
-
-    UIGridLayoutSection.prototype.recomputeFromIndex = function recomputeFromIndex(index) {
-        this.invalidate();
-        this.computeLayout();
-    };
-
-    UIGridLayoutSection.prototype.invalidate = function invalidate() {
-        this._isValid = false;
-        this.rows = [];
-    };
-
-    UIGridLayoutSection.prototype.computeLayout = function computeLayout() {
-        if (!this._isValid) {
-            var layoutInfo = this.layoutInfo;
-            if (layoutInfo === undefined) {
-                return;
-            }
-            var sectionSize = { width: 0.0, height: 0.0 };
-            var rowIndex = 0;
-            var itemIndex = 0;
-            var itemsByRowCount = 0;
-            var dimensionLeft = 0.0;
-            var row = undefined;
-            var headerFooterDimension = layoutInfo.dimension;
-            var dimension = headerFooterDimension;
-            if (layoutInfo.horizontal) {
-                dimension -= this.sectionMargins.top + this.sectionMargins.bottom;
-                this.headerFrame = { x: sectionSize.width, y: 0.0, width: this.headerDimension, height: headerFooterDimension };
-                sectionSize.width += this.headerDimension + this.sectionMargins.right;
-            } else {
-                dimension -= this.sectionMargins.left + this.sectionMargins.right;
-                this.headerFrame = { x: 0.0, y: sectionSize.height, width: headerFooterDimension, height: this.headerDimension };
-                sectionSize.height += this.headerDimension + this.sectionMargins.top;
-            }
-            var spacing = layoutInfo.horizontal ? this.verticalInterstice : this.horizontalInterstice;
-            while (itemIndex <= this.itemsCount) {
-                var finishCycle = itemIndex >= this.itemsCount;
-                var item = undefined;
-                if (!finishCycle) {
-                    item = this.fixedItemSize ? undefined : this.items[itemIndex];
-                }
-                var itemSize = this.fixedItemSize ? this.itemSize : item && item.itemFrame ? { width: item.itemFrame.width, height: item.itemFrame.height } : { width: 0, height: 0 };
-                var itemDimension = layoutInfo.horizontal ? itemSize.height : itemSize.width;
-                if (itemsByRowCount > 0) {
-                    itemDimension += spacing;
-                }
-                if (dimensionLeft < itemDimension || finishCycle) {
-                    if (row) {
-                        this.itemsByRowCount = Math.max(itemsByRowCount, this.itemsByRowCount);
-                        row.itemCount = itemsByRowCount;
-                        if (!finishCycle) {
-                            this.indexOfImcompleteRow = rowIndex;
-                        }
-                        row.layoutRow();
-                        if (layoutInfo.horizontal) {
-                            row.rowFrame = { x: sectionSize.width, y: this.sectionMargins.top, width: row.rowSize.width, height: row.rowSize.height };
-                            sectionSize.height = Math.max(row.rowSize.height, sectionSize.height);
-                            sectionSize.width += row.rowSize.width + (finishCycle ? 0.0 : this.horizontalInterstice);
-                        } else {
-                            row.rowFrame = { x: this.sectionMargins.left, y: sectionSize.height, width: row.rowSize.width, height: row.rowSize.height };
-                            sectionSize.height += row.rowSize.height + (finishCycle ? 0.0 : this.verticalInterstice);
-                            sectionSize.width = Math.max(row.rowSize.width, sectionSize.width);
-                        }
-                    }
-                    if (!finishCycle) {
-                        if (row) {
-                            row.complete = true;
-                        }
-                        row = this.addRow();
-                        row.fixedItemSize = this.fixedItemSize;
-                        row.index = rowIndex;
-                        this.indexOfImcompleteRow = rowIndex;
-                        rowIndex++;
-                        if (itemsByRowCount > 0) {
-                            itemDimension -= spacing;
-                        }
-                        dimensionLeft = dimension - itemDimension;
-                        itemsByRowCount = 0;
-                    }
-                } else {
-                    dimensionLeft -= itemDimension;
-                }
-                if (item && row) {
-                    row.addItem(item);
-                }
-                itemIndex++;
-                itemsByRowCount++;
-            }
-            if (layoutInfo.horizontal) {
-                sectionSize.width += this.sectionMargins.right;
-                this.footerFrame = { x: sectionSize.width, y: 0.0, width: this.footerDimension, height: headerFooterDimension };
-                sectionSize.width += this.footerDimension;
-            } else {
-                sectionSize.height += this.sectionMargins.bottom;
-                this.footerFrame = { x: 0.0, y: sectionSize.height, width: headerFooterDimension, height: this.footerDimension };
-                sectionSize.height += this.footerDimension;
-            }
-            this.frame = { x: 0.0, y: 0.0, width: sectionSize.width, height: sectionSize.height };
-            this._isValid = true;
-        }
-    };
-
-    UIGridLayoutSection.prototype.addItem = function addItem() {
-        var item = new UIGridLayoutItem();
-        item.section = this;
-        this.items.push(item);
-        return item;
-    };
-
-    UIGridLayoutSection.prototype.addRow = function addRow() {
-        var item = new UIGridLayoutRow();
-        item.section = this;
-        this.rows.push(item);
-        return item;
-    };
-
-    UIGridLayoutSection.prototype.snapshot = function snapshot() {
-        var snapshotSection = new UIGridLayoutSection();
-        snapshotSection.items = this.items.slice(0);
-        snapshotSection.rows = this.rows.slice(0);
-        snapshotSection.verticalInterstice = this.verticalInterstice;
-        snapshotSection.horizontalInterstice = this.horizontalInterstice;
-        snapshotSection.sectionMargins = this.sectionMargins;
-        snapshotSection.frame = this.frame;
-        snapshotSection.headerFrame = this.headerFrame;
-        snapshotSection.footerFrame = this.footerFrame;
-        snapshotSection.headerDimension = this.headerDimension;
-        snapshotSection.footerDimension = this.footerDimension;
-        snapshotSection.layoutInfo = this.layoutInfo;
-        snapshotSection.rowAlignmentOptions = this.rowAlignmentOptions;
-        snapshotSection.fixedItemSize = this.fixedItemSize;
-        snapshotSection.itemSize = this.itemSize;
-        snapshotSection.itemsCount = this.itemsCount;
-        snapshotSection.otherMargin = this.otherMargin;
-        snapshotSection.beginMargin = this.beginMargin;
-        snapshotSection.endMargin = this.endMargin;
-        snapshotSection.actualGap = this.actualGap;
-        snapshotSection.lastRowBeginMargin = this.lastRowBeginMargin;
-        snapshotSection.lastRowEndMargin = this.lastRowEndMargin;
-        snapshotSection.lastRowActualGap = this.lastRowActualGap;
-        snapshotSection.lastRowIncomplete = this.lastRowIncomplete;
-        snapshotSection.itemsByRowCount = this.itemsByRowCount;
-        snapshotSection.indexOfImcompleteRow = this.indexOfImcompleteRow;
-        return snapshotSection;
-    };
-
-    _createClass(UIGridLayoutSection, [{
-        key: "itemsCount",
-        get: function get() {
-            return this.fixedItemSize ? this._itemsCount : this.items.length;
-        },
-        set: function set(value) {
-            this._itemsCount = value;
-        }
-    }]);
-
-    return UIGridLayoutSection;
-}();
-
-var UIGridLayoutItem = function UIGridLayoutItem() {
-    _classCallCheck(this, UIGridLayoutItem);
-
-    this.section = undefined;
-    this.rowObject = undefined;
-    this.itemFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-};
-
-var UIGridLayoutRow = function () {
-    function UIGridLayoutRow() {
-        _classCallCheck(this, UIGridLayoutRow);
-
-        this.section = undefined;
-        this.items = [];
-        this.rowSize = UISize_1.UISizeZero;
-        this.rowFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-        this.index = 0;
-        this.complete = false;
-        this.fixedItemSize = false;
-        this._itemCount = 0;
-        this._isValid = false;
-    }
-
-    UIGridLayoutRow.prototype.addItem = function addItem(item) {
-        this.items.push(item);
-        item.rowObject = this;
-        this.invalidate();
-    };
-
-    UIGridLayoutRow.prototype.layoutRow = function layoutRow() {
-        this.layoutRowAndGenerateRectArray(false);
-    };
-
-    UIGridLayoutRow.prototype.itemRects = function itemRects() {
-        return this.layoutRowAndGenerateRectArray(true) || [];
-    };
-
-    UIGridLayoutRow.prototype.invalidate = function invalidate() {
-        this._isValid = false;
-        this.rowSize = UISize_1.UISizeZero;
-        this.rowFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-    };
-
-    UIGridLayoutRow.prototype.snapshot = function snapshot() {
-        var snapshotRow = new UIGridLayoutRow();
-        snapshotRow.section = this.section;
-        snapshotRow.items = this.items;
-        snapshotRow.rowSize = Object.assign({}, this.rowSize);
-        snapshotRow.rowFrame = Object.assign({}, this.rowFrame);
-        snapshotRow.index = this.index;
-        snapshotRow.complete = this.complete;
-        snapshotRow.fixedItemSize = this.fixedItemSize;
-        snapshotRow.itemCount = this.itemCount;
-        return snapshotRow;
-    };
-
-    UIGridLayoutRow.prototype.layoutRowAndGenerateRectArray = function layoutRowAndGenerateRectArray(generateRectArray) {
-        var rects = generateRectArray ? [] : undefined;
-        if (!this._isValid || generateRectArray) {
-            var section = this.section;
-            if (section === undefined) {
-                return undefined;
-            }
-            var isHorizontal = section.layoutInfo && section.layoutInfo.horizontal ? true : false;
-            var isLastRow = section.indexOfImcompleteRow == this.index;
-            var horizontalAlignment = section.rowAlignmentOptions[isLastRow ? UIFlowLayoutLastRowHorizontalAlignmentKey : UIFlowLayoutCommonRowHorizontalAlignmentKey];
-            if (horizontalAlignment === undefined) {
-                return undefined;
-            }
-            var leftOverSpace = section.layoutInfo && section.layoutInfo.dimension || 0.0;
-            if (isHorizontal) {
-                leftOverSpace -= section.sectionMargins.top + section.sectionMargins.bottom;
-            } else {
-                leftOverSpace -= section.sectionMargins.left + section.sectionMargins.right;
-            }
-            var usedItemCount = 0;
-            var itemIndex = 0;
-            var spacing = isHorizontal ? section.verticalInterstice : section.horizontalInterstice;
-            while (itemIndex < this.itemCount || isLastRow) {
-                var nextItemSize;
-                if (!this.fixedItemSize) {
-                    var _item = this.items[Math.min(itemIndex, this.itemCount - 1)];
-                    nextItemSize = isHorizontal ? _item.itemFrame.height : _item.itemFrame.width;
-                } else {
-                    nextItemSize = isHorizontal ? section.itemSize.height : section.itemSize.width;
-                }
-                if (itemIndex > 0) {
-                    nextItemSize += spacing;
-                }
-                if (leftOverSpace < nextItemSize) {
-                    break;
-                }
-                leftOverSpace -= nextItemSize;
-                itemIndex++;
-                usedItemCount = itemIndex;
-            }
-            var itemOffset = { x: 0, y: 0 };
-            if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.right) {
-                itemOffset.x += leftOverSpace;
-            } else if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.center || horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify && usedItemCount == 1) {
-                itemOffset.x += leftOverSpace / 2.0;
-            }
-            var interSpacing = usedItemCount <= 1 ? 0.0 : leftOverSpace / (usedItemCount - 1);
-            var frame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-            var itemFrame = { x: 0.0, y: 0.0, width: section.itemSize.width, height: section.itemSize.height };
-            for (var _itemIndex = 0; _itemIndex < this.itemCount; _itemIndex++) {
-                var item = undefined;
-                if (!this.fixedItemSize) {
-                    item = this.items[_itemIndex];
-                    itemFrame = Object.assign({}, item.itemFrame);
-                }
-                if (isHorizontal) {
-                    itemFrame.y = itemOffset.y;
-                    itemOffset.y += itemFrame.height + section.verticalInterstice;
-                    if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify) {
-                        itemOffset.y += interSpacing;
-                    }
-                } else {
-                    itemFrame.x = itemOffset.x;
-                    itemOffset.x += itemFrame.width + section.horizontalInterstice;
-                    if (horizontalAlignment == UIFlowLayoutHorizontalAlignment.justify) {
-                        itemOffset.x += interSpacing;
-                    }
-                }
-                var iFrame = { x: itemFrame.x, y: itemFrame.y, width: itemFrame.width, height: itemFrame.height };
-                if (item) {
-                    item.itemFrame = iFrame;
-                }
-                if (rects) {
-                    rects.push(iFrame);
-                }
-                frame = UIRect_1.UIRectUnion(frame, iFrame);
-            }
-            this.rowSize = { width: frame.width, height: frame.height };
-            this._isValid = true;
-        }
-        return rects;
-    };
-
-    _createClass(UIGridLayoutRow, [{
-        key: "itemCount",
-        get: function get() {
-            return this.fixedItemSize ? this._itemCount : this.items.length;
-        },
-        set: function set(value) {
-            this._itemCount = value;
-        }
-    }]);
-
-    return UIGridLayoutRow;
-}();
-
-var UICollectionViewFlowLayout = function (_UICollectionView_1$U) {
-    _inherits(UICollectionViewFlowLayout, _UICollectionView_1$U);
-
-    function UICollectionViewFlowLayout() {
-        var _this$rowAlignmentOpt;
-
-        _classCallCheck(this, UICollectionViewFlowLayout);
-
-        var _this = _possibleConstructorReturn(this, _UICollectionView_1$U.apply(this, arguments));
-
-        _this._data = undefined;
-        _this.minimumLineSpacing = 10.0;
-        _this.minimumInteritemSpacing = 10.0;
-        _this.itemSize = { width: 50.0, height: 50.0 };
-        _this.headerReferenceSize = UISize_1.UISizeZero;
-        _this.footerReferenceSize = UISize_1.UISizeZero;
-        _this._sectionInset = UIEdgeInsets_1.UIEdgeInsetsZero;
-        _this.scrollDirection = UICollectionViewScrollDirection.vertical;
-        _this.rowAlignmentOptions = (_this$rowAlignmentOpt = {}, _this$rowAlignmentOpt[UIFlowLayoutCommonRowHorizontalAlignmentKey] = UIFlowLayoutHorizontalAlignment.justify, _this$rowAlignmentOpt[UIFlowLayoutLastRowHorizontalAlignmentKey] = UIFlowLayoutHorizontalAlignment.justify, _this$rowAlignmentOpt[UIFlowLayoutRowVerticalAlignmentKey] = 1, _this$rowAlignmentOpt);
-        _this._visibleBounds = UIRect_1.UIRectZero;
-        _this.rectCache = [];
-        return _this;
-    }
-
-    UICollectionViewFlowLayout.prototype.prepareLayout = function prepareLayout() {
-        _UICollectionView_1$U.prototype.prepareLayout.call(this);
-        var data = new UIGridLayoutInfo();
-        data.horizontal = this.scrollDirection == UICollectionViewScrollDirection.horizontal;
-        this._visibleBounds = this.collectionView ? this.collectionView.visibleBoundRects : UIRect_1.UIRectZero;
-        data.dimension = data.horizontal ? this._visibleBounds.height : this._visibleBounds.width;
-        data.rowAlignmentOptions = this.rowAlignmentOptions;
-        this._data = data;
-        this.fetchItemsInfo();
-    };
-
-    UICollectionViewFlowLayout.prototype.layoutAttributesForElementsInRect = function layoutAttributesForElementsInRect(rect) {
-        var _this2 = this;
-
-        if (this._data == undefined) {
-            this.prepareLayout();
-        }
-        var layoutAttributesArray = [];
-        var _data = this._data;
-        if (_data === undefined) {
-            return [];
-        }
-        _data.sections.forEach(function (section, sectionIndex) {
-            if (true) {
-                var rectCache = _this2.rectCache;
-                var normalizedHeaderFrame = { x: section.headerFrame.x + section.frame.x, y: section.headerFrame.y + section.frame.y, width: section.headerFrame.width, height: section.headerFrame.height };
-                if (!UIRect_1.UIRectIsEmpty(normalizedHeaderFrame) && UIRect_1.UIRectIntersectsRect(normalizedHeaderFrame, rect)) {
-                    var layoutAttributes = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), UICollectionElementKindSectionHeader, UICollectionView_1.ItemType.supplementaryView);
-                    layoutAttributes.frame = normalizedHeaderFrame;
-                    layoutAttributesArray.push(layoutAttributes);
-                }
-                var itemRects = rectCache[sectionIndex];
-                if (itemRects === undefined && section.fixedItemSize && section.rows.length > 0) {
-                    itemRects = section.rows[0].itemRects();
-                    if (itemRects != undefined) {
-                        rectCache[sectionIndex] = itemRects;
-                    }
-                }
-                section.rows.forEach(function (row) {
-                    var normalizedRowFrame = { x: row.rowFrame.x + section.frame.x, y: row.rowFrame.y + section.frame.y, width: row.rowFrame.width, height: row.rowFrame.height };
-                    if (UIRect_1.UIRectIntersectsRect(normalizedRowFrame, rect)) {
-                        for (var itemIndex = 0; itemIndex < row.itemCount; itemIndex++) {
-                            var _layoutAttributes = void 0;
-                            var sectionItemIndex = void 0;
-                            var itemFrame = void 0;
-                            if (row.fixedItemSize) {
-                                itemFrame = itemRects[itemIndex] || UIRect_1.UIRectZero;
-                                sectionItemIndex = row.index * section.itemsByRowCount + itemIndex;
-                            } else {
-                                var item = row.items[itemIndex];
-                                sectionItemIndex = section.items.indexOf(item);
-                                itemFrame = item.itemFrame;
-                            }
-                            var normalizedItemFrame = { x: normalizedRowFrame.x + itemFrame.x, y: normalizedRowFrame.y + itemFrame.y, width: itemFrame.width, height: itemFrame.height };
-                            if (UIRect_1.UIRectIntersectsRect(normalizedItemFrame, rect)) {
-                                _layoutAttributes = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(sectionItemIndex, sectionIndex), UICollectionView_1.UICollectionElementKindCell, UICollectionView_1.ItemType.cell);
-                                _layoutAttributes.frame = normalizedItemFrame;
-                                layoutAttributesArray.push(_layoutAttributes);
-                            }
-                        }
-                    }
-                });
-                var normalizedFooterFrame = { x: section.footerFrame.x + section.frame.x, y: section.footerFrame.y + section.frame.y, width: section.footerFrame.width, height: section.footerFrame.height };
-                if (!UIRect_1.UIRectIsEmpty(normalizedFooterFrame) && UIRect_1.UIRectIntersectsRect(normalizedFooterFrame, rect)) {
-                    var _layoutAttributes2 = new _this2.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), UICollectionElementKindSectionFooter, UICollectionView_1.ItemType.supplementaryView);
-                    _layoutAttributes2.frame = normalizedFooterFrame;
-                    layoutAttributesArray.push(_layoutAttributes2);
-                }
-            }
-        });
-        return layoutAttributesArray;
-    };
-
-    UICollectionViewFlowLayout.prototype.layoutAttributesForItemAtIndexPath = function layoutAttributesForItemAtIndexPath(indexPath) {
-        if (this._data === undefined) {
-            this.prepareLayout();
-        }
-        var _data = this._data;
-        if (_data === undefined) {
-            return undefined;
-        }
-        var section = _data.sections[indexPath.section];
-        var row = undefined;
-        var itemFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-        if (section.fixedItemSize && section.itemsByRowCount > 0 && indexPath.row / section.itemsByRowCount < section.rows.length) {
-            row = section.rows[indexPath.row / section.itemsByRowCount];
-            var itemIndex = indexPath.row % section.itemsByRowCount;
-            var itemRects = row.itemRects();
-            itemFrame = itemRects[itemIndex];
-        } else if (indexPath.row < section.items.length) {
-            var item = section.items[indexPath.row];
-            row = item.rowObject;
-            itemFrame = item.itemFrame;
-        }
-        var layoutAttributes = new this.layoutAttributesClass(indexPath, UICollectionView_1.UICollectionElementKindCell, UICollectionView_1.ItemType.cell);
-        if (row) {
-            var normalizedRowFrame = { x: row.rowFrame.x + section.frame.x, y: row.rowFrame.y + section.frame.y, width: row.rowFrame.width, height: row.rowFrame.height };
-            layoutAttributes.frame = { x: normalizedRowFrame.x + itemFrame.x, y: normalizedRowFrame.y + itemFrame.y, width: itemFrame.width, height: itemFrame.height };
-        }
-        return layoutAttributes;
-    };
-
-    UICollectionViewFlowLayout.prototype.layoutAttributesForSupplementaryViewOfKind = function layoutAttributesForSupplementaryViewOfKind(kind, indexPath) {
-        if (this._data === undefined) {
-            this.prepareLayout();
-        }
-        var _data = this._data;
-        if (_data === undefined) {
-            return undefined;
-        }
-        var sectionIndex = indexPath.section;
-        var layoutAttributes = undefined;
-        if (sectionIndex < _data.sections.length) {
-            var section = _data.sections[sectionIndex];
-            var normalizedFrame = { x: 0.0, y: 0.0, width: 0.0, height: 0.0 };
-            if (kind == UICollectionElementKindSectionHeader) {
-                normalizedFrame = section.headerFrame;
-            } else if (kind == UICollectionElementKindSectionFooter) {
-                normalizedFrame = section.footerFrame;
-            }
-            if (!UIRect_1.UIRectIsEmpty(normalizedFrame)) {
-                normalizedFrame = { x: normalizedFrame.x + section.frame.x, y: normalizedFrame.y + section.frame.y, width: normalizedFrame.width, height: normalizedFrame.height };
-                layoutAttributes = new this.layoutAttributesClass(new UIIndexPath_1.UIIndexPath(0, sectionIndex), kind, UICollectionView_1.ItemType.supplementaryView);
-                layoutAttributes.frame = normalizedFrame;
-            }
-        }
-        return layoutAttributes;
-    };
-
-    UICollectionViewFlowLayout.prototype.layoutAttributesForDecorationViewOfKind = function layoutAttributesForDecorationViewOfKind(kind, indexPath) {
-        return undefined;
-    };
-
-    UICollectionViewFlowLayout.prototype.collectionViewContentSize = function collectionViewContentSize() {
-        if (this._data === undefined) {
-            this.prepareLayout();
-        }
-        var _data = this._data;
-        if (_data === undefined) {
-            return _UICollectionView_1$U.prototype.collectionViewContentSize.call(this);
-        }
-        return _data.contentSize;
-    };
-
-    UICollectionViewFlowLayout.prototype.invalidateLayout = function invalidateLayout() {
-        _UICollectionView_1$U.prototype.invalidateLayout.call(this);
-        this.rectCache = [];
-        this._data = undefined;
-    };
-
-    UICollectionViewFlowLayout.prototype.__sizeForItem = function __sizeForItem(indexPath) {
-        return this.val("sizeForItem", indexPath) || this.itemSize;
-    };
-
-    UICollectionViewFlowLayout.prototype.__insetForSection = function __insetForSection(inSection) {
-        return this.val("insetForSection", inSection) || this.sectionInset;
-    };
-
-    UICollectionViewFlowLayout.prototype.__minimumLineSpacing = function __minimumLineSpacing(inSection) {
-        var value = this.val("minimumLineSpacing", inSection);
-        return typeof value === "number" ? value : this.minimumLineSpacing;
-    };
-
-    UICollectionViewFlowLayout.prototype.__minimumInteritemSpacing = function __minimumInteritemSpacing(inSection) {
-        var value = this.val("minimumInteritemSpacing", inSection);
-        return typeof value === "number" ? value : this.minimumInteritemSpacing;
-    };
-
-    UICollectionViewFlowLayout.prototype.__referenceSizeForHeader = function __referenceSizeForHeader(inSection) {
-        return this.headerReferenceSize;
-    };
-
-    UICollectionViewFlowLayout.prototype.__referenceSizeForFooter = function __referenceSizeForFooter(inSection) {
-        return this.footerReferenceSize;
-    };
-
-    UICollectionViewFlowLayout.prototype.fetchItemsInfo = function fetchItemsInfo() {
-        this.getSizingInfos();
-        this.updateItemsLayout();
-    };
-
-    UICollectionViewFlowLayout.prototype.getSizingInfos = function getSizingInfos() {
-        var _data = this._data;
-        if (_data === undefined) {
-            return;
-        }
-        var collectionView = this.collectionView;
-        if (collectionView === undefined) {
-            return;
-        }
-        var numberOfSections = collectionView.numberOfSections();
-        for (var section = 0; section < numberOfSections; section++) {
-            var layoutSection = _data.addSection();
-            layoutSection.verticalInterstice = _data.horizontal ? this.__minimumInteritemSpacing(section) : this.__minimumLineSpacing(section);
-            layoutSection.horizontalInterstice = !_data.horizontal ? this.__minimumInteritemSpacing(section) : this.__minimumLineSpacing(section);
-            layoutSection.sectionMargins = this.__insetForSection(section);
-            layoutSection.headerDimension = _data.horizontal ? this.__referenceSizeForHeader(section).width : this.__referenceSizeForHeader(section).height;
-            layoutSection.footerDimension = _data.horizontal ? this.__referenceSizeForFooter(section).width : this.__referenceSizeForFooter(section).height;
-            var numberOfItems = collectionView.numberOfItemsInSection(section);
-            for (var item = 0; item < numberOfItems; item++) {
-                var indexPath = new UIIndexPath_1.UIIndexPath(item, section);
-                var itemSize = this.__sizeForItem(indexPath);
-                var layoutItem = layoutSection.addItem();
-                layoutItem.itemFrame = { x: 0.0, y: 0.0, width: itemSize.width, height: itemSize.height };
-            }
-        }
-    };
-
-    UICollectionViewFlowLayout.prototype.updateItemsLayout = function updateItemsLayout() {
-        var _data = this._data;
-        if (_data === undefined) {
-            return;
-        }
-        var contentSize = { width: 0, height: 0 };
-        _data.sections.forEach(function (section) {
-            section.computeLayout();
-            var sectionFrame = Object.assign({}, section.frame);
-            if (_data.horizontal) {
-                sectionFrame.x += contentSize.width;
-                contentSize.width += section.frame.width + section.frame.x;
-                contentSize.height = Math.max(contentSize.height, sectionFrame.height + section.frame.y + section.sectionMargins.top + section.sectionMargins.bottom);
-            } else {
-                sectionFrame.y += contentSize.height;
-                contentSize.height += sectionFrame.height + section.frame.y;
-                contentSize.width = Math.max(contentSize.width, sectionFrame.width + section.frame.x + section.sectionMargins.left + section.sectionMargins.right);
-            }
-            section.frame = { x: sectionFrame.x, y: sectionFrame.y, width: sectionFrame.width, height: sectionFrame.height };
-        });
-        _data.contentSize = { width: contentSize.width, height: contentSize.height };
-    };
-
-    _createClass(UICollectionViewFlowLayout, [{
-        key: "sectionInset",
-        get: function get() {
-            return this._sectionInset;
-        },
-        set: function set(value) {
-            this._sectionInset = value;
-            this.invalidateLayout();
-        }
-    }]);
-
-    return UICollectionViewFlowLayout;
-}(UICollectionView_1.UICollectionViewLayout);
-
-exports.UICollectionViewFlowLayout = UICollectionViewFlowLayout;
 
 /***/ })
 /******/ ]);

@@ -166,6 +166,11 @@ class UICollectionView extends UIScrollView_1.UIScrollView {
         return this.allCells().filter(it => UIRect_1.UIRectIntersectsRect(this.visibleBoundRects, it.frame));
     }
     reloadData() {
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this.invalidateLayout();
+            this.setNeedsLayout(true);
+            return;
+        }
         this.invalidateLayout();
         this._allVisibleViewsDict.forEach(it => {
             it.hidden = true;
@@ -319,6 +324,12 @@ class UICollectionView extends UIScrollView_1.UIScrollView {
             var view = this._allVisibleViewsDict.get(itemKey);
             if (view instanceof UICollectionReusableView) {
                 if (view instanceof UICollectionViewCell) {
+                    if (this.fetchMoreControl &&
+                        this.fetchMoreControl.fetching &&
+                        view.currentIndexPath &&
+                        view.currentIndexPath.mapKey() === itemKey.indexPath.mapKey()) {
+                        return;
+                    }
                     view.currentIndexPath = itemKey.indexPath;
                     view.highlighted = this._indexPathsForHighlightedItems.map(it => it.mapKey()).indexOf(itemKey.indexPath.mapKey()) >= 0;
                     view.selected = this._indexPathsForSelectedItems.map(it => it.mapKey()).indexOf(itemKey.indexPath.mapKey()) >= 0;

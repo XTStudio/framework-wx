@@ -191,6 +191,11 @@ export class UICollectionView extends UIScrollView {
     }
 
     reloadData(): void {
+        if (this.fetchMoreControl && this.fetchMoreControl.fetching) {
+            this.invalidateLayout()
+            this.setNeedsLayout(true)
+            return
+        }
         this.invalidateLayout()
         this._allVisibleViewsDict.forEach(it => {
             it.hidden = true
@@ -373,6 +378,12 @@ export class UICollectionView extends UIScrollView {
             var view = this._allVisibleViewsDict.get(itemKey)
             if (view instanceof UICollectionReusableView) {
                 if (view instanceof UICollectionViewCell) {
+                    if (this.fetchMoreControl &&
+                        this.fetchMoreControl.fetching &&
+                        view.currentIndexPath &&
+                        view.currentIndexPath.mapKey() === itemKey.indexPath.mapKey()) {
+                        return
+                    }
                     view.currentIndexPath = itemKey.indexPath
                     view.highlighted = this._indexPathsForHighlightedItems.map(it => it.mapKey()).indexOf(itemKey.indexPath.mapKey()) >= 0
                     view.selected = this._indexPathsForSelectedItems.map(it => it.mapKey()).indexOf(itemKey.indexPath.mapKey()) >= 0

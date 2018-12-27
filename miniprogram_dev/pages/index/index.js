@@ -66,14 +66,19 @@ class FooCell extends UICollectionViewCell {
 
 class BarViewController extends UIViewController {
 
+    numItems = 50
     flowLayout = new UICollectionViewFlowLayout
-
     collectionView = new UICollectionView(this.flowLayout)
 
     viewDidLoad() {
         super.viewDidLoad()
+        this.collectionView.addSubview(new UIFetchMoreControl().on("fetch", (sender) => {
+            this.numItems += 50
+            this.collectionView.reloadData()
+            sender.endFetching()
+        }))
         this.collectionView.register((context) => new FooCell(context), "Cell")
-        this.collectionView.on("numberOfItems", () => 1000)
+        this.collectionView.on("numberOfItems", () => this.numItems)
         this.collectionView.on("cellForItem", (indexPath) => {
             const cell = this.collectionView.dequeueReusableCell("Cell", indexPath)
             cell.textLabel.text = indexPath.row.toString()
