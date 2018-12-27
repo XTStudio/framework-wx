@@ -75,6 +75,7 @@ class BarViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
+        this.title = "Bar"
         this.view.backgroundColor = UIColor.gray
         const layer = new CAShapeLayer
         layer.fillColor = UIColor.clear
@@ -98,6 +99,9 @@ class FooViewController extends UIViewController {
 
     viewDidLoad() {
         super.viewDidLoad()
+        setTimeout(() => {
+            this.title = "Heewfekjhlk"
+        }, 10000)
         this.title = "UITableView"
         this.tableView.addSubview((() => {
             let refreshControl = new UIRefreshControl
@@ -125,11 +129,11 @@ class FooViewController extends UIViewController {
         this.tableView.register((context) => new FooCell(context), "Cell")
         this.tableView.on("numberOfRows", () => this.numRows)
         this.tableView.on("heightForRow", () => 44)
-        this.tableView.on("cellForRow", (indexPath) => {
-            const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
-            cell.textLabel.text = indexPath.row.toString()
-            return cell
-        })
+        // this.tableView.on("cellForRow", (indexPath) => {
+        //     const cell = this.tableView.dequeueReusableCell("Cell", indexPath)
+        //     cell.textLabel.text = indexPath.row.toString()
+        //     return cell
+        // })
         this.tableView.on("didSelectRow", (indexPath) => {
             if (this.navigationController) {
                 this.navigationController.pushViewController(new SecondViewController)
@@ -179,38 +183,32 @@ class ThirdViewController extends UIViewController {
 
 }
 
-// const tabBarController = new UITabBarController()
-// tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
-// tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
+const tabBarController = new UITabBarController()
+tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
+tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
 
-// const firstViewController = new UINavigationController(new FooViewController)
-// firstViewController.navigationBar.barTintColor = UIColor.gray
-// firstViewController.navigationBar.tintColor = UIColor.white
-// setTimeout(() => {
-//     UIAnimator.linear(0.3, () => {
-//         firstViewController.navigationBar.barTintColor = UIColor.white
-//         firstViewController.navigationBar.tintColor = UIColor.black
-//     })
-// }, 6000)
-// firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
-// firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
-// firstViewController.tabBarItem.title = "首页"
+const firstViewController = new UINavigationController(new FooViewController)
+firstViewController.navigationBar.barTintColor = UIColor.gray
+firstViewController.navigationBar.tintColor = UIColor.white
+firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
+firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
+firstViewController.tabBarItem.title = "首页"
 
-// const secondViewController = new UINavigationController(new SecondViewController)
-// secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
-// secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
-// secondViewController.tabBarItem.title = "我的"
+const secondViewController = new UINavigationController(new SecondViewController)
+secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
+secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
+secondViewController.tabBarItem.title = "我的"
 
-// tabBarController.setViewControllers([
-//     firstViewController,
-//     secondViewController,
-// ])
+tabBarController.setViewControllers([
+    firstViewController,
+    secondViewController,
+])
 
-// const window = new UIWindow
-// window.backgroundColor = UIColor.gray
+const window = new UIWindow
+window.backgroundColor = UIColor.gray
 
-// const main = tabBarController
-const main = new BarViewController
+const main = tabBarController
+// const main = new BarViewController
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Page({

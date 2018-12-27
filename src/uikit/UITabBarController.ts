@@ -22,6 +22,8 @@ export class UITabBarController extends UIViewController {
                 this.activedNavigationController = undefined
             }
         }
+        this.updateBrowserTitle()
+        this.updateBrowserBar()
     }
 
     private _selectedIndex: number = -1

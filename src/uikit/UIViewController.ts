@@ -20,6 +20,9 @@ export class UIViewController extends EventEmitter {
         if (this.navigationController) {
             this.navigationController.updateBrowserTitle()
         }
+        else {
+            this.updateBrowserTitle()
+        }
     }
 
     protected _view: any = undefined
@@ -52,6 +55,7 @@ export class UIViewController extends EventEmitter {
 
     attach(dataOwner: any, dataField: string) {
         this.iView.attach(dataOwner, dataField)
+        this.updateBrowserTitle()
     }
 
     loadView() {
@@ -178,6 +182,39 @@ export class UIViewController extends EventEmitter {
             return this._view.superview
         }
         return undefined
+    }
+
+    isVisible(): boolean {
+        if (this.view.hidden || this.view.alpha == 0.0) {
+            return false
+        }
+        else if (this.view.superview === undefined) {
+            return false
+        }
+        else if (this.parentViewController) {
+            if (this.parentViewController.clazz === "UINavigationController") {
+                if (this.parentViewController.childViewControllers[this.parentViewController.childViewControllers.length - 1] != this) {
+                    return false
+                }
+            }
+            else if (this.parentViewController.clazz === "UITabBarController") {
+                if ((this.parentViewController as any).selectedViewController != this) {
+                    return false
+                }
+            }
+            return this.parentViewController.isVisible()
+        }
+        else {
+            return true
+        }
+    }
+
+    updateBrowserTitle() {
+        if (this.parentViewController === undefined && this.isVisible()) {
+            wx.setNavigationBarTitle({
+                title: this.title
+            })
+        }
     }
 
 }

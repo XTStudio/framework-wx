@@ -124,10 +124,7 @@ export class UINavigationController extends UIViewController {
     }
 
     updateBrowserTitle() {
-        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
-            return
-        }
-        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+        if (!this.isVisible()) {
             return
         }
         if (this.childViewControllers.length > 0) {
@@ -139,10 +136,7 @@ export class UINavigationController extends UIViewController {
     }
 
     updateBrowserBar() {
-        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
-            return
-        }
-        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+        if (!this.isVisible()) {
             return
         }
         if (this.navigationBar.barTintColor) {

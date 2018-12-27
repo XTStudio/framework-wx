@@ -1651,6 +1651,9 @@ class UIViewController extends EventEmitter_1.EventEmitter {
         if (this.navigationController) {
             this.navigationController.updateBrowserTitle();
         }
+        else {
+            this.updateBrowserTitle();
+        }
     }
     set view(value) {
         if (this._view !== undefined) {
@@ -1676,6 +1679,7 @@ class UIViewController extends EventEmitter_1.EventEmitter {
     }
     attach(dataOwner, dataField) {
         this.iView.attach(dataOwner, dataField);
+        this.updateBrowserTitle();
     }
     loadView() {
         this.view = new UIView_1.UIView;
@@ -1776,6 +1780,37 @@ class UIViewController extends EventEmitter_1.EventEmitter {
             return this._view.superview;
         }
         return undefined;
+    }
+    isVisible() {
+        if (this.view.hidden || this.view.alpha == 0.0) {
+            return false;
+        }
+        else if (this.view.superview === undefined) {
+            return false;
+        }
+        else if (this.parentViewController) {
+            if (this.parentViewController.clazz === "UINavigationController") {
+                if (this.parentViewController.childViewControllers[this.parentViewController.childViewControllers.length - 1] != this) {
+                    return false;
+                }
+            }
+            else if (this.parentViewController.clazz === "UITabBarController") {
+                if (this.parentViewController.selectedViewController != this) {
+                    return false;
+                }
+            }
+            return this.parentViewController.isVisible();
+        }
+        else {
+            return true;
+        }
+    }
+    updateBrowserTitle() {
+        if (this.parentViewController === undefined && this.isVisible()) {
+            wx.setNavigationBarTitle({
+                title: this.title
+            });
+        }
     }
 }
 exports.UIViewController = UIViewController;
@@ -7938,10 +7973,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         }
     }
     updateBrowserTitle() {
-        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
-            return;
-        }
-        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+        if (!this.isVisible()) {
             return;
         }
         if (this.childViewControllers.length > 0) {
@@ -7952,10 +7984,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         }
     }
     updateBrowserBar() {
-        if (this.tabBarController && this.tabBarController.selectedViewController !== this) {
-            return;
-        }
-        if (this.parentViewController === undefined && this.window === undefined && this.attachBlock === undefined) {
+        if (!this.isVisible()) {
             return;
         }
         if (this.navigationBar.barTintColor) {
@@ -8994,6 +9023,8 @@ class UITabBarController extends UIViewController_1.UIViewController {
                 this.activedNavigationController = undefined;
             }
         };
+        this.updateBrowserTitle();
+        this.updateBrowserBar();
     }
     get selectedIndex() {
         return this._selectedIndex;
