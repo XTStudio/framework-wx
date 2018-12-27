@@ -1,5 +1,5 @@
 <view style='{{style}}{{frameStyle}}' animation='{{animation}}'>
-    <rich-text nodes="{{richText}}" style='position:absolute; width: 100%; top: 50%; transform: translateY(-50%); {{textStyle}}'>{{text}}</rich-text>
+    <rich-text space="true" nodes="{{richText}}" style='position:absolute; width: 100%; top: 50%; transform: translateY(-50%); {{textStyle}}'>{{text}}</rich-text>
     <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
         <factory view="{{item}}"></factory>
     </block>

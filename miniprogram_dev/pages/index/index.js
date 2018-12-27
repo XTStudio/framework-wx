@@ -43,17 +43,22 @@ const {
     UIPageViewController,
     UIWebView,
     URLRequest,
+    UICollectionView,
+    UICollectionViewCell,
+    UICollectionViewFlowLayout,
 } = require("../../components/index")
 
-class FooCell extends UITableViewCell {
+class FooCell extends UICollectionViewCell {
 
     textLabel = new UILabel
 
     constructor(context) {
         super(context)
-        this.textLabel.text = "Hello."
+        this.textLabel.text = "1"
+        this.textLabel.textAlignment = UITextAlignment.center
         this.textLabel.font = new UIFont(24)
-        this.textLabel.frame = UIRectMake(15, 0, 200, 44)
+        this.textLabel.frame = UIRectMake(0, 0, 88, 88)
+        this.textLabel.backgroundColor = UIColor.yellow
         this.contentView.addSubview(this.textLabel)
     }
 
@@ -61,17 +66,28 @@ class FooCell extends UITableViewCell {
 
 class BarViewController extends UIViewController {
 
-    webView = new UIWebView
+    flowLayout = new UICollectionViewFlowLayout
+
+    collectionView = new UICollectionView(this.flowLayout)
 
     viewDidLoad() {
         super.viewDidLoad()
-        this.webView.loadRequest(new URLRequest("https://api.github.com/"))
-        this.view.addSubview(this.webView)
+        this.collectionView.register((context) => new FooCell(context), "Cell")
+        this.collectionView.on("numberOfItems", () => 1000)
+        this.collectionView.on("cellForItem", (indexPath) => {
+            const cell = this.collectionView.dequeueReusableCell("Cell", indexPath)
+            cell.textLabel.text = indexPath.row.toString()
+            return cell
+        })
+        this.flowLayout.itemSize = { width: 88, height: 88 }
+        this.flowLayout.sectionInset = { top: 8, left: 16, bottom: 8, right: 16 }
+        this.view.addSubview(this.collectionView)
     }
 
     viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        this.webView.frame = this.view.bounds
+        this.collectionView.frame = this.view.bounds
+        this.collectionView.reloadData()
     }
 
 }
@@ -164,35 +180,35 @@ class ThirdViewController extends UIViewController {
 
 }
 
-const tabBarController = new UITabBarController()
-tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
-tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
+// const tabBarController = new UITabBarController()
+// tabBarController.tabBar.tintColor = new UIColor(0xf2 / 255.0, 0x30 / 255.0, 0xa4 / 255.0, 1.0)
+// tabBarController.tabBar.unselectedItemTintColor = new UIColor(0xa9 / 255.0, 0xa9 / 255.0, 0xa9 / 255.0, 1.0)
 
-const firstViewController = new UINavigationController(new FooViewController)
-firstViewController.navigationBar.barTintColor = UIColor.gray
-firstViewController.navigationBar.tintColor = UIColor.white
-setTimeout(() => {
-    UIAnimator.linear(0.3, () => {
-        firstViewController.navigationBar.barTintColor = UIColor.white
-        firstViewController.navigationBar.tintColor = UIColor.black
-    })
-}, 6000)
-firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
-firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
-firstViewController.tabBarItem.title = "首页"
+// const firstViewController = new UINavigationController(new FooViewController)
+// firstViewController.navigationBar.barTintColor = UIColor.gray
+// firstViewController.navigationBar.tintColor = UIColor.white
+// setTimeout(() => {
+//     UIAnimator.linear(0.3, () => {
+//         firstViewController.navigationBar.barTintColor = UIColor.white
+//         firstViewController.navigationBar.tintColor = UIColor.black
+//     })
+// }, 6000)
+// firstViewController.tabBarItem.image = new UIImage({ name: "tabbar_timeline_normal" })
+// firstViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_timeline_selected" })
+// firstViewController.tabBarItem.title = "首页"
 
-const secondViewController = new UINavigationController(new SecondViewController)
-secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
-secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
-secondViewController.tabBarItem.title = "我的"
+// const secondViewController = new UINavigationController(new SecondViewController)
+// secondViewController.tabBarItem.image = new UIImage({ name: "tabbar_me_normal" })
+// secondViewController.tabBarItem.selectedImage = new UIImage({ name: "tabbar_me_selected" })
+// secondViewController.tabBarItem.title = "我的"
 
-tabBarController.setViewControllers([
-    firstViewController,
-    secondViewController,
-])
+// tabBarController.setViewControllers([
+//     firstViewController,
+//     secondViewController,
+// ])
 
-const window = new UIWindow
-window.backgroundColor = UIColor.gray
+// const window = new UIWindow
+// window.backgroundColor = UIColor.gray
 
 // const main = tabBarController
 const main = new BarViewController

@@ -294,17 +294,49 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var UIView_1 = __webpack_require__(4);
+var UIViewManager_1 = __webpack_require__(0);
 
 var UIWebViewComponent = function (_UIView_1$UIViewCompo) {
-  _inherits(UIWebViewComponent, _UIView_1$UIViewCompo);
+    _inherits(UIWebViewComponent, _UIView_1$UIViewCompo);
 
-  function UIWebViewComponent() {
-    _classCallCheck(this, UIWebViewComponent);
+    function UIWebViewComponent() {
+        _classCallCheck(this, UIWebViewComponent);
 
-    return _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
-  }
+        var _this = _possibleConstructorReturn(this, _UIView_1$UIViewCompo.apply(this, arguments));
 
-  return UIWebViewComponent;
+        _this.methods = {
+            onLoad: function onLoad() {
+                var self = this;
+                if (self.data && self.data.viewID) {
+                    var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                    if (view) {
+                        view.emit("didFinish");
+                    }
+                }
+            },
+            onError: function onError() {
+                var self = this;
+                if (self.data && self.data.viewID) {
+                    var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                    if (view) {
+                        view.emit("didFail", Error("WebView error."));
+                    }
+                }
+            },
+            onMessage: function onMessage(e) {
+                var self = this;
+                if (self.data && self.data.viewID) {
+                    var view = UIViewManager_1.UIViewManager.shared.fetchView(self.data.viewID);
+                    if (view) {
+                        view.emit("message", e.detail.data);
+                    }
+                }
+            }
+        };
+        return _this;
+    }
+
+    return UIWebViewComponent;
 }(UIView_1.UIViewComponent);
 
 exports.UIWebViewComponent = UIWebViewComponent;

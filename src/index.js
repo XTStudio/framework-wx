@@ -17,6 +17,8 @@ Object.assign(module.exports, require('./uikit/UIAffineTransform'));
 Object.assign(module.exports, require('./uikit/UIAnimator'));
 Object.assign(module.exports, require('./uikit/UIAttributedString'));
 Object.assign(module.exports, require('./uikit/UIButton'));
+Object.assign(module.exports, require('./uikit/UICollectionView'));
+Object.assign(module.exports, require('./uikit/UICollectionViewFlowLayout'));
 Object.assign(module.exports, require('./uikit/UIColor'));
 Object.assign(module.exports, require('./uikit/UIConfirm'));
 Object.assign(module.exports, require('./uikit/UIDevice'));
