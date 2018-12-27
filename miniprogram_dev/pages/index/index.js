@@ -50,6 +50,7 @@ const {
     CADisplayLink,
     CALayer,
     UUID,
+    CAGradientLayer,
 } = require("../../components/index")
 
 class FooCell extends UICollectionViewCell {
@@ -81,9 +82,12 @@ class BarViewController extends UIViewController {
         layer.cornerRadius = 22
         // layer.masksToBounds = true
 
-        const bLayer = new CALayer
-        bLayer.frame = UIRectMake(22, 22, 44, 44)
-        bLayer.backgroundColor = UIColor.yellow
+        const bLayer = new CAGradientLayer
+        bLayer.frame = UIRectMake(22, 22, 88, 88)
+        bLayer.colors = [UIColor.red, UIColor.yellow]
+        bLayer.locations = [0, 1]
+        bLayer.startPoint = {x:0, y:0}
+        bLayer.endPoint = {x:0, y:1}
         layer.addSublayer(bLayer)
 
         this.view.layer.addSublayer(layer)

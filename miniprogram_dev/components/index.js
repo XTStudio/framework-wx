@@ -1966,10 +1966,7 @@ class CALayer {
             return;
         }
         this._frame = value;
-        if (this.view) {
-            this.view.layer.isDirty = true;
-            this.view.markFlagDirty("renderLayer", "layerSource");
-        }
+        this.markDirty();
     }
     get hidden() {
         if (this._view) {
@@ -1988,10 +1985,7 @@ class CALayer {
             this._view.hidden = value;
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     get cornerRadius() {
@@ -2006,10 +2000,7 @@ class CALayer {
             this._view.invalidate();
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     get borderWidth() {
@@ -2042,10 +2033,7 @@ class CALayer {
             this._view.invalidate();
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     removeFromSuperlayer() {
@@ -2055,10 +2043,7 @@ class CALayer {
                 this.superlayer.sublayers.splice(idx, 1);
             }
             this.superlayer = undefined;
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     addSublayer(layer) {
@@ -2067,10 +2052,7 @@ class CALayer {
         }
         this.sublayers.push(layer);
         layer.superlayer = this;
-        if (this.view) {
-            this.view.layer.isDirty = true;
-            this.view.markFlagDirty("renderLayer", "layerSource");
-        }
+        this.markDirty();
     }
     get backgroundColor() {
         if (this._view) {
@@ -2094,10 +2076,7 @@ class CALayer {
             this._view.backgroundColor = value;
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     get opacity() {
@@ -2117,10 +2096,7 @@ class CALayer {
             this._view.alpha = value;
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     get masksToBounds() {
@@ -2135,10 +2111,7 @@ class CALayer {
             this._view.clipsToBounds = value;
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true;
-                this.view.markFlagDirty("renderLayer", "layerSource");
-            }
+            this.markDirty();
         }
     }
     get shadowColor() {
@@ -2189,6 +2162,12 @@ class CALayer {
     resetShadow() {
         if (this._view) {
             this._view.invalidate();
+        }
+    }
+    markDirty() {
+        if (this.view) {
+            this.view.layer.isDirty = true;
+            this.view.markFlagDirty("renderLayer", "layerSource");
         }
     }
     buildSVG() {
@@ -5743,10 +5722,75 @@ exports.CADisplayLink = CADisplayLink;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const CALayer_1 = __webpack_require__(18);
+const UUID_1 = __webpack_require__(3);
 class CAGradientLayer extends CALayer_1.CALayer {
     constructor() {
-        super();
-        console.log("微信小程序暂时不支持 CAGradientLayer");
+        super(...arguments);
+        this._colors = [];
+        this._locations = [];
+        this._startPoint = { x: 0, y: 0 };
+        this._endPoint = { x: 1, y: 0 };
+    }
+    get colors() {
+        return this._colors;
+    }
+    set colors(value) {
+        this._colors = value;
+        this.markDirty();
+    }
+    get locations() {
+        return this._locations;
+    }
+    set locations(value) {
+        this._locations = value;
+        this.markDirty();
+    }
+    get startPoint() {
+        return this._startPoint;
+    }
+    set startPoint(value) {
+        this._startPoint = value;
+        this.markDirty();
+    }
+    get endPoint() {
+        return this._endPoint;
+    }
+    set endPoint(value) {
+        this._endPoint = value;
+        this.markDirty();
+    }
+    buildStops() {
+        let value = "";
+        let colors = this.colors;
+        let locations = this.locations.length === this.colors.length ? this.locations : undefined;
+        if (locations === undefined) {
+            colors.forEach((it, idx) => {
+                value += `<stop offset="${((idx / colors.length) * 100).toString()}%" stop-color="${this.colors[idx].toStyle()}" />`;
+            });
+        }
+        else if (colors.length === locations.length) {
+            locations.forEach((it, idx) => {
+                value += `<stop offset="${(it * 100).toString()}%" stop-color="${this.colors[idx].toStyle()}" />`;
+            });
+        }
+        return value;
+    }
+    buildSVGLayer() {
+        if (this.hidden) {
+            return "";
+        }
+        const uuid = UUID_1.randomUUID();
+        return `
+        ${this.masksToBounds ? `<clipPath id="clip.${uuid}"><rect rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect></clipPath>` : ''}
+        <linearGradient x1="${this.startPoint.x}" y="${this.startPoint.y}" x2="${this.endPoint.x}" y2="${this.endPoint.y}" id="filter.${uuid}">${this.buildStops()}</linearGradient>
+        <g ${this.masksToBounds ? `clip-path="url(#clip.${uuid})"` : ''} transform="matrix(1,0,0,1,${this.frame.x},${this.frame.y})" style="${this.opacity < 1.0 ? `opacity: ${this.opacity};` : ''}">
+            <rect fill="url(#filter.${uuid})" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ${this.sublayers.map(it => it.buildSVGLayer()).join("")}
+            ${this.borderColor && this.borderWidth > 0 ? `
+            <rect fill="transparent" style="stroke-width: ${this.borderWidth}; stroke: ${this.borderColor.toStyle()};" rx="${this.cornerRadius}" ry="${this.cornerRadius}" width="${this.frame.width}" height="${this.frame.height}"></rect>
+            ` : ''}
+        </g>
+        `;
     }
 }
 exports.CAGradientLayer = CAGradientLayer;

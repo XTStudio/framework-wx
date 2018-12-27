@@ -29,10 +29,7 @@ export class CALayer {
     public set frame(value: UIRect) {
         if (UIRectEqualToRect(this._frame, value)) { return }
         this._frame = value;
-        if (this.view) {
-            this.view.layer.isDirty = true
-            this.view.markFlagDirty("renderLayer", "layerSource")
-        }
+        this.markDirty()
     }
 
     private _hidden: boolean = false
@@ -53,10 +50,7 @@ export class CALayer {
             this._view.hidden = value
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -73,10 +67,7 @@ export class CALayer {
             this._view.invalidate()
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -112,10 +103,7 @@ export class CALayer {
             this._view.invalidate()
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -128,10 +116,7 @@ export class CALayer {
                 this.superlayer.sublayers.splice(idx, 1)
             }
             this.superlayer = undefined
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -143,10 +128,7 @@ export class CALayer {
         }
         this.sublayers.push(layer)
         layer.superlayer = this
-        if (this.view) {
-            this.view.layer.isDirty = true
-            this.view.markFlagDirty("renderLayer", "layerSource")
-        }
+        this.markDirty()
     }
 
     private _backgroundColor: UIColor | undefined = undefined
@@ -170,10 +152,7 @@ export class CALayer {
             this._view.backgroundColor = value
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -195,10 +174,7 @@ export class CALayer {
             this._view.alpha = value
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -215,10 +191,7 @@ export class CALayer {
             this._view.clipsToBounds = value
         }
         else {
-            if (this.view) {
-                this.view.layer.isDirty = true
-                this.view.markFlagDirty("renderLayer", "layerSource")
-            }
+            this.markDirty()
         }
     }
 
@@ -276,6 +249,13 @@ export class CALayer {
     private resetShadow() {
         if (this._view) {
             this._view.invalidate()
+        }
+    }
+
+    markDirty() {
+        if (this.view) {
+            this.view.layer.isDirty = true
+            this.view.markFlagDirty("renderLayer", "layerSource")
         }
     }
 
