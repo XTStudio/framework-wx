@@ -82,7 +82,7 @@ module.exports =
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 48);
+/******/ 	return __webpack_require__(__webpack_require__.s = 49);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -125,18 +125,18 @@ exports.UIViewManager = UIViewManager;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = __webpack_require__(9);
-const UIAffineTransform_1 = __webpack_require__(22);
-const Matrix_1 = __webpack_require__(32);
+const UIAffineTransform_1 = __webpack_require__(23);
+const Matrix_1 = __webpack_require__(33);
 const UIColor_1 = __webpack_require__(5);
 const UITouch_1 = __webpack_require__(10);
 const UIEdgeInsets_1 = __webpack_require__(8);
 const UIAnimator_1 = __webpack_require__(7);
 const UIViewManager_1 = __webpack_require__(0);
-const EventEmitter_1 = __webpack_require__(12);
+const EventEmitter_1 = __webpack_require__(13);
 const UIEnums_1 = __webpack_require__(6);
-const CALayer_1 = __webpack_require__(57);
+const CALayer_1 = __webpack_require__(18);
 const UIComponentManager_1 = __webpack_require__(2);
-const Ticker_1 = __webpack_require__(21);
+const Ticker_1 = __webpack_require__(22);
 class UIView extends EventEmitter_1.EventEmitter {
     constructor() {
         super();
@@ -1448,7 +1448,7 @@ exports.UIRectIsEmpty = function (rect) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const UIPoint_1 = __webpack_require__(11);
+const UIPoint_1 = __webpack_require__(12);
 var UITouchPhase;
 (function (UITouchPhase) {
     UITouchPhase[UITouchPhase["began"] = 0] = "began";
@@ -1528,33 +1528,6 @@ exports.VelocityTracker = VelocityTracker;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UIPointZero = { x: 0, y: 0 };
-exports.UIPointMake = function (x, y) {
-    return { x, y };
-};
-exports.UIPointEqualToPoint = function (point1, point2) {
-    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
-};
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const EventEmitterIMP = __webpack_require__(56);
-exports.EventEmitter = EventEmitterIMP.EventEmitter;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.UISizeZero = { width: 0, height: 0 };
 exports.UISizeMake = function (width, height) {
     return { width, height };
@@ -1565,14 +1538,41 @@ exports.UISizeEqualToSize = function (a, b) {
 
 
 /***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UIPointZero = { x: 0, y: 0 };
+exports.UIPointMake = function (x, y) {
+    return { x, y };
+};
+exports.UIPointEqualToPoint = function (point1, point2) {
+    return Math.abs(point1.x - point2.x) < 0.001 && Math.abs(point1.y - point2.y) < 0.001;
+};
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const EventEmitterIMP = __webpack_require__(61);
+exports.EventEmitter = EventEmitterIMP.EventEmitter;
+
+
+/***/ }),
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const UIPoint_1 = __webpack_require__(11);
-const EventEmitter_1 = __webpack_require__(12);
+const UIPoint_1 = __webpack_require__(12);
+const EventEmitter_1 = __webpack_require__(13);
 var UIGestureRecognizerState;
 (function (UIGestureRecognizerState) {
     UIGestureRecognizerState[UIGestureRecognizerState["possible"] = 0] = "possible";
@@ -1622,12 +1622,12 @@ exports.UIGestureRecognizer = UIGestureRecognizer;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const EventEmitter_1 = __webpack_require__(12);
+const EventEmitter_1 = __webpack_require__(13);
 const UIView_1 = __webpack_require__(1);
 const UIEdgeInsets_1 = __webpack_require__(8);
 const UIColor_1 = __webpack_require__(5);
-const UITabBarItem_1 = __webpack_require__(65);
-const UINavigationBar_1 = __webpack_require__(27);
+const UITabBarItem_1 = __webpack_require__(71);
+const UINavigationBar_1 = __webpack_require__(28);
 class UIViewController extends EventEmitter_1.EventEmitter {
     constructor() {
         super(...arguments);
@@ -1924,6 +1924,249 @@ exports.MutableData = MutableData;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const UIRect_1 = __webpack_require__(9);
+const UISize_1 = __webpack_require__(11);
+class CALayer {
+    constructor() {
+        this._view = undefined;
+        this._frame = UIRect_1.UIRectZero;
+        this._hidden = false;
+        this._cornerRadius = 0.0;
+        this._borderWidth = 0.0;
+        this._borderColor = undefined;
+        this.superlayer = undefined;
+        this.sublayers = [];
+        this._backgroundColor = undefined;
+        this._opacity = 1.0;
+        this._masksToBounds = false;
+        this._shadowColor = undefined;
+        this._shadowOpacity = 0.0;
+        this._shadowOffset = { width: 0, height: -3 };
+        this._shadowRadius = 3.0;
+    }
+    get view() {
+        if (this.superlayer) {
+            return this.superlayer._view;
+        }
+        return this._view;
+    }
+    set view(value) {
+        this._view = value;
+    }
+    get frame() {
+        return this._frame;
+    }
+    set frame(value) {
+        if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
+            return;
+        }
+        this._frame = value;
+    }
+    get hidden() {
+        if (this._view) {
+            return this._view.hidden;
+        }
+        else {
+            return this._hidden;
+        }
+    }
+    set hidden(value) {
+        if (this.hidden === value) {
+            return;
+        }
+        this._hidden = value;
+        if (this._view) {
+            this._view.hidden = value;
+        }
+        else {
+        }
+    }
+    get cornerRadius() {
+        return this._cornerRadius;
+    }
+    set cornerRadius(value) {
+        if (this._cornerRadius === value) {
+            return;
+        }
+        this._cornerRadius = value;
+        if (this._view) {
+            this._view.invalidate();
+        }
+        else {
+        }
+    }
+    get borderWidth() {
+        return this._borderWidth;
+    }
+    set borderWidth(value) {
+        if (this._borderWidth === value) {
+            return;
+        }
+        this._borderWidth = value;
+        this.resetBorder();
+    }
+    get borderColor() {
+        return this._borderColor;
+    }
+    set borderColor(value) {
+        if (this._borderColor === value) {
+            return;
+        }
+        if (this._borderColor !== undefined && value !== undefined) {
+            if (this._borderColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
+        this._borderColor = value;
+        this.resetBorder();
+    }
+    resetBorder() {
+        if (this._view) {
+            this._view.invalidate();
+        }
+        else {
+        }
+    }
+    moveBorderElementToFront() {
+    }
+    removeFromSuperlayer() {
+        if (this.superlayer) {
+            const idx = this.superlayer.sublayers.indexOf(this);
+            if (idx >= 0) {
+                this.superlayer.sublayers.splice(idx, 1);
+            }
+            this.superlayer = undefined;
+        }
+    }
+    addSublayer(layer) {
+        if (layer.superlayer !== undefined) {
+            layer.removeFromSuperlayer();
+        }
+        this.sublayers.push(layer);
+        layer.superlayer = this;
+        this.createSVGElement();
+        layer.createSVGElement();
+    }
+    createSVGElement() {
+    }
+    get backgroundColor() {
+        if (this._view) {
+            return this._view.backgroundColor;
+        }
+        else {
+            return this._backgroundColor;
+        }
+    }
+    set backgroundColor(value) {
+        if (this.backgroundColor === value) {
+            return;
+        }
+        if (this.backgroundColor !== undefined && value !== undefined) {
+            if (this.backgroundColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
+        this._backgroundColor = value;
+        if (this._view) {
+            this._view.backgroundColor = value;
+        }
+        else {
+        }
+    }
+    get opacity() {
+        if (this._view) {
+            return this._view.alpha;
+        }
+        else {
+            return this._opacity;
+        }
+    }
+    set opacity(value) {
+        if (this.opacity === value) {
+            return;
+        }
+        this._opacity = value;
+        if (this._view) {
+            this._view.alpha = value;
+        }
+        else {
+        }
+    }
+    get masksToBounds() {
+        return this._masksToBounds;
+    }
+    set masksToBounds(value) {
+        if (this.masksToBounds === value) {
+            return;
+        }
+        this._masksToBounds = value;
+        if (this._view) {
+            this._view.clipsToBounds = value;
+        }
+        else {
+        }
+    }
+    get shadowColor() {
+        return this._shadowColor;
+    }
+    set shadowColor(value) {
+        if (this.shadowColor === value) {
+            return;
+        }
+        if (this.shadowColor !== undefined && value !== undefined) {
+            if (this.shadowColor.toStyle() === value.toStyle()) {
+                return;
+            }
+        }
+        this._shadowColor = value;
+        this.resetShadow();
+    }
+    get shadowOpacity() {
+        return this._shadowOpacity;
+    }
+    set shadowOpacity(value) {
+        if (this.shadowOpacity === value) {
+            return;
+        }
+        this._shadowOpacity = value;
+        this.resetShadow();
+    }
+    get shadowOffset() {
+        return this._shadowOffset;
+    }
+    set shadowOffset(value) {
+        if (UISize_1.UISizeEqualToSize(this.shadowOffset, value)) {
+            return;
+        }
+        this._shadowOffset = value;
+        this.resetShadow();
+    }
+    get shadowRadius() {
+        return this._shadowRadius;
+    }
+    set shadowRadius(value) {
+        if (this.shadowRadius === value) {
+            return;
+        }
+        this._shadowRadius = value;
+        this.resetShadow();
+    }
+    resetShadow() {
+        if (this._view) {
+            this._view.invalidate();
+        }
+    }
+}
+exports.CALayer = CALayer;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 class UIFont {
     constructor(pointSize, fontStyle, fontName) {
         this.pointSize = pointSize;
@@ -1938,7 +2181,7 @@ exports.UIFont = UIFont;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2032,19 +2275,19 @@ exports.UILongPressGestureRecognizer = UILongPressGestureRecognizer;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
-const UIPoint_1 = __webpack_require__(11);
-const UISize_1 = __webpack_require__(13);
+const UIPoint_1 = __webpack_require__(12);
+const UISize_1 = __webpack_require__(11);
 const UIEdgeInsets_1 = __webpack_require__(8);
-const UIPanGestureRecognizer_1 = __webpack_require__(35);
-const UIRefreshControl_1 = __webpack_require__(36);
-const UIFetchMoreControl_1 = __webpack_require__(37);
+const UIPanGestureRecognizer_1 = __webpack_require__(36);
+const UIRefreshControl_1 = __webpack_require__(37);
+const UIFetchMoreControl_1 = __webpack_require__(38);
 const isIOS = wx.getSystemInfoSync().platform === "ios";
 class UIScrollView extends UIView_1.UIView {
     constructor() {
@@ -2392,7 +2635,7 @@ exports.UIScrollView = UIScrollView;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2440,13 +2683,13 @@ exports.Ticker = Ticker;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Matrix_1 = __webpack_require__(32);
+const Matrix_1 = __webpack_require__(33);
 exports.UIAffineTransformIdentity = { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 exports.UIAffineTransformMake = function (a, b, c, d, tx, ty) {
     return { a, b, c, d, tx, ty };
@@ -2512,7 +2755,7 @@ exports.UIAffineTransformIsIdentity = function (transform) {
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2580,7 +2823,7 @@ exports.UITapGestureRecognizer = UITapGestureRecognizer;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2713,7 +2956,7 @@ exports.UILabel = UILabel;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2769,7 +3012,7 @@ exports.UIImageView = UIImageView;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2788,7 +3031,7 @@ exports.UIIndexPath = UIIndexPath;
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2796,7 +3039,7 @@ exports.UIIndexPath = UIIndexPath;
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
 const UIColor_1 = __webpack_require__(5);
-const EventEmitter_1 = __webpack_require__(12);
+const EventEmitter_1 = __webpack_require__(13);
 class UINavigationItem {
     constructor() {
         this.viewController = undefined;
@@ -2838,7 +3081,7 @@ exports.UINavigationBar = UINavigationBar;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2885,7 +3128,7 @@ exports.Bundle = Bundle;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2942,7 +3185,7 @@ exports.MutableURLRequest = MutableURLRequest;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2962,7 +3205,7 @@ exports.URLResponse = URLResponse;
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2983,7 +3226,7 @@ exports.UUID = UUID;
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3358,21 +3601,21 @@ exports.Matrix = Matrix;
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
-const UIFont_1 = __webpack_require__(18);
+const UIFont_1 = __webpack_require__(19);
 const UIEnums_1 = __webpack_require__(6);
 const UIColor_1 = __webpack_require__(5);
 const UIEdgeInsets_1 = __webpack_require__(8);
-const UITapGestureRecognizer_1 = __webpack_require__(23);
-const UILongPressGestureRecognizer_1 = __webpack_require__(19);
-const UILabel_1 = __webpack_require__(24);
-const UIImageView_1 = __webpack_require__(25);
+const UITapGestureRecognizer_1 = __webpack_require__(24);
+const UILongPressGestureRecognizer_1 = __webpack_require__(20);
+const UILabel_1 = __webpack_require__(25);
+const UIImageView_1 = __webpack_require__(26);
 class UIButton extends UIView_1.UIView {
     constructor(isCustom = false) {
         super();
@@ -3719,21 +3962,21 @@ exports.UIButton = UIButton;
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
-const UIScrollView_1 = __webpack_require__(20);
+const UIScrollView_1 = __webpack_require__(21);
 const UIRect_1 = __webpack_require__(9);
-const UIIndexPath_1 = __webpack_require__(26);
-const UISize_1 = __webpack_require__(13);
-const UIAffineTransform_1 = __webpack_require__(22);
-const UIPoint_1 = __webpack_require__(11);
+const UIIndexPath_1 = __webpack_require__(27);
+const UISize_1 = __webpack_require__(11);
+const UIAffineTransform_1 = __webpack_require__(23);
+const UIPoint_1 = __webpack_require__(12);
 const UIAnimator_1 = __webpack_require__(7);
-const EventEmitter_1 = __webpack_require__(12);
+const EventEmitter_1 = __webpack_require__(13);
 const UITouch_1 = __webpack_require__(10);
 var ItemType;
 (function (ItemType) {
@@ -4512,7 +4755,7 @@ exports.UICollectionViewData = UICollectionViewData;
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4648,7 +4891,7 @@ exports.UIPanGestureRecognizer = UIPanGestureRecognizer;
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4761,7 +5004,7 @@ exports.UIRefreshControl = UIRefreshControl;
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4800,7 +5043,7 @@ exports.UIFetchMoreControl = UIFetchMoreControl;
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4814,8 +5057,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const UISize_1 = __webpack_require__(13);
-const EventEmitter_1 = __webpack_require__(12);
+const UISize_1 = __webpack_require__(11);
+const EventEmitter_1 = __webpack_require__(13);
 var UIImageRenderingMode;
 (function (UIImageRenderingMode) {
     UIImageRenderingMode[UIImageRenderingMode["automatic"] = 0] = "automatic";
@@ -4880,7 +5123,6 @@ exports.UIImage = UIImage;
 
 
 /***/ }),
-/* 39 */,
 /* 40 */,
 /* 41 */,
 /* 42 */,
@@ -4889,83 +5131,91 @@ exports.UIImage = UIImage;
 /* 45 */,
 /* 46 */,
 /* 47 */,
-/* 48 */
+/* 48 */,
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-Object.assign(module.exports, __webpack_require__(28));
-Object.assign(module.exports, __webpack_require__(17));
-Object.assign(module.exports, __webpack_require__(49));
-Object.assign(module.exports, __webpack_require__(50));
-Object.assign(module.exports, __webpack_require__(51));
-Object.assign(module.exports, __webpack_require__(16));
-Object.assign(module.exports, __webpack_require__(29));
-Object.assign(module.exports, __webpack_require__(30));
-Object.assign(module.exports, __webpack_require__(52));
-Object.assign(module.exports, __webpack_require__(53));
-Object.assign(module.exports, __webpack_require__(31));
-Object.assign(module.exports, __webpack_require__(54));
-Object.assign(module.exports, __webpack_require__(55));
-Object.assign(module.exports, __webpack_require__(58));
-Object.assign(module.exports, __webpack_require__(22));
+// Foundation
+Object.assign(module.exports, __webpack_require__(29))
+Object.assign(module.exports, __webpack_require__(17))
+Object.assign(module.exports, __webpack_require__(50))
+Object.assign(module.exports, __webpack_require__(51))
+Object.assign(module.exports, __webpack_require__(52))
+Object.assign(module.exports, __webpack_require__(16))
+Object.assign(module.exports, __webpack_require__(30))
+Object.assign(module.exports, __webpack_require__(31))
+Object.assign(module.exports, __webpack_require__(53))
+Object.assign(module.exports, __webpack_require__(54))
+Object.assign(module.exports, __webpack_require__(32))
+// CoreGraphics
+Object.assign(module.exports, __webpack_require__(55))
+Object.assign(module.exports, __webpack_require__(56))
+Object.assign(module.exports, __webpack_require__(18))
+Object.assign(module.exports, __webpack_require__(57))
+// KIMI
+Object.assign(module.exports, __webpack_require__(58))
+// UIKit
+Object.assign(module.exports, __webpack_require__(59))
+Object.assign(module.exports, __webpack_require__(60))
+Object.assign(module.exports, __webpack_require__(62))
+Object.assign(module.exports, __webpack_require__(23))
 Object.assign(module.exports, __webpack_require__(7));
-Object.assign(module.exports, __webpack_require__(59));
-Object.assign(module.exports, __webpack_require__(33));
-Object.assign(module.exports, __webpack_require__(34));
-Object.assign(module.exports, __webpack_require__(61));
-Object.assign(module.exports, __webpack_require__(5));
-Object.assign(module.exports, __webpack_require__(62));
 Object.assign(module.exports, __webpack_require__(63));
-Object.assign(module.exports, __webpack_require__(8));
-Object.assign(module.exports, __webpack_require__(6));
-Object.assign(module.exports, __webpack_require__(37));
-Object.assign(module.exports, __webpack_require__(18));
-Object.assign(module.exports, __webpack_require__(14));
-Object.assign(module.exports, __webpack_require__(38));
-Object.assign(module.exports, __webpack_require__(25));
-Object.assign(module.exports, __webpack_require__(24));
-Object.assign(module.exports, __webpack_require__(19));
-Object.assign(module.exports, __webpack_require__(27));
-Object.assign(module.exports, __webpack_require__(64));
-Object.assign(module.exports, __webpack_require__(66));
-Object.assign(module.exports, __webpack_require__(67));
+Object.assign(module.exports, __webpack_require__(65));
+Object.assign(module.exports, __webpack_require__(34));
 Object.assign(module.exports, __webpack_require__(35));
-Object.assign(module.exports, __webpack_require__(68));
-Object.assign(module.exports, __webpack_require__(11));
-Object.assign(module.exports, __webpack_require__(69));
-Object.assign(module.exports, __webpack_require__(9));
-Object.assign(module.exports, __webpack_require__(36));
-Object.assign(module.exports, __webpack_require__(70));
-Object.assign(module.exports, __webpack_require__(71));
-Object.assign(module.exports, __webpack_require__(20));
-Object.assign(module.exports, __webpack_require__(13));
-Object.assign(module.exports, __webpack_require__(72));
-Object.assign(module.exports, __webpack_require__(73));
-Object.assign(module.exports, __webpack_require__(74));
-Object.assign(module.exports, __webpack_require__(75));
-Object.assign(module.exports, __webpack_require__(23));
-Object.assign(module.exports, __webpack_require__(77));
-Object.assign(module.exports, __webpack_require__(78));
-Object.assign(module.exports, __webpack_require__(79));
-Object.assign(module.exports, __webpack_require__(10));
-Object.assign(module.exports, __webpack_require__(1));
-Object.assign(module.exports, __webpack_require__(15));
-Object.assign(module.exports, __webpack_require__(80));
+Object.assign(module.exports, __webpack_require__(67));
+Object.assign(module.exports, __webpack_require__(5))
+Object.assign(module.exports, __webpack_require__(68))
+Object.assign(module.exports, __webpack_require__(69))
+Object.assign(module.exports, __webpack_require__(8))
+Object.assign(module.exports, __webpack_require__(6))
+Object.assign(module.exports, __webpack_require__(38))
+Object.assign(module.exports, __webpack_require__(19))
+Object.assign(module.exports, __webpack_require__(14))
+Object.assign(module.exports, __webpack_require__(39))
+Object.assign(module.exports, __webpack_require__(26))
+Object.assign(module.exports, __webpack_require__(25))
+Object.assign(module.exports, __webpack_require__(20))
+Object.assign(module.exports, __webpack_require__(28))
+Object.assign(module.exports, __webpack_require__(70))
+Object.assign(module.exports, __webpack_require__(72))
+Object.assign(module.exports, __webpack_require__(73))
+Object.assign(module.exports, __webpack_require__(36))
+Object.assign(module.exports, __webpack_require__(74))
+Object.assign(module.exports, __webpack_require__(12))
+Object.assign(module.exports, __webpack_require__(75))
+Object.assign(module.exports, __webpack_require__(9))
+Object.assign(module.exports, __webpack_require__(37))
+Object.assign(module.exports, __webpack_require__(76))
+Object.assign(module.exports, __webpack_require__(77))
+Object.assign(module.exports, __webpack_require__(21))
+Object.assign(module.exports, __webpack_require__(11))
+Object.assign(module.exports, __webpack_require__(78))
+Object.assign(module.exports, __webpack_require__(79))
+Object.assign(module.exports, __webpack_require__(80))
+Object.assign(module.exports, __webpack_require__(81))
+Object.assign(module.exports, __webpack_require__(24))
+Object.assign(module.exports, __webpack_require__(83))
+Object.assign(module.exports, __webpack_require__(84))
+Object.assign(module.exports, __webpack_require__(85))
+Object.assign(module.exports, __webpack_require__(10))
+Object.assign(module.exports, __webpack_require__(1))
+Object.assign(module.exports, __webpack_require__(15))
+Object.assign(module.exports, __webpack_require__(86))
+
 Component({
     properties: {
         view: {
             type: Object,
             value: undefined,
             observer: function (view) {
-                if (view === undefined || view === null) {
-                    return;
-                }
+                if (view === undefined || view === null) { return }
                 if (typeof this.data.clazz !== "string" || typeof this.data.view !== view) {
                     this.setData({
                         viewID: view.viewID,
                         clazz: view.clazz,
-                    });
+                    })
                 }
             }
         },
@@ -4974,12 +5224,14 @@ Component({
         view: undefined,
         clazz: "UIView",
     },
-    methods: {}
-});
+    methods: {
+
+    }
+})
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5005,14 +5257,14 @@ exports.DispatchQueue = DispatchQueue;
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const Data_1 = __webpack_require__(17);
-const Bundle_1 = __webpack_require__(28);
+const Bundle_1 = __webpack_require__(29);
 const fs = wx.getFileSystemManager();
 class FileManager {
     constructor() {
@@ -5210,7 +5462,7 @@ exports.FileManager = FileManager;
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5256,16 +5508,16 @@ exports.Timer = Timer;
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const URLRequest_1 = __webpack_require__(29);
+const URLRequest_1 = __webpack_require__(30);
 const URL_1 = __webpack_require__(16);
 const Data_1 = __webpack_require__(17);
-const URLResponse_1 = __webpack_require__(30);
+const URLResponse_1 = __webpack_require__(31);
 class URLSession {
     fetch(request) {
         return new Promise((resolver, rejector) => {
@@ -5353,7 +5605,7 @@ exports.URLSessionTask = URLSessionTask;
 
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5398,7 +5650,91 @@ exports.UserDefaults = UserDefaults;
 
 
 /***/ }),
-/* 54 */
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class CADisplayLink {
+    constructor(vsyncBlock) {
+        this.vsyncBlock = vsyncBlock;
+    }
+    active() {
+        console.log("微信小程序暂时不支持 CADisplayLink。");
+    }
+    invalidate() { }
+}
+exports.CADisplayLink = CADisplayLink;
+
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const CALayer_1 = __webpack_require__(18);
+class CAGradientLayer extends CALayer_1.CALayer {
+    constructor() {
+        super();
+        console.log("微信小程序暂时不支持 CAGradientLayer");
+    }
+}
+exports.CAGradientLayer = CAGradientLayer;
+
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const CALayer_1 = __webpack_require__(18);
+var CAShapeFillRule;
+(function (CAShapeFillRule) {
+    CAShapeFillRule[CAShapeFillRule["nonZero"] = 0] = "nonZero";
+    CAShapeFillRule[CAShapeFillRule["evenOdd"] = 1] = "evenOdd";
+})(CAShapeFillRule = exports.CAShapeFillRule || (exports.CAShapeFillRule = {}));
+var CAShapeLineCap;
+(function (CAShapeLineCap) {
+    CAShapeLineCap[CAShapeLineCap["butt"] = 0] = "butt";
+    CAShapeLineCap[CAShapeLineCap["round"] = 1] = "round";
+    CAShapeLineCap[CAShapeLineCap["square"] = 2] = "square";
+})(CAShapeLineCap = exports.CAShapeLineCap || (exports.CAShapeLineCap = {}));
+var CAShapeLineJoin;
+(function (CAShapeLineJoin) {
+    CAShapeLineJoin[CAShapeLineJoin["miter"] = 0] = "miter";
+    CAShapeLineJoin[CAShapeLineJoin["round"] = 1] = "round";
+    CAShapeLineJoin[CAShapeLineJoin["bevel"] = 2] = "bevel";
+})(CAShapeLineJoin = exports.CAShapeLineJoin || (exports.CAShapeLineJoin = {}));
+class CAShapeLayer extends CALayer_1.CALayer {
+    constructor() {
+        super();
+        console.log("微信小程序暂时不支持 CAShapeLayer");
+    }
+}
+exports.CAShapeLayer = CAShapeLayer;
+
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class KMCore {
+}
+KMCore.version = "0.7.0";
+KMCore.hostVersion = wx.getSystemInfoSync().SDKVersion;
+exports.KMCore = KMCore;
+
+
+/***/ }),
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5459,7 +5795,7 @@ exports.UIActionSheet = UIActionSheet;
 
 
 /***/ }),
-/* 55 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5509,7 +5845,7 @@ exports.UIActivityIndicatorView = UIActivityIndicatorView;
 
 
 /***/ }),
-/* 56 */
+/* 61 */
 /***/ (function(module, exports) {
 
 /*!
@@ -6011,250 +6347,7 @@ exports.UIActivityIndicatorView = UIActivityIndicatorView;
 }(this || {}));
 
 /***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const UIRect_1 = __webpack_require__(9);
-const UISize_1 = __webpack_require__(13);
-class CALayer {
-    constructor() {
-        this._view = undefined;
-        this._frame = UIRect_1.UIRectZero;
-        this._hidden = false;
-        this._cornerRadius = 0.0;
-        this._borderWidth = 0.0;
-        this._borderColor = undefined;
-        this.superlayer = undefined;
-        this.sublayers = [];
-        this._backgroundColor = undefined;
-        this._opacity = 1.0;
-        this._masksToBounds = false;
-        this._shadowColor = undefined;
-        this._shadowOpacity = 0.0;
-        this._shadowOffset = { width: 0, height: -3 };
-        this._shadowRadius = 3.0;
-    }
-    get view() {
-        if (this.superlayer) {
-            return this.superlayer._view;
-        }
-        return this._view;
-    }
-    set view(value) {
-        this._view = value;
-    }
-    get frame() {
-        return this._frame;
-    }
-    set frame(value) {
-        if (UIRect_1.UIRectEqualToRect(this._frame, value)) {
-            return;
-        }
-        this._frame = value;
-    }
-    get hidden() {
-        if (this._view) {
-            return this._view.hidden;
-        }
-        else {
-            return this._hidden;
-        }
-    }
-    set hidden(value) {
-        if (this.hidden === value) {
-            return;
-        }
-        this._hidden = value;
-        if (this._view) {
-            this._view.hidden = value;
-        }
-        else {
-        }
-    }
-    get cornerRadius() {
-        return this._cornerRadius;
-    }
-    set cornerRadius(value) {
-        if (this._cornerRadius === value) {
-            return;
-        }
-        this._cornerRadius = value;
-        if (this._view) {
-            this._view.invalidate();
-        }
-        else {
-        }
-    }
-    get borderWidth() {
-        return this._borderWidth;
-    }
-    set borderWidth(value) {
-        if (this._borderWidth === value) {
-            return;
-        }
-        this._borderWidth = value;
-        this.resetBorder();
-    }
-    get borderColor() {
-        return this._borderColor;
-    }
-    set borderColor(value) {
-        if (this._borderColor === value) {
-            return;
-        }
-        if (this._borderColor !== undefined && value !== undefined) {
-            if (this._borderColor.toStyle() === value.toStyle()) {
-                return;
-            }
-        }
-        this._borderColor = value;
-        this.resetBorder();
-    }
-    resetBorder() {
-        if (this._view) {
-            this._view.invalidate();
-        }
-        else {
-        }
-    }
-    moveBorderElementToFront() {
-    }
-    removeFromSuperlayer() {
-        if (this.superlayer) {
-            const idx = this.superlayer.sublayers.indexOf(this);
-            if (idx >= 0) {
-                this.superlayer.sublayers.splice(idx, 1);
-            }
-            this.superlayer = undefined;
-        }
-    }
-    addSublayer(layer) {
-        if (layer.superlayer !== undefined) {
-            layer.removeFromSuperlayer();
-        }
-        this.sublayers.push(layer);
-        layer.superlayer = this;
-        this.createSVGElement();
-        layer.createSVGElement();
-    }
-    createSVGElement() {
-    }
-    get backgroundColor() {
-        if (this._view) {
-            return this._view.backgroundColor;
-        }
-        else {
-            return this._backgroundColor;
-        }
-    }
-    set backgroundColor(value) {
-        if (this.backgroundColor === value) {
-            return;
-        }
-        if (this.backgroundColor !== undefined && value !== undefined) {
-            if (this.backgroundColor.toStyle() === value.toStyle()) {
-                return;
-            }
-        }
-        this._backgroundColor = value;
-        if (this._view) {
-            this._view.backgroundColor = value;
-        }
-        else {
-        }
-    }
-    get opacity() {
-        if (this._view) {
-            return this._view.alpha;
-        }
-        else {
-            return this._opacity;
-        }
-    }
-    set opacity(value) {
-        if (this.opacity === value) {
-            return;
-        }
-        this._opacity = value;
-        if (this._view) {
-            this._view.alpha = value;
-        }
-        else {
-        }
-    }
-    get masksToBounds() {
-        return this._masksToBounds;
-    }
-    set masksToBounds(value) {
-        if (this.masksToBounds === value) {
-            return;
-        }
-        this._masksToBounds = value;
-        if (this._view) {
-            this._view.clipsToBounds = value;
-        }
-        else {
-        }
-    }
-    get shadowColor() {
-        return this._shadowColor;
-    }
-    set shadowColor(value) {
-        if (this.shadowColor === value) {
-            return;
-        }
-        if (this.shadowColor !== undefined && value !== undefined) {
-            if (this.shadowColor.toStyle() === value.toStyle()) {
-                return;
-            }
-        }
-        this._shadowColor = value;
-        this.resetShadow();
-    }
-    get shadowOpacity() {
-        return this._shadowOpacity;
-    }
-    set shadowOpacity(value) {
-        if (this.shadowOpacity === value) {
-            return;
-        }
-        this._shadowOpacity = value;
-        this.resetShadow();
-    }
-    get shadowOffset() {
-        return this._shadowOffset;
-    }
-    set shadowOffset(value) {
-        if (UISize_1.UISizeEqualToSize(this.shadowOffset, value)) {
-            return;
-        }
-        this._shadowOffset = value;
-        this.resetShadow();
-    }
-    get shadowRadius() {
-        return this._shadowRadius;
-    }
-    set shadowRadius(value) {
-        if (this.shadowRadius === value) {
-            return;
-        }
-        this._shadowRadius = value;
-        this.resetShadow();
-    }
-    resetShadow() {
-        if (this._view) {
-            this._view.invalidate();
-        }
-    }
-}
-exports.CALayer = CALayer;
-
-
-/***/ }),
-/* 58 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6288,7 +6381,7 @@ exports.UIAlert = UIAlert;
 
 
 /***/ }),
-/* 59 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6296,9 +6389,9 @@ exports.UIAlert = UIAlert;
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIRect_1 = __webpack_require__(9);
 const UIColor_1 = __webpack_require__(5);
-const UIFont_1 = __webpack_require__(18);
+const UIFont_1 = __webpack_require__(19);
 const UIEnums_1 = __webpack_require__(6);
-const TextMeasurer_1 = __webpack_require__(60);
+const TextMeasurer_1 = __webpack_require__(64);
 class UIAttributedStringKey {
 }
 UIAttributedStringKey.foregroundColor = "foregroundColor"; // value: UIColor
@@ -6543,7 +6636,7 @@ exports.UIMutableAttributedString = UIMutableAttributedString;
 
 
 /***/ }),
-/* 60 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6648,17 +6741,71 @@ exports.TextMeasurer = TextMeasurer;
 
 
 /***/ }),
-/* 61 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const UISize_1 = __webpack_require__(13);
+const d3 = __webpack_require__(66);
+class UIBezierPath {
+    constructor() {
+        this.d3Paths = [d3.path()];
+    }
+    activePath() {
+        return this.d3Paths[this.d3Paths.length - 1];
+    }
+    moveTo(toPoint) {
+        this.activePath().moveTo(toPoint.x, toPoint.y);
+    }
+    addLineTo(toPoint) {
+        this.activePath().lineTo(toPoint.x, toPoint.y);
+    }
+    addArcTo(toCenter, radius, startAngle, endAngle, closewise) {
+        this.activePath().moveTo(toCenter.x + radius, toCenter.y);
+        this.activePath().arc(toCenter.x, toCenter.y, radius, startAngle, endAngle, closewise);
+    }
+    addCurveTo(toPoint, controlPoint1, controlPoint2) {
+        this.activePath().bezierCurveTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, toPoint.x, toPoint.y);
+    }
+    addQuadCurveTo(toPoint, controlPoint) {
+        this.activePath().quadraticCurveTo(controlPoint.x, controlPoint.y, toPoint.x, toPoint.y);
+    }
+    closePath() {
+        this.activePath().closePath();
+    }
+    removeAllPoints() {
+        this.d3Paths = [d3.path()];
+    }
+    appendPath(path) {
+        path.d3Paths.forEach(it => {
+            this.d3Paths.push(it);
+        });
+    }
+}
+exports.UIBezierPath = UIBezierPath;
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// https://d3js.org/d3-path/ v1.0.7 Copyright 2018 Mike Bostock
+!function(t,i){ true?i(exports):undefined}(this,function(t){"use strict";var i=Math.PI,s=2*i,h=s-1e-6;function _(){this._x0=this._y0=this._x1=this._y1=null,this._=""}function e(){return new _}_.prototype=e.prototype={constructor:_,moveTo:function(t,i){this._+="M"+(this._x0=this._x1=+t)+","+(this._y0=this._y1=+i)},closePath:function(){null!==this._x1&&(this._x1=this._x0,this._y1=this._y0,this._+="Z")},lineTo:function(t,i){this._+="L"+(this._x1=+t)+","+(this._y1=+i)},quadraticCurveTo:function(t,i,s,h){this._+="Q"+ +t+","+ +i+","+(this._x1=+s)+","+(this._y1=+h)},bezierCurveTo:function(t,i,s,h,_,e){this._+="C"+ +t+","+ +i+","+ +s+","+ +h+","+(this._x1=+_)+","+(this._y1=+e)},arcTo:function(t,s,h,_,e){t=+t,s=+s,h=+h,_=+_,e=+e;var n=this._x1,o=this._y1,r=h-t,a=_-s,u=n-t,c=o-s,f=u*u+c*c;if(e<0)throw new Error("negative radius: "+e);if(null===this._x1)this._+="M"+(this._x1=t)+","+(this._y1=s);else if(f>1e-6)if(Math.abs(c*r-a*u)>1e-6&&e){var x=h-n,y=_-o,M=r*r+a*a,l=x*x+y*y,d=Math.sqrt(M),p=Math.sqrt(f),v=e*Math.tan((i-Math.acos((M+f-l)/(2*d*p)))/2),b=v/p,w=v/d;Math.abs(b-1)>1e-6&&(this._+="L"+(t+b*u)+","+(s+b*c)),this._+="A"+e+","+e+",0,0,"+ +(c*x>u*y)+","+(this._x1=t+w*r)+","+(this._y1=s+w*a)}else this._+="L"+(this._x1=t)+","+(this._y1=s);else;},arc:function(t,_,e,n,o,r){t=+t,_=+_;var a=(e=+e)*Math.cos(n),u=e*Math.sin(n),c=t+a,f=_+u,x=1^r,y=r?n-o:o-n;if(e<0)throw new Error("negative radius: "+e);null===this._x1?this._+="M"+c+","+f:(Math.abs(this._x1-c)>1e-6||Math.abs(this._y1-f)>1e-6)&&(this._+="L"+c+","+f),e&&(y<0&&(y=y%s+s),y>h?this._+="A"+e+","+e+",0,1,"+x+","+(t-a)+","+(_-u)+"A"+e+","+e+",0,1,"+x+","+(this._x1=c)+","+(this._y1=f):y>1e-6&&(this._+="A"+e+","+e+",0,"+ +(y>=i)+","+x+","+(this._x1=t+e*Math.cos(o))+","+(this._y1=_+e*Math.sin(o))))},rect:function(t,i,s,h){this._+="M"+(this._x0=this._x1=+t)+","+(this._y0=this._y1=+i)+"h"+ +s+"v"+ +h+"h"+-s+"Z"},toString:function(){return this._}},t.path=e,Object.defineProperty(t,"__esModule",{value:!0})});
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const UISize_1 = __webpack_require__(11);
 const UIRect_1 = __webpack_require__(9);
 const UIEdgeInsets_1 = __webpack_require__(8);
-const UICollectionView_1 = __webpack_require__(34);
-const UIIndexPath_1 = __webpack_require__(26);
+const UICollectionView_1 = __webpack_require__(35);
+const UIIndexPath_1 = __webpack_require__(27);
 var UICollectionViewScrollDirection;
 (function (UICollectionViewScrollDirection) {
     UICollectionViewScrollDirection[UICollectionViewScrollDirection["vertical"] = 0] = "vertical";
@@ -7289,7 +7436,7 @@ exports.UICollectionViewFlowLayout = UICollectionViewFlowLayout;
 
 
 /***/ }),
-/* 62 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7326,13 +7473,13 @@ exports.UIConfirm = UIConfirm;
 
 
 /***/ }),
-/* 63 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const UUID_1 = __webpack_require__(31);
+const UUID_1 = __webpack_require__(32);
 class UIDevice {
     constructor() {
         this.name = "Browser";
@@ -7359,7 +7506,7 @@ exports.UIDevice = UIDevice;
 
 
 /***/ }),
-/* 64 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7377,7 +7524,7 @@ exports.UINavigationBarViewController = UINavigationBarViewController;
 
 
 /***/ }),
-/* 65 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7434,14 +7581,14 @@ exports.UITabBarItem = UITabBarItem;
 
 
 /***/ }),
-/* 66 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIViewController_1 = __webpack_require__(15);
-const UINavigationBar_1 = __webpack_require__(27);
+const UINavigationBar_1 = __webpack_require__(28);
 const UIAnimator_1 = __webpack_require__(7);
 const UIColor_1 = __webpack_require__(5);
 class UINavigationController extends UIViewController_1.UIViewController {
@@ -7601,15 +7748,15 @@ exports.UINavigationController = UINavigationController;
 
 
 /***/ }),
-/* 67 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIViewController_1 = __webpack_require__(15);
-const UIScrollView_1 = __webpack_require__(20);
-const UIPoint_1 = __webpack_require__(11);
+const UIScrollView_1 = __webpack_require__(21);
+const UIPoint_1 = __webpack_require__(12);
 const UIAnimator_1 = __webpack_require__(7);
 class UIPageViewController extends UIViewController_1.UIViewController {
     constructor(isVertical = false) {
@@ -7874,7 +8021,7 @@ exports.UIPageViewController = UIPageViewController;
 
 
 /***/ }),
-/* 68 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7895,7 +8042,7 @@ exports.UIPinchGestureRecognizer = UIPinchGestureRecognizer;
 
 
 /***/ }),
-/* 69 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7985,7 +8132,7 @@ exports.UIProgressView = UIProgressView;
 
 
 /***/ }),
-/* 70 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8003,7 +8150,7 @@ exports.UIRotationGestureRecognizer = UIRotationGestureRecognizer;
 
 
 /***/ }),
-/* 71 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8020,7 +8167,7 @@ exports.UIScreen = UIScreen;
 
 
 /***/ }),
-/* 72 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8028,7 +8175,7 @@ exports.UIScreen = UIScreen;
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
 const UIAnimator_1 = __webpack_require__(7);
-const UILongPressGestureRecognizer_1 = __webpack_require__(19);
+const UILongPressGestureRecognizer_1 = __webpack_require__(20);
 class ThumbView extends UIView_1.UIView {
     pointInside(point) {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
@@ -8166,7 +8313,7 @@ exports.UISlider = UISlider;
 
 
 /***/ }),
-/* 73 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8441,7 +8588,7 @@ exports.UIStackView = UIStackView;
 
 
 /***/ }),
-/* 74 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8450,7 +8597,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
 const UIColor_1 = __webpack_require__(5);
 const UIAnimator_1 = __webpack_require__(7);
-const UILongPressGestureRecognizer_1 = __webpack_require__(19);
+const UILongPressGestureRecognizer_1 = __webpack_require__(20);
 class ThumbView extends UIView_1.UIView {
     pointInside(point) {
         return point.x >= -22.0 && point.y >= -22.0 && point.x <= this.frame.width + 22.0 && point.y <= this.frame.height + 22.0;
@@ -8582,14 +8729,14 @@ exports.UISwitch = UISwitch;
 
 
 /***/ }),
-/* 75 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIViewController_1 = __webpack_require__(15);
-const UITabBar_1 = __webpack_require__(76);
+const UITabBar_1 = __webpack_require__(82);
 class UITabBarController extends UIViewController_1.UIViewController {
     constructor() {
         super(...arguments);
@@ -8742,7 +8889,7 @@ exports.UITabBarController = UITabBarController;
 
 
 /***/ }),
-/* 76 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8750,11 +8897,11 @@ exports.UITabBarController = UITabBarController;
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
 const UIColor_1 = __webpack_require__(5);
-const UIImageView_1 = __webpack_require__(25);
-const UILabel_1 = __webpack_require__(24);
-const UIFont_1 = __webpack_require__(18);
+const UIImageView_1 = __webpack_require__(26);
+const UILabel_1 = __webpack_require__(25);
+const UIFont_1 = __webpack_require__(19);
 const UIEnums_1 = __webpack_require__(6);
-const UITapGestureRecognizer_1 = __webpack_require__(23);
+const UITapGestureRecognizer_1 = __webpack_require__(24);
 const UIEdgeInsets_1 = __webpack_require__(8);
 class UITabBar extends UIView_1.UIView {
     constructor() {
@@ -8900,16 +9047,16 @@ exports.UITabBarButton = UITabBarButton;
 
 
 /***/ }),
-/* 77 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
-const UIScrollView_1 = __webpack_require__(20);
+const UIScrollView_1 = __webpack_require__(21);
 const UIColor_1 = __webpack_require__(5);
-const UIIndexPath_1 = __webpack_require__(26);
+const UIIndexPath_1 = __webpack_require__(27);
 const UIRect_1 = __webpack_require__(9);
 const UIAnimator_1 = __webpack_require__(7);
 const UITouch_1 = __webpack_require__(10);
@@ -9534,7 +9681,7 @@ exports.UITableViewCell = UITableViewCell;
 
 
 /***/ }),
-/* 78 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9543,8 +9690,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const UIView_1 = __webpack_require__(1);
 const UIColor_1 = __webpack_require__(5);
 const UIEnums_1 = __webpack_require__(6);
-const UIButton_1 = __webpack_require__(33);
-const UIImage_1 = __webpack_require__(38);
+const UIButton_1 = __webpack_require__(34);
+const UIImage_1 = __webpack_require__(39);
 const clearButtonImage = new UIImage_1.UIImage({ base64: "iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAC0UExURUxpcY+NlKqqqo+PlI+OlI6Nk4+OlI6Nk4+OlH9/f39//46NlI+PlY6NlY6Nk5+fn4+OlJGOlpCQlY6OlI+OlJGOlI2NkY+Nk4+Ok46Ok1VVVQAAAI+OlJGOlY6OlY+Pk4+Pk4+PlJCOlJCOlY+OlI+Nk46NlI+OlI+PlI6Olo6Ok4+Nk4+Nk46OlI+Nk4+OlJCPlZGQlpKRl5OSmJaVnJWUmpeWnJSSmZCOlJSTmZCOlZOSmb7cF6QAAAAvdFJOUwD+A2X9/Pv+/gIC6Cnz2AjHZmhdul0/cPu+AwHkRkaAcL1/aOXm9/Y+Zvu7/rqAXZkdXwAAAYZJREFUKM91U4d2wjAMVMCOnQBhBMIoe7R0Sk4gQPv//1U5Zpail5fk6eyTdD4D2AgA6uv5LKrVotl8XS8SpyhB0GnoPDNEJst1Iw44dYwAqu10i1IpRKUkbtN29bQ3gHFloyUjLpTUm8rYoSUYPe98jVfh+buXsWVmzsrO5/XCOyKCOfxdpWAO2xvGNGVYECvMiGn8zafl7aTaQ4/81bcRiMLgsMeo1mnM8zW2EhW9xaUpGSEMdcPYJ4Vy26hDoplJZEMmaSIRNrnFVSY4qROY5JIrIna5fjlNy/yZ7m1C5l/Qz2wfytAr12+1+NUkU6SyPkTFn22kDE/ATxltY3Z9BDVy4wlKWzAYQCsl4TJUuwYXd2BkPh7TnhviGWBx09DMjeLdjNItEjKfQ+IVIizDiwjh8CTCUb5eHHadfNNS3DvJZ4Vnnak3RCf8fnkUvsP1w/f/j6wdPDzsH3fY1iaHvzY5OJvYvaN7g40u9ntsTcsc3pi6E15M7a5DMunb69CfJOfr8AsJs0zEPPGMHwAAAABJRU5ErkJggg==", renderingMode: UIImage_1.UIImageRenderingMode.alwaysOriginal });
 class UITextField extends UIView_1.UIView {
     constructor() {
@@ -9855,7 +10002,7 @@ exports.UITextField = UITextField;
 
 
 /***/ }),
-/* 79 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10023,7 +10170,7 @@ exports.UITextView = UITextView;
 
 
 /***/ }),
-/* 80 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

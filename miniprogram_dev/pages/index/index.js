@@ -46,6 +46,10 @@ const {
     UICollectionView,
     UICollectionViewCell,
     UICollectionViewFlowLayout,
+    KMCore,
+    CADisplayLink,
+    CALayer,
+    UUID,
 } = require("../../components/index")
 
 class FooCell extends UICollectionViewCell {
