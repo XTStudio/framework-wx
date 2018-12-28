@@ -8008,6 +8008,15 @@ class UINavigationController extends UIViewController_1.UIViewController {
             });
         }
     }
+    isVisible() {
+        let visible = super.isVisible();
+        if (!visible) {
+            if (this.childViewControllers[0] && this.childViewControllers[0].view.superview && this.childViewControllers[0].view.superview.clazz === "UIWindow") {
+                return true;
+            }
+        }
+        return visible;
+    }
 }
 exports.UINavigationController = UINavigationController;
 
