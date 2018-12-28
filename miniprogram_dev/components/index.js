@@ -1808,7 +1808,7 @@ class UIViewController extends EventEmitter_1.EventEmitter {
     updateBrowserTitle() {
         if (this.parentViewController === undefined && this.isVisible()) {
             wx.setNavigationBarTitle({
-                title: this.title
+                title: this.title || ""
             });
         }
     }
@@ -7979,7 +7979,7 @@ class UINavigationController extends UIViewController_1.UIViewController {
         if (this.childViewControllers.length > 0) {
             const title = this.childViewControllers[this.childViewControllers.length - 1].title;
             if (title) {
-                wx.setNavigationBarTitle({ title });
+                wx.setNavigationBarTitle({ title: title || "" });
             }
         }
     }
@@ -9142,7 +9142,7 @@ class UITabBarController extends UIViewController_1.UIViewController {
             }
             else {
                 wx.setNavigationBarTitle({
-                    title: this.selectedViewController.title
+                    title: this.selectedViewController.title || ""
                 });
             }
         }

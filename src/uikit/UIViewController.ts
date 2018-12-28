@@ -212,7 +212,7 @@ export class UIViewController extends EventEmitter {
     updateBrowserTitle() {
         if (this.parentViewController === undefined && this.isVisible()) {
             wx.setNavigationBarTitle({
-                title: this.title
+                title: this.title || ""
             })
         }
     }

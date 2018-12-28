@@ -149,7 +149,7 @@ export class UITabBarController extends UIViewController {
             }
             else {
                 wx.setNavigationBarTitle({
-                    title: this.selectedViewController.title
+                    title: this.selectedViewController.title || ""
                 })
             }
         }

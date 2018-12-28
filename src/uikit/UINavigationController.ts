@@ -130,7 +130,7 @@ export class UINavigationController extends UIViewController {
         if (this.childViewControllers.length > 0) {
             const title = this.childViewControllers[this.childViewControllers.length - 1].title
             if (title) {
-                wx.setNavigationBarTitle({ title })
+                wx.setNavigationBarTitle({ title: title || "" })
             }
         }
     }
