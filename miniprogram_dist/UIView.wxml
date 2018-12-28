@@ -1,6 +1,0 @@
-<!--xt-framework/uiview.wxml-->
-<view style='{{style}}'>
-  <view wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
-    <factory view="{{item}}"></factory>
-  </view>
-</view>

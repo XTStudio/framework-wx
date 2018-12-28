@@ -1,1 +1,9 @@
-<uiview wx:if="{{clazz == 'UIView'}}" props="{{view}}"></uiview>
+<uiview wx:if="{{clazz == 'UIView'}}" viewID="{{viewID}}"></uiview>
+<uiscrollview wx:if="{{clazz == 'UIScrollView'}}" viewID="{{viewID}}"></uiscrollview>
+<uiwindow wx:if="{{clazz == 'UIWindow'}}" viewID="{{viewID}}"></uiwindow>
+<uilabel wx:if="{{clazz == 'UILabel'}}" viewID="{{viewID}}"></uilabel>
+<uiimageview wx:if="{{clazz == 'UIImageView'}}" viewID="{{viewID}}"></uiimageview>
+<uibutton wx:if="{{clazz == 'UIButton'}}" viewID="{{viewID}}"></uibutton>
+<uiactivityindicatorview wx:if="{{clazz == 'UIActivityIndicatorView'}}" viewID="{{viewID}}"></uiactivityindicatorview>
+<uitextfield wx:if="{{clazz == 'UITextField'}}" viewID="{{viewID}}"></uitextfield>
+<uiwebview wx:if="{{clazz == 'UIWebView'}}" viewID="{{viewID}}"></uiwebview>

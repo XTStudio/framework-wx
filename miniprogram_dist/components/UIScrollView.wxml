@@ -1,0 +1,41 @@
+<factory view="{{refreshControlAnimationView}}"></factory>
+<scroll-view 
+    id="scroll-view"
+    wx:if="{{!pagingEnabled}}"
+    style='{{style}}{{frameStyle}}' 
+    scroll-x="{{direction == 'horizontal' || direction == 'all'}}" 
+    scroll-y="{{direction == 'vertical' || direction == 'all'}}" 
+    scroll-top="{{contentOffsetY}}"
+    scroll-left="{{contentOffsetX}}"
+    scroll-with-animation="{{scrollWithAnimation}}"
+    enable-back-to-top="{{scrollsToTop}}"
+    bindscroll="onScroll"
+    bindtouchstart="onTouchStarted"
+    bindtouchend="onTouchEnded"
+    bindtouchcancel="onTouchCancelled"
+    lower-threshold="200"
+    bindscrolltolower="onScrollToLower">
+    <view style="position:absolute; transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top + refreshOffset}})" animation="{{refreshingAnimation}}">
+      <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+        <factory view="{{item}}"></factory>
+      </block>
+    </view>
+    <view style="position:absolute; width:1px;height:1px;left:{{contentSize.width}}px;top:{{contentSize.height}}px;"></view>
+</scroll-view>
+<swiper wx:if="{{pagingEnabled}}"
+        style='{{style}}{{frameStyle}}'
+        vertical='{{pagingItems[0] === 1}}'
+        current='{{pagingCurrentIndex}}'
+        duration='{{pagingDuration}}'
+        bindtransition='onPagingScroll'
+        bindanimationfinish='onPagingChange'
+        bindtouchstart="onTouchStarted"
+        bindtouchend="onTouchEnded"
+        bindtouchcancel="onTouchCancelled">
+        <block wx:for="{{pagingItems}}" wx:key="*this">
+          <swiper-item></swiper-item>
+        </block>
+        <view style='transform: matrix(1,0,0,1,{{contentInset.left}},{{contentInset.top}});' wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+          <factory view="{{item}}"></factory>
+        </view>
+</swiper>

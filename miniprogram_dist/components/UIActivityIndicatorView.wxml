@@ -1,0 +1,6 @@
+<view style='{{style}}{{frameStyle}}' animation='{{animation}}'>
+  <button wx:if="{{animating}}" plain="true" style="line-height: {{lineHeight}}px;border-width: 0px; transform: scale({{sizeScale}}, {{sizeScale}}); pointer-events: none" loading="true"></button>
+  <block wx:for="{{subviews}}" wx:key="viewID" wx:for-item="item">
+    <factory view="{{item}}"></factory>
+  </block>
+</view>

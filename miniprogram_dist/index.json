@@ -1,6 +1,14 @@
 {
   "component": true,
   "usingComponents": {
-    "uiview": "UIView"
+    "uiview": "./components/UIView",
+    "uiscrollview": "./components/UIScrollView",
+    "uiwindow": "./components/UIWindow",
+    "uilabel": "./components/UILabel",
+    "uiimageview": "./components/UIImageView",
+    "uibutton": "./components/UIButton",
+    "uiactivityindicatorview": "./components/UIActivityIndicatorView",
+    "uitextfield": "./components/UITextField",
+    "uiwebview": "./components/UIWebView"
   }
 }
